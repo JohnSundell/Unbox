@@ -36,7 +36,7 @@ struct User: Unboxable {
 }
 ```
 
-Unboxed automatically (or, actually Swift does this) figures out what types your properties are, and decodes them accordingly. Now, we can decode a `User` like this:
+Unbox automatically (or, actually, Swift does) figures out what types your properties are, and decodes them accordingly. Now, we can decode a `User` like this:
 
 ```
 let user: User? = Unbox(dictionary)
