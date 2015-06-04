@@ -35,7 +35,7 @@ public typealias UnboxableDictionary = [String : AnyObject]
 /**
  *  Unbox (decode) a dictionary into a model
  *
- *  @param dictionary The dictionary to decode. Must be a valid JSON object.
+ *  @param dictionary The dictionary to decode. Must be a valid JSON dictionary.
  *
  *  @discussion This function gets its return type from the context in which it's called.
  *  If the context is ambigious, you need to supply it, like:
@@ -52,7 +52,7 @@ public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary) -> T? {
 /**
  *  Unbox (decode) a dictionary into a model, optionally logging any error that occured
  *
- *  @param dictionary The dictionary to decode. Must be a valid JSON object.
+ *  @param dictionary The dictionary to decode. Must be a valid JSON dictionary.
  *  @param logErrors Whether any encountered error should be logged to the console
  *
  *  @idscussion See the documentation for the main Unbox() function above for more information.
@@ -78,6 +78,38 @@ public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, #logErrors: Boo
     }
     
     return unboxed
+}
+
+/**
+ *  Unbox (decode) a set of data into a model
+ *
+ *  @param data The data to decode. Must be convertible into a valid JSON dictionary.
+ *
+ *  @discussion See the documentation for the main Unbox(dictionary:) function above for more information.
+ */
+public func Unbox<T: Unboxable>(data: NSData) -> T? {
+    return Unbox(data, logErrors: false)
+}
+
+/**
+ *  Unbox (decode) a set of data into a model, optionally logging any error that occured
+ *
+ *  @param data The data to decode. Must be convertible into a valid JSON dictionary.
+ *
+ *  @discussion See the documentation for the main Unbox(dictionary:) function above for more information.
+ */
+public func Unbox<T: Unboxable>(data: NSData, #logErrors: Bool) -> T? {
+    var dataDecodingError: NSError?
+    
+    if let dictionary = NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions(), error: &dataDecodingError) as? UnboxableDictionary {
+        return Unbox(dictionary, logErrors: logErrors)
+    }
+    
+    if logErrors {
+        println("Unbox: Failed to convert data into a Unboxable Dictionary. Error: \(dataDecodingError)")
+    }
+    
+    return nil
 }
 
 // MARK: - Protocols

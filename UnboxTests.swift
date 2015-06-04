@@ -63,6 +63,17 @@ class UnboxTests: XCTestCase {
         let unboxed: UnboxTestMock? = Unbox(validDictionary)
         XCTAssertNotNil(unboxed, "Invalid optional values should be ignored")
     }
+    
+    func testUnboxingFromValidData() {
+        let dictionary = UnboxTestDictionaryWithAllRequiredKeysWithValidValues(false)
+        
+        if let data = NSJSONSerialization.dataWithJSONObject(dictionary, options: NSJSONWritingOptions(), error: nil) {
+            let unboxed: UnboxTestMock? = Unbox(data)
+            XCTAssertNotNil(unboxed, "Could not unbox from data")
+        } else {
+            XCTFail("Could not decode data from dictionary: \(dictionary)")
+        }
+    }
 }
 
 private func UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: Bool) -> UnboxableDictionary {
