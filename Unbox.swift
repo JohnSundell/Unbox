@@ -316,12 +316,12 @@ public class Unboxer {
         })
     }
     
-    /// Cause this Unboxer to fail for a certain key. This will cause the `Unbox()` function that triggered this Unboxer to return `nil`.
+    /// Make this Unboxer to fail for a certain key. This will cause the `Unbox()` function that triggered this Unboxer to return `nil`.
     public func failForKey(key: String) {
         self.failForInvalidValue(nil, forKey: key)
     }
     
-    /// Cause this Unboxer to fail for a certain key and invalid value. This will cause the `Unbox()` function that triggered this Unboxer to return `nil`.
+    /// Make this Unboxer to fail for a certain key and invalid value. This will cause the `Unbox()` function that triggered this Unboxer to return `nil`.
     public func failForInvalidValue(invalidValue: AnyObject?, forKey key: String) {
         self.failureInfo = (key, invalidValue)
     }
