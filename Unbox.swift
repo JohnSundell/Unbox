@@ -134,13 +134,14 @@ public protocol UnboxableByTransform {
 
 /// Protocol for objects that can act as Unboxing transformers, turning an unboxed value into its final form
 public protocol UnboxTransformer {
-    /// The raw unboxed type this transformer expects as input
+    /// The raw unboxed type this transformer accepts as input
     typealias RawType
     /// The transformed type this transformer outputs
     typealias TransformedType
     
     /// Attempt to transformed an unboxed value, returning non-`nil` if successful
     static func transformUnboxedValue(unboxedValue: RawType) -> TransformedType?
+    
     /// The value to use for required properties if unboxing or transformation failed. This value will never be returned to the API user.
     static func fallbackValue() -> TransformedType
 }
