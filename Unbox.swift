@@ -46,68 +46,76 @@ public typealias UnboxableDictionary = [String : AnyObject]
  *  about any error, use: `Unbox(dictionary, logErrors: true)`
  */
 public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary) -> T? {
-    return Unbox(dictionary, logErrors: false)
+    do {
+        return try UnboxOrThrow(dictionary)
+    } catch {
+        return nil
+    }
 }
 
 /**
- *  Unbox (decode) a dictionary into a model, optionally logging any error that occured
+*  Unbox (decode) a set of data into a model
+*
+*  @param data The data to decode. Must be convertible into a valid JSON dictionary.
+*
+*  @discussion See the documentation for the main Unbox(dictionary:) function above for more information.
+*/
+public func Unbox<T: Unboxable>(data: NSData) -> T? {
+    do {
+        return try UnboxOrThrow(data)
+    } catch {
+        return nil
+    }
+}
+
+// MARK: - Unbox functions with error handling
+
+/**
+ *  Unbox (decode) a dictionary into a model, or throw an UnboxError if the operation failed
  *
  *  @param dictionary The dictionary to decode. Must be a valid JSON dictionary.
  *  @param logErrors Whether any encountered error should be logged to the console
  *
- *  @idscussion See the documentation for the main Unbox() function above for more information.
+ *  @discussion This function throws an UnboxError if the supplied dictionary couldn't be decoded
+ *  for any reason. See the documentation for the main Unbox() function above for more information.
  */
-public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, logErrors: Bool) -> T? {
+public func UnboxOrThrow<T: Unboxable>(dictionary: UnboxableDictionary) throws -> T? {
     let unboxer = Unboxer(dictionary)
     let unboxed = T(unboxer: unboxer)
     
     if let failureInfo = unboxer.failureInfo {
-        if logErrors {
-            var failureMessage = "Unbox: Failed to unbox dictionary for type: \(T.self). "
-            
-            if let failedValue: AnyObject = failureInfo.value {
-                failureMessage.extend("Invalid value found (\(failedValue)) for key: \(failureInfo.key)")
-            } else {
-                failureMessage.extend("Missing value for key: \(failureInfo.key)")
-            }
-            
-            print(failureMessage)
+        if let failedValue: AnyObject = failureInfo.value {
+            throw UnboxError.InvalidValue(failureInfo.key, "\(failedValue)")
         }
         
-        return nil
+        throw UnboxError.MissingKey(failureInfo.key)
     }
     
     return unboxed
 }
 
 /**
- *  Unbox (decode) a set of data into a model
+ *  Unbox (decode) a set of data into a model, or throw an UnboxError if the operation failed
  *
  *  @param data The data to decode. Must be convertible into a valid JSON dictionary.
  *
- *  @discussion See the documentation for the main Unbox(dictionary:) function above for more information.
+ *  @discussion This function throws an UnboxError if the supplied data couldn't be decoded for
+ *  any reason. See the documentation for the main Unbox() function above for more information.
  */
-public func Unbox<T: Unboxable>(data: NSData) -> T? {
-    return Unbox(data, logErrors: false)
-}
-
-/**
- *  Unbox (decode) a set of data into a model, optionally logging any error that occured
- *
- *  @param data The data to decode. Must be convertible into a valid JSON dictionary.
- *
- *  @discussion See the documentation for the main Unbox(dictionary:) function above for more information.
- */
-public func Unbox<T: Unboxable>(data: NSData, logErrors: Bool) -> T? {
-    do {
-        if let dictionary = try NSJSONSerialization.JSONObjectWithData(data, options: []) as? UnboxableDictionary {
-            return Unbox(dictionary, logErrors: logErrors)
-        }
-    } catch {
-        print("Unbox: Failed to convert data into a Unboxable Dictionary. Error: \(error)")
+public func UnboxOrThrow<T: Unboxable>(data: NSData) throws -> T? {
+    if let dictionary = try NSJSONSerialization.JSONObjectWithData(data, options: []) as? UnboxableDictionary {
+        return try UnboxOrThrow(dictionary)
     }
     
-    return nil
+    throw UnboxError.InvalidDictionary
+}
+
+// MARK: - Error type
+
+public enum UnboxError: ErrorType {
+    case MissingKey(String)
+    case InvalidValue(String, String)
+    case InvalidDictionary
 }
 
 // MARK: - Protocols
