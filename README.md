@@ -86,6 +86,12 @@ struct Astronaut: Unboxable {
 }
 ```
 
+#### Fully Swift 2 ready
+
+Unbox comes completely ready to use in Swift 2, without sacrificing Swift 1 support. The Swift 2 implementation includes `throwing` variants of the Unbox functions, as well as an adoption of the new Swift 2 syntax.
+
+To use Unbox with Swift 2, check out the `swift2` branch!
+
 #### Hope you enjoy unboxing your JSON!
 
 For more updates on Unbox, and my other open source projects, follow me on Twitter: [@johnsundell](http://www.twitter.com/johnsundell)
