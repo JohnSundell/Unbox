@@ -57,7 +57,7 @@ public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary) -> T? {
  *
  *  @idscussion See the documentation for the main Unbox() function above for more information.
  */
-public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, #logErrors: Bool) -> T? {
+public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, logErrors: Bool) -> T? {
     let unboxer = Unboxer(dictionary)
     let unboxed = T(unboxer: unboxer)
     
@@ -71,7 +71,7 @@ public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, #logErrors: Boo
                 failureMessage.extend("Missing value for key: \(failureInfo.key)")
             }
             
-            println(failureMessage)
+            print(failureMessage)
         }
         
         return nil
@@ -98,15 +98,13 @@ public func Unbox<T: Unboxable>(data: NSData) -> T? {
  *
  *  @discussion See the documentation for the main Unbox(dictionary:) function above for more information.
  */
-public func Unbox<T: Unboxable>(data: NSData, #logErrors: Bool) -> T? {
-    var dataDecodingError: NSError?
-    
-    if let dictionary = NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions(), error: &dataDecodingError) as? UnboxableDictionary {
-        return Unbox(dictionary, logErrors: logErrors)
-    }
-    
-    if logErrors {
-        println("Unbox: Failed to convert data into a Unboxable Dictionary. Error: \(dataDecodingError)")
+public func Unbox<T: Unboxable>(data: NSData, logErrors: Bool) -> T? {
+    do {
+        if let dictionary = try NSJSONSerialization.JSONObjectWithData(data, options: []) as? UnboxableDictionary {
+            return Unbox(dictionary, logErrors: logErrors)
+        }
+    } catch {
+        print("Unbox: Failed to convert data into a Unboxable Dictionary. Error: \(error)")
     }
     
     return nil

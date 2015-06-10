@@ -67,10 +67,11 @@ class UnboxTests: XCTestCase {
     func testUnboxingFromValidData() {
         let dictionary = UnboxTestDictionaryWithAllRequiredKeysWithValidValues(false)
         
-        if let data = NSJSONSerialization.dataWithJSONObject(dictionary, options: NSJSONWritingOptions(), error: nil) {
+        do {
+            let data = try NSJSONSerialization.dataWithJSONObject(dictionary, options: [])
             let unboxed: UnboxTestMock? = Unbox(data)
             XCTAssertNotNil(unboxed, "Could not unbox from data")
-        } else {
+        } catch {
             XCTFail("Could not decode data from dictionary: \(dictionary)")
         }
     }
