@@ -87,7 +87,7 @@ class UnboxTests: XCTestCase {
                 let _: UnboxTestMock? = try UnboxOrThrow(invalidDictionary)
                 XCTFail("Unbox should have thrown for a missing value")
             } catch UnboxError.MissingKey(key) {
-                // test passed
+                // Test passed
             } catch {
                 XCTFail("Unbox did not return the correct error type")
             }
