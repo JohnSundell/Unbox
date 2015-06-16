@@ -115,7 +115,20 @@ public func UnboxOrThrow<T: Unboxable>(data: NSData) throws -> T {
 // MARK: - Error type
 
 /// Enum describing errors that can occur during unboxing. Use the throwing functions to receive any errors.
-public enum UnboxError: ErrorType {
+public enum UnboxError: ErrorType, CustomStringConvertible {
+    public var description: String {
+        let baseDescription = "[Unbox error] "
+        
+        switch self {
+        case .MissingKey(let key):
+            return baseDescription + "Missing key (\(key))"
+        case .InvalidValue(let key, let valueDescription):
+            return baseDescription + "Invalid value (\(valueDescription)) for key (\(key))"
+        case .InvalidDictionary:
+            return "Invalid dictionary"
+        }
+    }
+    
     /// Thrown when a required key was missing in an unboxed dictionary. Contains the missing key.
     case MissingKey(String)
     /// Thrown when a required key contained an invalid value in an unboxed dictionary. Contains the invalid
