@@ -47,7 +47,8 @@ public typealias UnboxableDictionary = [String : AnyObject]
  */
 public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary) -> T? {
     do {
-        return try UnboxOrThrow(dictionary)
+        let unboxed: T = try UnboxOrThrow(dictionary)
+        return unboxed
     } catch {
         return nil
     }
@@ -62,7 +63,8 @@ public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary) -> T? {
 */
 public func Unbox<T: Unboxable>(data: NSData) -> T? {
     do {
-        return try UnboxOrThrow(data)
+        let unboxed: T = try UnboxOrThrow(data)
+        return unboxed
     } catch {
         return nil
     }
@@ -79,7 +81,7 @@ public func Unbox<T: Unboxable>(data: NSData) -> T? {
  *  @discussion This function throws an UnboxError if the supplied dictionary couldn't be decoded
  *  for any reason. See the documentation for the main Unbox() function above for more information.
  */
-public func UnboxOrThrow<T: Unboxable>(dictionary: UnboxableDictionary) throws -> T? {
+public func UnboxOrThrow<T: Unboxable>(dictionary: UnboxableDictionary) throws -> T {
     let unboxer = Unboxer(dictionary)
     let unboxed = T(unboxer: unboxer)
     
@@ -102,7 +104,7 @@ public func UnboxOrThrow<T: Unboxable>(dictionary: UnboxableDictionary) throws -
  *  @discussion This function throws an UnboxError if the supplied data couldn't be decoded for
  *  any reason. See the documentation for the main Unbox() function above for more information.
  */
-public func UnboxOrThrow<T: Unboxable>(data: NSData) throws -> T? {
+public func UnboxOrThrow<T: Unboxable>(data: NSData) throws -> T {
     if let dictionary = try NSJSONSerialization.JSONObjectWithData(data, options: []) as? UnboxableDictionary {
         return try UnboxOrThrow(dictionary)
     }
