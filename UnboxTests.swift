@@ -6,7 +6,7 @@ import XCTest
 class UnboxTests: XCTestCase {
     func testWithOnlyValidRequiredValues() {
         let dictionary = UnboxTestDictionaryWithAllRequiredKeysWithValidValues(false)
-        let unboxed: UnboxTestMock? = Unbox(dictionary, logErrors: true)
+        let unboxed: UnboxTestMock? = Unbox(dictionary)
         XCTAssertNotNil(unboxed, "Failed to unbox valid dictionary")
         unboxed?.verifyAgainstDictionary(dictionary)
     }

@@ -46,7 +46,7 @@ public typealias UnboxableDictionary = [String : AnyObject]
  *  about any error, use: `Unbox(dictionary, logErrors: true)`
  */
 public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary) -> T? {
-    return Unbox(dictionary, logErrors: false)
+    return Unbox(dictionary, logErrors: false, context: nil)
 }
 
 /**
@@ -54,11 +54,12 @@ public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary) -> T? {
  *
  *  @param dictionary The dictionary to decode. Must be a valid JSON dictionary.
  *  @param logErrors Whether any encountered error should be logged to the console
+ *  @param context Any contextual information that should be available during unboxing
  *
  *  @idscussion See the documentation for the main Unbox() function above for more information.
  */
-public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, #logErrors: Bool) -> T? {
-    let unboxer = Unboxer(dictionary)
+public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, #logErrors: Bool, #context: AnyObject?) -> T? {
+    let unboxer = Unboxer(dictionary: dictionary, logErrors: logErrors, context: context)
     let unboxed = T(unboxer: unboxer)
     
     if let failureInfo = unboxer.failureInfo {
@@ -88,21 +89,23 @@ public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, #logErrors: Boo
  *  @discussion See the documentation for the main Unbox(dictionary:) function above for more information.
  */
 public func Unbox<T: Unboxable>(data: NSData) -> T? {
-    return Unbox(data, logErrors: false)
+    return Unbox(data, logErrors: false, context: nil)
 }
 
 /**
  *  Unbox (decode) a set of data into a model, optionally logging any error that occured
  *
  *  @param data The data to decode. Must be convertible into a valid JSON dictionary.
+ *  @param logErrors Whether any encountered error should be logged to the console
+ *  @param context Any contextual information that should be available during unboxing
  *
  *  @discussion See the documentation for the main Unbox(dictionary:) function above for more information.
  */
-public func Unbox<T: Unboxable>(data: NSData, #logErrors: Bool) -> T? {
+public func Unbox<T: Unboxable>(data: NSData, #logErrors: Bool, #context: AnyObject?) -> T? {
     var dataDecodingError: NSError?
     
     if let dictionary = NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions(), error: &dataDecodingError) as? UnboxableDictionary {
-        return Unbox(dictionary, logErrors: logErrors)
+        return Unbox(dictionary, logErrors: logErrors, context: context)
     }
     
     if logErrors {
@@ -218,14 +221,19 @@ extension NSURL: UnboxableByTransform {
 public class Unboxer {
     /// Whether the Unboxer has failed, and a `nil` value will be returned from the `Unbox()` function that triggered it.
     public var hasFailed: Bool { return self.failureInfo != nil }
+    /// Any contextual object that was supplied when unboxing was started
+    public let context: AnyObject?
     
     private var failureInfo: (key: String, value: AnyObject?)?
     private let dictionary: UnboxableDictionary
+    private let logErrors: Bool
     
     // MARK: - Private initializer
     
-    private init(_ dictionary: UnboxableDictionary) {
+    private init(dictionary: UnboxableDictionary, logErrors: Bool, context: AnyObject?) {
         self.dictionary = dictionary
+        self.logErrors = logErrors
+        self.context = context
     }
     
     // MARK: - Public API
@@ -263,14 +271,14 @@ public class Unboxer {
     /// Unbox a required nested Unboxable, by unboxing a Dictionary and then using a transform
     public func unbox<T: Unboxable>(key: String) -> T {
         return UnboxValueResolver<UnboxableDictionary>(self).resolveRequiredValueForKey(key, fallbackValue: T(unboxer: self), transform: {
-            return Unbox($0)
+            return Unbox($0, logErrors: self.logErrors, context: self.context)
         })
     }
     
     /// Unbox an optional nested Unboxable, by unboxing a Dictionary and then using a transform
     public func unbox<T: Unboxable>(key: String) -> T? {
         return UnboxValueResolver<UnboxableDictionary>(self).resolveOptionalValueForKey(key, transform: {
-            return Unbox($0)
+            return Unbox($0, logErrors: self.logErrors, context: self.context)
         })
     }
     
@@ -332,7 +340,7 @@ public class Unboxer {
         var transformed = [T]()
         
         for dictionary in dictionaries {
-            if let unboxed: T = Unbox(dictionary) {
+            if let unboxed: T = Unbox(dictionary, logErrors: self.logErrors, context: self.context) {
                 transformed.append(unboxed)
             } else if required {
                 self.failForInvalidValue(dictionaries, forKey: key)
@@ -347,7 +355,7 @@ public class Unboxer {
         
         for (key, dictionary) in dictionaries {
             if let unboxableDictionary = dictionary as? UnboxableDictionary {
-                if let unboxed: T = Unbox(unboxableDictionary) {
+                if let unboxed: T = Unbox(unboxableDictionary, logErrors: self.logErrors, context: self.context) {
                     transformed[key] = unboxed
                     continue
                 }
