@@ -145,7 +145,7 @@ class UnboxTests: XCTestCase {
             }
         }
         
-        let unboxed: UnboxableWithContext? = Unbox(["nested" : UnboxableDictionary()], logErrors: false, context: "context")
+        let unboxed: UnboxableWithContext? = Unbox(["nested" : UnboxableDictionary()], context: "context")
         
         XCTAssertFalse(unboxed == nil, "Could not unbox with a context")
     }
