@@ -129,6 +129,26 @@ class UnboxTests: XCTestCase {
             XCTFail("Could not create data from a string")
         }
     }
+    
+    func testContext() {
+        class UnboxableWithContext: Unboxable {
+            let nestedUnboxable: UnboxableWithContext?
+            
+            required init(unboxer: Unboxer) {
+                if let context = unboxer.context as? String {
+                    XCTAssertTrue("context" == context, "")
+                } else {
+                    XCTFail("Context was of an unexpected type: \(unboxer.context)")
+                }
+                
+                self.nestedUnboxable = unboxer.unbox("nested")
+            }
+        }
+        
+        let unboxed: UnboxableWithContext? = Unbox(["nested" : UnboxableDictionary()], logErrors: false, context: "context")
+        
+        XCTAssertFalse(unboxed == nil, "Could not unbox with a context")
+    }
 }
 
 private func UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: Bool) -> UnboxableDictionary {

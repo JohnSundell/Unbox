@@ -77,6 +77,7 @@ public func Unbox<T: Unboxable>(data: NSData) -> T? {
  *
  *  @param dictionary The dictionary to decode. Must be a valid JSON dictionary.
  *  @param logErrors Whether any encountered error should be logged to the console
+ *  @param context Any contextual information that should be available during unboxing
  *
  *  @discussion This function throws an UnboxError if the supplied dictionary couldn't be decoded
  *  for any reason. See the documentation for the main Unbox() function above for more information.
@@ -244,14 +245,19 @@ extension NSURL: UnboxableByTransform {
 public class Unboxer {
     /// Whether the Unboxer has failed, and a `nil` value will be returned from the `Unbox()` function that triggered it.
     public var hasFailed: Bool { return self.failureInfo != nil }
+    /// Any contextual object that was supplied when unboxing was started
+    public let context: AnyObject?
     
     private var failureInfo: (key: String, value: AnyObject?)?
     private let dictionary: UnboxableDictionary
+    private let logErrors: Bool
     
     // MARK: - Private initializer
     
-    private init(_ dictionary: UnboxableDictionary) {
+    private init(dictionary: UnboxableDictionary, logErrors: Bool, context: AnyObject?) {
         self.dictionary = dictionary
+        self.logErrors = logErrors
+        self.context = context
     }
     
     // MARK: - Public API
@@ -289,14 +295,14 @@ public class Unboxer {
     /// Unbox a required nested Unboxable, by unboxing a Dictionary and then using a transform
     public func unbox<T: Unboxable>(key: String) -> T {
         return UnboxValueResolver<UnboxableDictionary>(self).resolveRequiredValueForKey(key, fallbackValue: T(unboxer: self), transform: {
-            return Unbox($0)
+            return Unbox($0, logErrors: self.logErrors, context: self.context)
         })
     }
     
     /// Unbox an optional nested Unboxable, by unboxing a Dictionary and then using a transform
     public func unbox<T: Unboxable>(key: String) -> T? {
         return UnboxValueResolver<UnboxableDictionary>(self).resolveOptionalValueForKey(key, transform: {
-            return Unbox($0)
+            return Unbox($0, logErrors: self.logErrors, context: self.context)
         })
     }
     
@@ -342,6 +348,17 @@ public class Unboxer {
         })
     }
     
+    /// Return a required contextual object of type `T` attached to this Unboxer, or cause the Unboxer to fail (using a dummy fallback value)
+    public func requiredContextWithFallbackValue<T>(@autoclosure fallbackValue: () -> T) -> T {
+        if let context = self.context as? T {
+            return context
+        }
+        
+        self.failForInvalidValue(self.context, forKey: "Unboxer.Context")
+        
+        return fallbackValue()
+    }
+    
     /// Make this Unboxer to fail for a certain key. This will cause the `Unbox()` function that triggered this Unboxer to return `nil`.
     public func failForKey(key: String) {
         self.failForInvalidValue(nil, forKey: key)
@@ -358,7 +375,7 @@ public class Unboxer {
         var transformed = [T]()
         
         for dictionary in dictionaries {
-            if let unboxed: T = Unbox(dictionary) {
+            if let unboxed: T = Unbox(dictionary, logErrors: self.logErrors, context: self.context) {
                 transformed.append(unboxed)
             } else if required {
                 self.failForInvalidValue(dictionaries, forKey: key)
@@ -373,7 +390,7 @@ public class Unboxer {
         
         for (key, dictionary) in dictionaries {
             if let unboxableDictionary = dictionary as? UnboxableDictionary {
-                if let unboxed: T = Unbox(unboxableDictionary) {
+                if let unboxed: T = Unbox(unboxableDictionary, logErrors: self.logErrors, context: self.context) {
                     transformed[key] = unboxed
                     continue
                 }
