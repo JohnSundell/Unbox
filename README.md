@@ -6,7 +6,7 @@ Unbox is lightweight, non-magical and doesn't require you to subclass, make your
 
 Say you have your usual-suspect `User` model:
 
-```
+```swift
 struct User {
     let name: String
     let age: Int
@@ -15,7 +15,7 @@ struct User {
 
 That can be initialized with the following JSON:
 
-```
+```swift
 {
     "name": "John",
     "age": 27
@@ -24,7 +24,7 @@ That can be initialized with the following JSON:
 
 To decode this JSON into a `User` instance, all you have to do is make `User` conform to `Unboxable` and unbox its properties:
 
-```
+```swift
 struct User: Unboxable {
     let name: String
     let age: Int
@@ -38,11 +38,11 @@ struct User: Unboxable {
 
 Unbox automatically (or, actually, Swift does) figures out what types your properties are, and decodes them accordingly. Now, we can decode a `User` like this:
 
-```
+```swift
 let user: User? = Unbox(dictionary)
 ```
 or even:
-```
+```swift
 let user: User? = Unbox(data)
 ```
 
@@ -50,7 +50,7 @@ let user: User? = Unbox(data)
 
 Now - that was a pretty simple example, but Unbox can decode even the most complicated JSON structures for you, with both required and optional values, all without any extra code on your part:
 
-```
+```swift
 struct SpaceShip: Unboxable {
     let weight: Double
     let engine: Engine
