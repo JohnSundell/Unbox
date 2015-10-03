@@ -36,6 +36,7 @@ public typealias UnboxableDictionary = [String : AnyObject]
  *  Unbox (decode) a dictionary into a model
  *
  *  @param dictionary The dictionary to decode. Must be a valid JSON dictionary.
+ *  @param context Any contextual object that should be available during unboxing.
  *
  *  @discussion This function gets its return type from the context in which it's called.
  *  If the context is ambigious, you need to supply it, like:
@@ -45,74 +46,99 @@ public typealias UnboxableDictionary = [String : AnyObject]
  *  @return A model of type `T` or `nil` if an error was occured. If you wish to know more
  *  about any error, use: `Unbox(dictionary, logErrors: true)`
  */
-public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary) -> T? {
-    return Unbox(dictionary, logErrors: false, context: nil)
+public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, context: AnyObject? = nil) -> T? {
+    do {
+        let unboxed: T = try UnboxOrThrow(dictionary, context: context)
+        return unboxed
+    } catch {
+        return nil
+    }
 }
 
 /**
- *  Unbox (decode) a dictionary into a model, optionally logging any error that occured
+*  Unbox (decode) a set of data into a model
+*
+*  @param data The data to decode. Must be convertible into a valid JSON dictionary.
+*  @param context Any contextual object that should be available during unboxing.
+*
+*  @discussion See the documentation for the main Unbox(dictionary:) function above for more information.
+*/
+public func Unbox<T: Unboxable>(data: NSData, context: AnyObject? = nil) -> T? {
+    do {
+        let unboxed: T = try UnboxOrThrow(data, context: context)
+        return unboxed
+    } catch {
+        return nil
+    }
+}
+
+// MARK: - Unbox functions with error handling
+
+/**
+ *  Unbox (decode) a dictionary into a model, or throw an UnboxError if the operation failed
  *
  *  @param dictionary The dictionary to decode. Must be a valid JSON dictionary.
- *  @param logErrors Whether any encountered error should be logged to the console
- *  @param context Any contextual information that should be available during unboxing
+ *  @param context Any contextual object that should be available during unboxing.
  *
- *  @idscussion See the documentation for the main Unbox() function above for more information.
+ *  @discussion This function throws an UnboxError if the supplied dictionary couldn't be decoded
+ *  for any reason. See the documentation for the main Unbox() function above for more information.
  */
-public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, #logErrors: Bool, #context: AnyObject?) -> T? {
-    let unboxer = Unboxer(dictionary: dictionary, logErrors: logErrors, context: context)
+public func UnboxOrThrow<T: Unboxable>(dictionary: UnboxableDictionary, context: AnyObject? = nil) throws -> T {
+    let unboxer = Unboxer(dictionary: dictionary, context: context)
     let unboxed = T(unboxer: unboxer)
     
     if let failureInfo = unboxer.failureInfo {
-        if logErrors {
-            var failureMessage = "Unbox: Failed to unbox dictionary for type: \(T.self). "
-            
-            if let failedValue: AnyObject = failureInfo.value {
-                failureMessage.extend("Invalid value found (\(failedValue)) for key: \(failureInfo.key)")
-            } else {
-                failureMessage.extend("Missing value for key: \(failureInfo.key)")
-            }
-            
-            println(failureMessage)
+        if let failedValue: AnyObject = failureInfo.value {
+            throw UnboxError.InvalidValue(failureInfo.key, "\(failedValue)")
         }
         
-        return nil
+        throw UnboxError.MissingKey(failureInfo.key)
     }
     
     return unboxed
 }
 
 /**
- *  Unbox (decode) a set of data into a model
+ *  Unbox (decode) a set of data into a model, or throw an UnboxError if the operation failed
  *
  *  @param data The data to decode. Must be convertible into a valid JSON dictionary.
+ *  @param context Any contextual object that should be available during unboxing.
  *
- *  @discussion See the documentation for the main Unbox(dictionary:) function above for more information.
+ *  @discussion This function throws an UnboxError if the supplied data couldn't be decoded for
+ *  any reason. See the documentation for the main Unbox() function above for more information.
  */
-public func Unbox<T: Unboxable>(data: NSData) -> T? {
-    return Unbox(data, logErrors: false, context: nil)
+public func UnboxOrThrow<T: Unboxable>(data: NSData, context: AnyObject? = nil) throws -> T {
+    if let dictionary = try NSJSONSerialization.JSONObjectWithData(data, options: []) as? UnboxableDictionary {
+        return try UnboxOrThrow(dictionary)
+    }
+    
+    throw UnboxError.InvalidDictionary
 }
 
-/**
- *  Unbox (decode) a set of data into a model, optionally logging any error that occured
- *
- *  @param data The data to decode. Must be convertible into a valid JSON dictionary.
- *  @param logErrors Whether any encountered error should be logged to the console
- *  @param context Any contextual information that should be available during unboxing
- *
- *  @discussion See the documentation for the main Unbox(dictionary:) function above for more information.
- */
-public func Unbox<T: Unboxable>(data: NSData, #logErrors: Bool, #context: AnyObject?) -> T? {
-    var dataDecodingError: NSError?
-    
-    if let dictionary = NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions(), error: &dataDecodingError) as? UnboxableDictionary {
-        return Unbox(dictionary, logErrors: logErrors, context: context)
+// MARK: - Error type
+
+/// Enum describing errors that can occur during unboxing. Use the throwing functions to receive any errors.
+public enum UnboxError: ErrorType, CustomStringConvertible {
+    public var description: String {
+        let baseDescription = "[Unbox error] "
+        
+        switch self {
+        case .MissingKey(let key):
+            return baseDescription + "Missing key (\(key))"
+        case .InvalidValue(let key, let valueDescription):
+            return baseDescription + "Invalid value (\(valueDescription)) for key (\(key))"
+        case .InvalidDictionary:
+            return "Invalid dictionary"
+        }
     }
     
-    if logErrors {
-        println("Unbox: Failed to convert data into a Unboxable Dictionary. Error: \(dataDecodingError)")
-    }
-    
-    return nil
+    /// Thrown when a required key was missing in an unboxed dictionary. Contains the missing key.
+    case MissingKey(String)
+    /// Thrown when a required key contained an invalid value in an unboxed dictionary. Contains the invalid
+    /// key and a description of the invalid data.
+    case InvalidValue(String, String)
+    /// Thrown when an unboxed dictionary was either missing or contained invalid data
+    case InvalidDictionary
 }
 
 // MARK: - Protocols
@@ -226,13 +252,11 @@ public class Unboxer {
     
     private var failureInfo: (key: String, value: AnyObject?)?
     private let dictionary: UnboxableDictionary
-    private let logErrors: Bool
     
     // MARK: - Private initializer
     
-    private init(dictionary: UnboxableDictionary, logErrors: Bool, context: AnyObject?) {
+    private init(dictionary: UnboxableDictionary, context: AnyObject?) {
         self.dictionary = dictionary
-        self.logErrors = logErrors
         self.context = context
     }
     
@@ -271,14 +295,14 @@ public class Unboxer {
     /// Unbox a required nested Unboxable, by unboxing a Dictionary and then using a transform
     public func unbox<T: Unboxable>(key: String) -> T {
         return UnboxValueResolver<UnboxableDictionary>(self).resolveRequiredValueForKey(key, fallbackValue: T(unboxer: self), transform: {
-            return Unbox($0, logErrors: self.logErrors, context: self.context)
+            return Unbox($0, context: self.context)
         })
     }
     
     /// Unbox an optional nested Unboxable, by unboxing a Dictionary and then using a transform
     public func unbox<T: Unboxable>(key: String) -> T? {
         return UnboxValueResolver<UnboxableDictionary>(self).resolveOptionalValueForKey(key, transform: {
-            return Unbox($0, logErrors: self.logErrors, context: self.context)
+            return Unbox($0, context: self.context)
         })
     }
     
@@ -351,7 +375,7 @@ public class Unboxer {
         var transformed = [T]()
         
         for dictionary in dictionaries {
-            if let unboxed: T = Unbox(dictionary, logErrors: self.logErrors, context: self.context) {
+            if let unboxed: T = Unbox(dictionary, context: self.context) {
                 transformed.append(unboxed)
             } else if required {
                 self.failForInvalidValue(dictionaries, forKey: key)
@@ -366,7 +390,7 @@ public class Unboxer {
         
         for (key, dictionary) in dictionaries {
             if let unboxableDictionary = dictionary as? UnboxableDictionary {
-                if let unboxed: T = Unbox(unboxableDictionary, logErrors: self.logErrors, context: self.context) {
+                if let unboxed: T = Unbox(unboxableDictionary, context: self.context) {
                     transformed[key] = unboxed
                     continue
                 }
