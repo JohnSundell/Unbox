@@ -15,7 +15,7 @@ struct User {
 
 That can be initialized with the following JSON:
 
-```swift
+```json
 {
     "name": "John",
     "age": 27
