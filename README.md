@@ -86,6 +86,36 @@ struct Astronaut: Unboxable {
 }
 ```
 
+#### Key path support
+
+You can also use key paths to unbox values from nested JSON structures. Let's expand our User model:
+
+```json
+{
+    "name": "John",
+    "age": 27,
+    "activities": {
+        "running": {
+            "distance": 300
+        }
+    }
+}
+```
+
+```swift
+struct User: Unboxable {
+    let name: String
+    let age: Int
+    let runningDistance: Int
+
+    init(unboxer: Unboxer) {
+        self.name = unboxer.unbox("name")
+        self.age = unboxer.unbox("age")
+        self.runningDistance = unboxer.unbox("activities.running.distance")
+    }
+}
+```
+
 #### Hope you enjoy unboxing your JSON!
 
 For more updates on Unbox, and my other open source projects, follow me on Twitter: [@johnsundell](http://www.twitter.com/johnsundell)
