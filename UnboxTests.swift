@@ -158,10 +158,10 @@ class UnboxTests: XCTestCase {
             init(unboxer: Unboxer) {
                 let intKeyPathComponents = [UnboxTestMock.requiredUnboxableDictionaryKey, "test", UnboxTestMock.requiredIntKey]
                 let keyPath = intKeyPathComponents.joinWithSeparator(".")
-                intValue = unboxer.unbox(keyPath)
+                self.intValue = unboxer.unbox(keyPath)
 
                 let dictionaryKeyPath = [UnboxTestMock.requiredUnboxableDictionaryKey, "test"].joinWithSeparator(".")
-                dictionary = unboxer.unbox(dictionaryKeyPath)
+                self.dictionary = unboxer.unbox(dictionaryKeyPath)
             }
         }
 
