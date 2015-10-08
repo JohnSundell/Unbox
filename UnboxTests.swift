@@ -149,6 +149,33 @@ class UnboxTests: XCTestCase {
         
         XCTAssertFalse(unboxed == nil, "Could not unbox with a context")
     }
+
+    func testAccessingNestedDictionaryWithKeyPath() {
+        struct KeyPathModel: Unboxable {
+            let intValue: Int
+            let dictionary: UnboxableDictionary
+
+            init(unboxer: Unboxer) {
+                let intKeyPathComponents = [UnboxTestMock.requiredUnboxableDictionaryKey, "test", UnboxTestMock.requiredIntKey]
+                let keyPath = intKeyPathComponents.joinWithSeparator(".")
+                intValue = unboxer.unbox(keyPath)
+
+                let dictionaryKeyPath = [UnboxTestMock.requiredUnboxableDictionaryKey, "test"].joinWithSeparator(".")
+                dictionary = unboxer.unbox(dictionaryKeyPath)
+            }
+        }
+
+
+        let validDictionary = UnboxTestDictionaryWithAllRequiredKeysWithValidValues(false)
+        let model: KeyPathModel? = Unbox(validDictionary)
+        XCTAssertNotNil(model)
+        XCTAssertEqual(15, model?.intValue)
+        if let result = model?.dictionary[UnboxTestMock.requiredArrayKey] as? [String] {
+            XCTAssertEqual(["unbox", "is", "pretty", "cool", "right?"], result)
+        } else {
+            XCTFail()
+        }
+    }
 }
 
 private func UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: Bool) -> UnboxableDictionary {
