@@ -280,13 +280,9 @@ public enum UnboxError: ErrorType, CustomStringConvertible {
 }
 
 // MARK: - Protocols
-public protocol Unboxable {
-    
-}
-
 /// Protocol used to declare a model as being DictionaryUnboxable, for use with
 /// the Unbox() function
-public protocol DictionaryUnboxable: Unboxable {
+public protocol DictionaryUnboxable {
     /// Initialize an instance of this model by unboxing a dictionary using an 
     /// DictionaryUnboxer
     init(unboxer: DictionaryUnboxer)
@@ -294,7 +290,7 @@ public protocol DictionaryUnboxable: Unboxable {
 
 /// Protocol used to declare a model as being ArrayUnboxable, for use with the
 /// Unbox() function
-public protocol ArrayUnboxable: Unboxable {
+public protocol ArrayUnboxable {
     /// Initialize an instance of this model by unboxing an array using an 
     /// ArrayUnboxer
     init(unboxer: ArrayUnboxer)
@@ -392,6 +388,7 @@ extension NSURL: UnboxableByTransform {
 }
 
 // MARK: - Unboxer
+// MARK: Unboxer Type
 private protocol UnboxerType {
     /// Whether the Unboxer has failed, and a `nil` value will be returned
     /// from the `Unbox()` function that triggered it.
@@ -401,6 +398,8 @@ private protocol UnboxerType {
     var context: AnyObject? { get }
 }
 
+
+// MARK: Array Unboxer
 /**
  *  Class used to Unbox (decode) values from an array
  *
@@ -416,16 +415,16 @@ public class ArrayUnboxer: UnboxerType {
     private let array: UnboxableArray
     
     public var hasFailed: Bool { return self.failureInfo != nil }
-    private let context: AnyObject?
+    public let context: AnyObject?
     
     private var failureInfo: UnboxableDictionary?
     
-    // MARK: - Private initializer
-    
+    // MARK: Private initializer
     private init(array: UnboxableArray, context: AnyObject?) {
         self.array = array; self.context = context
     }
     
+    // MARK: Public APIs
     /// Unbox self as an array
     public func unbox<T: DictionaryUnboxable>() -> [T] {
         return array.flatMap { Unbox($0, context: self.context) }
@@ -436,6 +435,7 @@ public class ArrayUnboxer: UnboxerType {
     }
 }
 
+// MARK: Dictionary Unboxer
 /**
  *  Class used to Unbox (decode) values from a dictionary
  *
@@ -451,16 +451,16 @@ public class DictionaryUnboxer: UnboxerType {
     private let dictionary: UnboxableDictionary
     
     public var hasFailed: Bool { return self.failureInfo != nil }
-    private let context: AnyObject?
+    public let context: AnyObject?
     
     public private(set) var failureInfo: (key: String, value: AnyObject?)?
     
-    // MARK: - Private initializer
-    
+    // MARK: Private initializer
     private init(dictionary: UnboxableDictionary, context: AnyObject?) {
         self.dictionary = dictionary; self.context = context
     }
     
+    // MARK: Public APIs
     /// Unbox a required raw type
     public func unbox<T: UnboxableRawType>(key: String) -> T {
         return DictionaryUnboxValueResolver<T>(self)
@@ -593,7 +593,6 @@ public class DictionaryUnboxer: UnboxerType {
         })
     }
     
-    // MARK: Private utilities
     /// Make this Unboxer to fail for a certain key. This will cause the 
     /// `Unbox()` function that triggered this Unboxer to return `nil`.
     public func failForKey(key: String) {
@@ -609,7 +608,7 @@ public class DictionaryUnboxer: UnboxerType {
         self.failureInfo = (key, invalidValue)
     }
     
-    
+    // MARK: Private Utilities
     /// Return a required contextual object of type `T` attached to this 
     /// Unboxer, or cause the Unboxer to fail (using a dummy fallback value)
     private func requiredContextWithFallbackValue<T>(
