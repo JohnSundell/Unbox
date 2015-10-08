@@ -238,9 +238,10 @@ extension NSURL: UnboxableByTransform {
 /**
  *  Class used to Unbox (decode) values from a dictionary
  *
- *  For each supported type, simply call `unbox(key)` and the correct type will be returned. If a required (non-optional)
- *  value couldn't be unboxed, the Unboxer will be marked as failed, and a `nil` value will be returned from the `Unbox()`
- *  function that triggered the Unboxer.
+ *  For each supported type, simply call `unbox(string)` (where `string` is either a key or a key path in the dictionary
+ *  that is being unboxed) - and the correct type will be returned. If a required (non-optional) value couldn't be
+ *  unboxed, the Unboxer will be marked as failed, and a `nil` value will be returned from the `Unbox()` function that
+ *  triggered the Unboxer.
  *
  *  An Unboxer may also be manually failed, by using the `failForKey()` or `failForInvalidValue(forKey:)` APIs.
  */
