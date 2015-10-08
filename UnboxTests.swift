@@ -106,7 +106,7 @@ class UnboxTests: XCTestCase {
             do {
                 let _: UnboxTestMock = try UnboxOrThrow(invalidDictionary)
                 XCTFail("Unbox should have thrown for an invalid value")
-            } catch UnboxError.InvalidValue(key, invalidValueDescription) {
+            } catch UnboxError.InvalidKeyValue(key, invalidValueDescription) {
                 // Test passed
             } catch {
                 XCTFail("Unbox did not return the correct error type")
@@ -131,10 +131,10 @@ class UnboxTests: XCTestCase {
     }
     
     func testContext() {
-        class UnboxableWithContext: Unboxable {
+        class UnboxableWithContext: DictionaryUnboxable {
             let nestedUnboxable: UnboxableWithContext?
             
-            required init(unboxer: Unboxer) {
+            required init(unboxer: DictionaryUnboxer) {
                 if let context = unboxer.context as? String {
                     XCTAssertTrue("context" == context, "")
                 } else {
@@ -173,7 +173,7 @@ private func UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: Bool)
 
 // MARK: - Mocks
 
-private class UnboxTestBaseMock: Unboxable {
+private class UnboxTestBaseMock: DictionaryUnboxable {
     static let requiredBoolKey = "requiredBool"
     static let optionalBoolKey = "optionalBool"
     static let requiredIntKey = "requiredInt"
@@ -204,7 +204,7 @@ private class UnboxTestBaseMock: Unboxable {
     let requiredArray: [String]
     let optionalArray: [String]?
     
-    required init(unboxer: Unboxer) {
+    required init(unboxer: DictionaryUnboxer) {
         self.requiredBool = unboxer.unbox(UnboxTestBaseMock.requiredBoolKey)
         self.optionalBool = unboxer.unbox(UnboxTestBaseMock.optionalBoolKey)
         self.requiredInt = unboxer.unbox(UnboxTestBaseMock.requiredIntKey)
@@ -312,7 +312,7 @@ private class UnboxTestMock: UnboxTestBaseMock {
     let requiredUnboxableDictionary: [String : UnboxTestBaseMock]
     let optionalUnboxableDictionary: [String : UnboxTestBaseMock]?
     
-    required init(unboxer: Unboxer) {
+    required init(unboxer: DictionaryUnboxer) {
         self.requiredUnboxable = unboxer.unbox(UnboxTestMock.requiredUnboxableKey)
         self.optionalUnboxable = unboxer.unbox(UnboxTestMock.optionalUnboxableKey)
         self.requiredUnboxableArray = unboxer.unbox(UnboxTestMock.requiredUnboxableArrayKey)
