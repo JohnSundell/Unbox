@@ -88,6 +88,20 @@ struct Astronaut: Unboxable {
 }
 ```
 
+### Error handling
+
+Decoding JSON is inherently a failable operation. The JSON might be in an unexpected format, or a required value might be missing. Thankfully, Unbox provides several ways to trigger and handle errors during the unboxing process.
+
+What all these techniques share is that you never have to manually exit out of an initializer (which in Swift requires you to assign default values to all stored properites, generating a lot of unwanted boilerplate).
+
+Instead, if an error occurs, the currently used `Unboxer` is marked as failed, which in turn will cause `nil` to be returned from the `Unbox()` function call that triggered the unboxing process. Optionally, you can also chose to call `UnboxOrThrow()` when starting the unboxing process to use Swift 2-style error handling in case of an error.
+
+**Missing required properties**
+If a non-optional property couldn’t be unboxed, this will automatically cause the current `Unboxer` to be marked as failed.
+
+**Manually failing an Unboxer**
+You can also perform custom validation inside of an initializer, and in case you want to abort the unboxing process, simply call `unboxer.failForKey()` or `unboxer.failForInvalidValue(forKey:)`.
+
 ### Supported types
 
 Unbox supports decoding all standard JSON types, like:
