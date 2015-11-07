@@ -48,6 +48,15 @@ or even:
 let user: User? = Unbox(data)
 ```
 
+or if you prefer Swift 2-style error handling instead of optionals:
+```swift
+do {
+    let user: User = try UnboxOrThrow(dictionary)
+} catch {
+    // Error handling
+}
+```
+
 ### Advanced example
 
 The first was a pretty simple example, but Unbox can decode even the most complicated JSON structures for you, with both required and optional values, all without any extra code on your part:
