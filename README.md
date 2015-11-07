@@ -96,10 +96,10 @@ What all these techniques share is that you never have to manually exit out of a
 
 Instead, if an error occurs, the currently used `Unboxer` is marked as failed, which in turn will cause `nil` to be returned from the `Unbox()` function call that triggered the unboxing process. Optionally, you can also chose to call `UnboxOrThrow()` when starting the unboxing process to use Swift 2-style error handling in case of an error.
 
-**Missing required properties**
+#### Missing required properties
 If a non-optional property couldn’t be unboxed, this will automatically cause the current `Unboxer` to be marked as failed.
 
-**Manually failing an Unboxer**
+#### Manually failing an Unboxer
 You can also perform custom validation inside of an initializer, and in case you want to abort the unboxing process, simply call `unboxer.failForKey()` or `unboxer.failForInvalidValue(forKey:)`.
 
 ### Supported types
