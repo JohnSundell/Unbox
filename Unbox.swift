@@ -216,14 +216,11 @@ extension String: UnboxableRawType {
 
 /// A transformer that is used to transform Strings into `NSURL` instances
 public class UnboxURLTransformer: UnboxTransformer {
-    public typealias RawType = String
-    public typealias TransformedType = NSURL
-    
-    public static func transformUnboxedValue(unboxedValue: RawType) -> TransformedType? {
+    public static func transformUnboxedValue(unboxedValue: String) -> NSURL? {
         return NSURL(string: unboxedValue)
     }
     
-    public static func fallbackValue() -> TransformedType {
+    public static func fallbackValue() -> NSURL {
         return NSURL()
     }
 }
