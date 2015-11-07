@@ -124,6 +124,18 @@ class ProfessionUnboxTransformer: UnboxTransformer {
 }
 ```
 
+Now `Profession` can be unboxed directly in any model
+
+```
+struct Passenger: Unboxable {
+    let profession: Profession
+    
+    init(unboxer: Unboxer) {
+        self.profession = unboxer.unbox("profession")
+    }
+}
+```
+
 ### Key path support
 
 You can also use key paths to unbox values from nested JSON structures. Let's expand our User model:
