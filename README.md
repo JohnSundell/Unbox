@@ -4,6 +4,8 @@ Unbox is an easy to use Swift JSON decoder. Don't spend hours writing JSON decod
 
 Unbox is lightweight, non-magical and doesn't require you to subclass, make your JSON conform to a specific schema or completely change the way you write model code. It can be used on any model with ease.
 
+### Basic example
+
 Say you have your usual-suspect `User` model:
 
 ```swift
@@ -46,9 +48,9 @@ or even:
 let user: User? = Unbox(data)
 ```
 
-#### Pretty nice and easy, right?
+### Advanced example
 
-Now - that was a pretty simple example, but Unbox can decode even the most complicated JSON structures for you, with both required and optional values, all without any extra code on your part:
+The first was a pretty simple example, but Unbox can decode even the most complicated JSON structures for you, with both required and optional values, all without any extra code on your part:
 
 ```swift
 struct SpaceShip: Unboxable {
@@ -86,7 +88,43 @@ struct Astronaut: Unboxable {
 }
 ```
 
-#### Key path support
+### Transformers
+
+Unbox also supports transformers that let you treat any value or object as if it was a raw JSON type.
+
+It ships with a default `String` -> `NSURL` transformer, which lets you unbox any `NSURL` property from a string describing an URL without writing any transformation code.
+
+To enable your own types to be unboxable using a transformer, all you have to do is make your type conform to `UnboxableByTransform` and implement an `UnboxTransformer` for it, like this:
+
+```swift
+enum Profession {
+    case Developer
+    case Astronaut
+}
+
+extension Profession: UnboxableByTransform {
+    typealias UnboxTransformerType = ProfessionUnboxTransformer
+}
+
+class ProfessionUnboxTransformer: UnboxTransformer {
+   static func transformUnboxedValue(unboxedValue: String) -> Profession? {
+        switch unboxedValue {
+            case "DEVELOPER":
+                return .Developer
+            case "ASTRONAUT":
+                return .Astronaut
+            default:
+                return nil
+        }
+    }
+    
+   static func fallbackValue() -> Profession {
+        return .Developer
+    }
+}
+```
+
+### Key path support
 
 You can also use key paths to unbox values from nested JSON structures. Let's expand our User model:
 
@@ -116,6 +154,14 @@ struct User: Unboxable {
 }
 ```
 
-#### Hope you enjoy unboxing your JSON!
+### Installation
+
+**CocoaPods:**
+Add the line `pod "Unbox"` to your `Podfile`
+
+**Manual:**
+Clone the repo and drag the file `Unbox.swift` into your Xcode project.
+
+### Hope you enjoy unboxing your JSON!
 
 For more updates on Unbox, and my other open source projects, follow me on Twitter: [@johnsundell](http://www.twitter.com/johnsundell)
