@@ -150,6 +150,14 @@ struct Passenger: Unboxable {
 }
 ```
 
+### Contextual objects
+
+Sometimes you need to use data other than what's contained in a dictionary during the decoding process. For this, Unbox has support for contextual objects that can be made available on the `Unboxer` that is being used.
+
+To pass a contextual object, use the `Unbox(dictionary:context:)` overload when you start the unboxing process.
+
+The `Unboxer` passed to your `Unboxable`'s init method will then make your contextual object available through its `context` property.
+
 ### Key path support
 
 You can also use key paths to unbox values from nested JSON structures. Let's expand our User model:
