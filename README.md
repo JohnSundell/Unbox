@@ -88,6 +88,20 @@ struct Astronaut: Unboxable {
 }
 ```
 
+### Supported types
+
+Unbox supports decoding all standard JSON types, like:
+
+- `Bool`
+- `Int`, `Double`, `Float`
+- `String`
+- `Array`
+- `Dictionary`
+
+It also supports `Arrays` and `Dictionaries` that contain nested unboxable types, as you can see in the **Advanced example** above (where an array of the unboxable `Astronaut` struct is being unboxed).
+
+Finally, it also supports `NSURL` through the use of a transformer.
+
 ### Transformers
 
 Unbox also supports transformers that let you treat any value or object as if it was a raw JSON type.
