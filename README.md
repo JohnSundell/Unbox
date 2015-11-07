@@ -126,7 +126,7 @@ class ProfessionUnboxTransformer: UnboxTransformer {
 
 Now `Profession` can be unboxed directly in any model
 
-```
+```swift
 struct Passenger: Unboxable {
     let profession: Profession
     
