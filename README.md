@@ -219,7 +219,7 @@ Add the line `pod "Unbox"` to your `Podfile`
 
 **Carthage:** 
 
-Add the line `github "johnsundell/unbox”` to your `Cartfile`
+Add the line `github "johnsundell/unbox"` to your `Cartfile`
 
 **Manual:**
 
