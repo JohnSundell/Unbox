@@ -214,9 +214,15 @@ struct User: Unboxable {
 ### Installation
 
 **CocoaPods:**
+
 Add the line `pod "Unbox"` to your `Podfile`
 
+**Carthage:** 
+
+Add the line `github "johnsundell/unbox”` to your `Cartfile`
+
 **Manual:**
+
 Clone the repo and drag the file `Unbox.swift` into your Xcode project.
 
 ### Hope you enjoy unboxing your JSON!
