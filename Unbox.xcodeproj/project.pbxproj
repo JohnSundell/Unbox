@@ -475,6 +475,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				INFOPLIST_FILE = "$(SRCROOT)/Configs/iOS.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.unbox.Unbox-iOS";
 				PRODUCT_NAME = Unbox;
@@ -493,6 +494,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				INFOPLIST_FILE = "$(SRCROOT)/Configs/iOS.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.unbox.Unbox-iOS";
 				PRODUCT_NAME = Unbox;
@@ -680,6 +682,7 @@
 				52D6D9E91BEFFF6E002C0205 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		52D6DA011BEFFFBE002C0205 /* Build configuration list for PBXNativeTarget "Unbox-tvOS" */ = {
 			isa = XCConfigurationList;
@@ -688,6 +691,7 @@
 				52D6DA031BEFFFBE002C0205 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		52D6DA201BF000BD002C0205 /* Build configuration list for PBXNativeTarget "Unbox-OSX" */ = {
 			isa = XCConfigurationList;
@@ -696,6 +700,7 @@
 				52D6DA221BF000BD002C0205 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
