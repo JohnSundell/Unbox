@@ -1,4 +1,4 @@
 language: objective-c
 osx_image: xcode7
-xcode_project: Unbox.xcodeproj
-xcode_scheme: UnboxTests
+script:
+    - xctool -project Unbox.xcodeproj -scheme UnboxTests clean build CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
