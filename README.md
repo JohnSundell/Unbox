@@ -1,5 +1,7 @@
 # Unbox
 
+![CocoaPods](https://img.shields.io/cocoapods/v/Unbox.svg)
+
 Unbox is an easy to use Swift JSON decoder. Don't spend hours writing JSON decoding code - just unbox it instead!
 
 Unbox is lightweight, non-magical and doesn't require you to subclass, make your JSON conform to a specific schema or completely change the way you write model code. It can be used on any model with ease.
