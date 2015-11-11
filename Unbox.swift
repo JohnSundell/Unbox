@@ -43,8 +43,8 @@ public typealias UnboxableDictionary = [String : AnyObject]
  *
  *  `let unboxed: MyUnboxable? = Unbox(dictionary)`
  *
- *  @return A model of type `T` or `nil` if an error was occured. If you wish to know more
- *  about any error, use: `Unbox(dictionary, logErrors: true)`
+ *  @return A model of type `T` or `nil` if an error was occured. If you prefer do, try, catch
+ *  error handling instead of optionals; use `UnboxOrThrow` instead.
  */
 public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, context: AnyObject? = nil) -> T? {
     do {
