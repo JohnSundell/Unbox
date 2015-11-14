@@ -46,7 +46,7 @@ public typealias UnboxableDictionary = [String : AnyObject]
  *  @return A model of type `T` or `nil` if an error was occured. If you prefer do, try, catch
  *  error handling instead of optionals; use `UnboxOrThrow` instead.
  */
-public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, context: AnyObject? = nil) -> T? {
+public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, context: Any? = nil) -> T? {
     do {
         let unboxed: T = try UnboxOrThrow(dictionary, context: context)
         return unboxed
@@ -56,14 +56,14 @@ public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, context: AnyObj
 }
 
 /**
-*  Unbox (decode) a set of data into a model
-*
-*  @param data The data to decode. Must be convertible into a valid JSON dictionary.
-*  @param context Any contextual object that should be available during unboxing.
-*
-*  @discussion See the documentation for the main Unbox(dictionary:) function above for more information.
-*/
-public func Unbox<T: Unboxable>(data: NSData, context: AnyObject? = nil) -> T? {
+ *  Unbox (decode) a set of data into a model
+ *
+ *  @param data The data to decode. Must be convertible into a valid JSON dictionary.
+ *  @param context Any contextual object that should be available during unboxing.
+ *
+ *  @discussion See the documentation for the main Unbox(dictionary:) function above for more information.
+ */
+public func Unbox<T: Unboxable>(data: NSData, context: Any? = nil) -> T? {
     do {
         let unboxed: T = try UnboxOrThrow(data, context: context)
         return unboxed
@@ -83,12 +83,12 @@ public func Unbox<T: Unboxable>(data: NSData, context: AnyObject? = nil) -> T? {
  *  @discussion This function throws an UnboxError if the supplied dictionary couldn't be decoded
  *  for any reason. See the documentation for the main Unbox() function above for more information.
  */
-public func UnboxOrThrow<T: Unboxable>(dictionary: UnboxableDictionary, context: AnyObject? = nil) throws -> T {
+public func UnboxOrThrow<T: Unboxable>(dictionary: UnboxableDictionary, context: Any? = nil) throws -> T {
     let unboxer = Unboxer(dictionary: dictionary, context: context)
     let unboxed = T(unboxer: unboxer)
     
     if let failureInfo = unboxer.failureInfo {
-        if let failedValue: AnyObject = failureInfo.value {
+        if let failedValue: Any = failureInfo.value {
             throw UnboxError.InvalidValue(failureInfo.key, "\(failedValue)")
         }
         
@@ -107,7 +107,7 @@ public func UnboxOrThrow<T: Unboxable>(dictionary: UnboxableDictionary, context:
  *  @discussion This function throws an UnboxError if the supplied data couldn't be decoded for
  *  any reason. See the documentation for the main Unbox() function above for more information.
  */
-public func UnboxOrThrow<T: Unboxable>(data: NSData, context: AnyObject? = nil) throws -> T {
+public func UnboxOrThrow<T: Unboxable>(data: NSData, context: Any? = nil) throws -> T {
     if let dictionary = try NSJSONSerialization.JSONObjectWithData(data, options: []) as? UnboxableDictionary {
         return try UnboxOrThrow(dictionary)
     }
@@ -246,14 +246,14 @@ public class Unboxer {
     /// Whether the Unboxer has failed, and a `nil` value will be returned from the `Unbox()` function that triggered it.
     public var hasFailed: Bool { return self.failureInfo != nil }
     /// Any contextual object that was supplied when unboxing was started
-    public let context: AnyObject?
+    public let context: Any?
     
-    private var failureInfo: (key: String, value: AnyObject?)?
+    private var failureInfo: (key: String, value: Any?)?
     private let dictionary: UnboxableDictionary
     
     // MARK: - Private initializer
     
-    private init(dictionary: UnboxableDictionary, context: AnyObject?) {
+    private init(dictionary: UnboxableDictionary, context: Any?) {
         self.dictionary = dictionary
         self.context = context
     }
@@ -363,7 +363,7 @@ public class Unboxer {
     }
     
     /// Make this Unboxer to fail for a certain key and invalid value. This will cause the `Unbox()` function that triggered this Unboxer to return `nil`.
-    public func failForInvalidValue(invalidValue: AnyObject?, forKey key: String) {
+    public func failForInvalidValue(invalidValue: Any?, forKey key: String) {
         self.failureInfo = (key, invalidValue)
     }
     
