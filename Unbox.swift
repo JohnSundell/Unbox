@@ -152,7 +152,7 @@ public protocol Unboxable {
 /// Protocol used to enable a raw type for Unboxing. See default implementations further down.
 public protocol UnboxableRawType {
     /// The value to use for required properties if unboxing failed. This value will never be returned to the API user.
-    static func fallbackValue() -> Self
+    static func unboxFallbackValue() -> Self
 }
 
 /// Protocol used to declare a model as being Unboxable by using a transformer
@@ -179,35 +179,35 @@ public protocol UnboxTransformer {
 
 /// Protocol making Bool an Unboxable raw type
 extension Bool: UnboxableRawType {
-    public static func fallbackValue() -> Bool {
+    public static func unboxFallbackValue() -> Bool {
         return false
     }
 }
 
 /// Protocol making Int an Unboxable raw type
 extension Int: UnboxableRawType {
-    public static func fallbackValue() -> Int {
+    public static func unboxFallbackValue() -> Int {
         return 0
     }
 }
 
 /// Protocol making Double an Unboxable raw type
 extension Double: UnboxableRawType {
-    public static func fallbackValue() -> Double {
+    public static func unboxFallbackValue() -> Double {
         return 0
     }
 }
 
 /// Protocol making Float an Unboxable raw type
 extension Float: UnboxableRawType {
-    public static func fallbackValue() -> Float {
+    public static func unboxFallbackValue() -> Float {
         return 0
     }
 }
 
 /// Protocol making String an Unboxable raw type
 extension String: UnboxableRawType {
-    public static func fallbackValue() -> String {
+    public static func unboxFallbackValue() -> String {
         return ""
     }
 }
@@ -262,7 +262,7 @@ public class Unboxer {
     
     /// Unbox a required raw type
     public func unbox<T: UnboxableRawType>(key: String) -> T {
-        return UnboxValueResolver<T>(self).resolveRequiredValueForKey(key, fallbackValue: T.fallbackValue())
+        return UnboxValueResolver<T>(self).resolveRequiredValueForKey(key, fallbackValue: T.unboxFallbackValue())
     }
     
     /// Unbox an optional raw type
