@@ -151,7 +151,7 @@ public protocol Unboxable {
 
 /// Protocol used to enable a raw type for Unboxing. See default implementations further down.
 public protocol UnboxableRawType {
-    /// The value to use for required properties if unboxing failed. This value will never be returned to the API user.
+    /// The value to use for required properties if unboxing failed. Typically a dummy value.
     static func unboxFallbackValue() -> Self
 }
 
