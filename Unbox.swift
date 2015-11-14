@@ -149,30 +149,22 @@ public protocol Unboxable {
     init(unboxer: Unboxer)
 }
 
-/// Protocol used to enable a raw type for Unboxing. See default implementations further down.
-public protocol UnboxableRawType {
+/// Protocol that types that can be used in an unboxing process must conform to
+public protocol UnboxCompatibleType {
     /// The value to use for required properties if unboxing failed. Typically a dummy value.
     static func unboxFallbackValue() -> Self
 }
 
-/// Protocol used to declare a model as being Unboxable by using a transformer
-public protocol UnboxableByTransform {
-    /// The transformer type to use. See UnboxTransformer for more information.
-    typealias UnboxTransformerType: UnboxTransformer
-}
+/// Protocol used to enable a raw type for Unboxing. See default implementations further down.
+public protocol UnboxableRawType: UnboxCompatibleType {}
 
-/// Protocol for objects that can act as Unboxing transformers, turning an unboxed value into its final form
-public protocol UnboxTransformer {
-    /// The raw unboxed type this transformer accepts as input
-    typealias RawType
-    /// The transformed type this transformer outputs
-    typealias TransformedType
+/// Protocol used to enable any type as being unboxable, by transforming a raw value
+public protocol UnboxableByTransform: UnboxCompatibleType {
+    /// The type of raw value that this type can be transformed from
+    typealias UnboxRawValueType: UnboxableRawType
     
-    /// Attempt to transform an unboxed value, returning non-`nil` if successful
-    static func transformUnboxedValue(unboxedValue: RawType) -> TransformedType?
-    
-    /// The value to use for required properties if unboxing or transformation failed. This value will never be returned to the API user.
-    static func fallbackValue() -> TransformedType
+    /// Attempt to transform a raw unboxed value into an instance of this type
+    static func transformUnboxedValue(unboxedValue: UnboxRawValueType) -> Self?
 }
 
 // MARK: - Raw types
@@ -212,22 +204,19 @@ extension String: UnboxableRawType {
     }
 }
 
-// MARK: - Default transformers
-
-/// A transformer that is used to transform Strings into `NSURL` instances
-public class UnboxURLTransformer: UnboxTransformer {
-    public static func transformUnboxedValue(unboxedValue: String) -> NSURL? {
-        return NSURL(string: unboxedValue)
-    }
-    
-    public static func fallbackValue() -> NSURL {
-        return NSURL()
-    }
-}
+// MARK: - Default transformation implementations
 
 /// Protocol making NSURL Unboxable by transform
 extension NSURL: UnboxableByTransform {
-    public typealias UnboxTransformerType = UnboxURLTransformer
+    public typealias UnboxRawValueType = String
+    
+    public static func transformUnboxedValue(rawValue: String) -> Self? {
+        return self.init(string: rawValue)
+    }
+    
+    public static func unboxFallbackValue() -> Self {
+        return self.init()
+    }
 }
 
 // MARK: - Unboxer
@@ -335,16 +324,16 @@ public class Unboxer {
     }
     
     /// Unbox a required value that can be transformed into its final form. Usable for types that have an `UnboxTransformer`
-    public func unbox<T: UnboxableByTransform where T == T.UnboxTransformerType.TransformedType>(key: String) -> T {
-        return UnboxValueResolver<T.UnboxTransformerType.RawType>(self).resolveRequiredValueForKey(key, fallbackValue: T.UnboxTransformerType.fallbackValue(), transform: {
-            return T.UnboxTransformerType.transformUnboxedValue($0)
+    public func unbox<T: UnboxableByTransform>(key: String) -> T {
+        return UnboxValueResolver<T.UnboxRawValueType>(self).resolveRequiredValueForKey(key, fallbackValue: T.unboxFallbackValue(), transform: {
+            return T.transformUnboxedValue($0)
         })
     }
     
     /// Unbox an optional value that can be transformed into its final form. Usable for types that have an `UnboxTransformer`
-    public func unbox<T: UnboxableByTransform where T == T.UnboxTransformerType.TransformedType>(key: String) -> T.UnboxTransformerType.TransformedType? {
-        return UnboxValueResolver<T.UnboxTransformerType.RawType>(self).resolveOptionalValueForKey(key, transform: {
-            return T.UnboxTransformerType.transformUnboxedValue($0)
+    public func unbox<T: UnboxableByTransform>(key: String) -> T? {
+        return UnboxValueResolver<T.UnboxRawValueType>(self).resolveOptionalValueForKey(key, transform: {
+            return T.transformUnboxedValue($0)
         })
     }
     
