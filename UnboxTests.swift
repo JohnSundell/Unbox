@@ -176,6 +176,25 @@ class UnboxTests: XCTestCase {
             XCTFail()
         }
     }
+    
+    func testAllKeys() {
+        let dictionary = [
+            "a" : "A",
+            "b" : 12,
+            "c" : ["C"]
+        ]
+        
+        struct Model: Unboxable {
+            init(unboxer: Unboxer) {
+                XCTAssertEqual(unboxer.allKeys.count, 3)
+                XCTAssertTrue(unboxer.allKeys.contains("a"))
+                XCTAssertTrue(unboxer.allKeys.contains("b"))
+                XCTAssertTrue(unboxer.allKeys.contains("c"))
+            }
+        }
+        
+        Unbox(dictionary) as Model?
+    }
 }
 
 private func UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: Bool) -> UnboxableDictionary {

@@ -243,6 +243,8 @@ extension NSURL: UnboxableByTransform {
  *  An Unboxer may also be manually failed, by using the `failForKey()` or `failForInvalidValue(forKey:)` APIs.
  */
 public class Unboxer {
+    /// All keys contained within the underlying JSON data that is being unboxed
+    public var allKeys: [String] { return Array(self.dictionary.keys) }
     /// Whether the Unboxer has failed, and a `nil` value will be returned from the `Unbox()` function that triggered it.
     public var hasFailed: Bool { return self.failureInfo != nil }
     /// Any contextual object that was supplied when unboxing was started
