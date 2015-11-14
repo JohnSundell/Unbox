@@ -169,35 +169,35 @@ public protocol UnboxableByTransform: UnboxCompatibleType {
 
 // MARK: - Raw types
 
-/// Protocol making Bool an Unboxable raw type
+/// Extension making Bool an Unboxable raw type
 extension Bool: UnboxableRawType {
     public static func unboxFallbackValue() -> Bool {
         return false
     }
 }
 
-/// Protocol making Int an Unboxable raw type
+/// Extension making Int an Unboxable raw type
 extension Int: UnboxableRawType {
     public static func unboxFallbackValue() -> Int {
         return 0
     }
 }
 
-/// Protocol making Double an Unboxable raw type
+/// Extension making Double an Unboxable raw type
 extension Double: UnboxableRawType {
     public static func unboxFallbackValue() -> Double {
         return 0
     }
 }
 
-/// Protocol making Float an Unboxable raw type
+/// Extension making Float an Unboxable raw type
 extension Float: UnboxableRawType {
     public static func unboxFallbackValue() -> Float {
         return 0
     }
 }
 
-/// Protocol making String an Unboxable raw type
+/// Extension making String an Unboxable raw type
 extension String: UnboxableRawType {
     public static func unboxFallbackValue() -> String {
         return ""
@@ -206,7 +206,7 @@ extension String: UnboxableRawType {
 
 // MARK: - Default transformation implementations
 
-/// Protocol making NSURL Unboxable by transform
+/// Extension making NSURL Unboxable by transform
 extension NSURL: UnboxableByTransform {
     public typealias UnboxRawValueType = String
     
