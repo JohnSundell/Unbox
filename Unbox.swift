@@ -61,9 +61,43 @@ public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, context: Any? =
  *  @param data The data to decode. Must be convertible into a valid JSON dictionary.
  *  @param context Any contextual object that should be available during unboxing.
  *
- *  @discussion See the documentation for the main Unbox(dictionary:) function above for more information.
+ *  @discussion See the documentation for the main `Unbox(dictionary:)` function above for more information.
  */
 public func Unbox<T: Unboxable>(data: NSData, context: Any? = nil) -> T? {
+    do {
+        let unboxed: T = try UnboxOrThrow(data, context: context)
+        return unboxed
+    } catch {
+        return nil
+    }
+}
+
+/**
+ *  Unbox (decode) a dictionary into a model using a context
+ *
+ *  @param dictionary The dictionary to decode. Must be a valid JSON dictionary.
+ *  @param context The contextual object to use during unboxing.
+ *
+ *  @discussion See the documentation for `Unbox(dictionary:)` for more information.
+ */
+public func Unbox<T: UnboxableWithContext>(dictionary: UnboxableDictionary, context: T.ContextType) -> T? {
+    do {
+        let unboxed: T = try UnboxOrThrow(dictionary, context: context)
+        return unboxed
+    } catch {
+        return nil
+    }
+}
+
+/**
+ *  Unbox (decode) a set of data into a model using a context
+ *
+ *  @param data The data to decode. Must be convertible into a valid JSON dictionary.
+ *  @param context The contextual object to use during unboxing.
+ *
+ *  @discussion See the documentation for `Unbox(data:)` for more information.
+ */
+public func Unbox<T: UnboxableWithContext>(data: NSData, context: T.ContextType) -> T? {
     do {
         let unboxed: T = try UnboxOrThrow(data, context: context)
         return unboxed
@@ -87,13 +121,7 @@ public func UnboxOrThrow<T: Unboxable>(dictionary: UnboxableDictionary, context:
     let unboxer = Unboxer(dictionary: dictionary, context: context)
     let unboxed = T(unboxer: unboxer)
     
-    if let failureInfo = unboxer.failureInfo {
-        if let failedValue: Any = failureInfo.value {
-            throw UnboxError.InvalidValue(failureInfo.key, "\(failedValue)")
-        }
-        
-        throw UnboxError.MissingKey(failureInfo.key)
-    }
+    try unboxer.throwIfFailed()
     
     return unboxed
 }
@@ -110,6 +138,39 @@ public func UnboxOrThrow<T: Unboxable>(dictionary: UnboxableDictionary, context:
 public func UnboxOrThrow<T: Unboxable>(data: NSData, context: Any? = nil) throws -> T {
     if let dictionary = try NSJSONSerialization.JSONObjectWithData(data, options: []) as? UnboxableDictionary {
         return try UnboxOrThrow(dictionary)
+    }
+    
+    throw UnboxError.InvalidDictionary
+}
+
+/**
+ *  Unbox (decode) a dictionary into a model using a context, or throw an UnboxError if the operation failed
+ *
+ *  @param dictionary The dictionary to decode. Must be a valid JSON dictionary.
+ *  @param context The contextual object to use during unboxing.
+ *
+ *  @discussion See the documentation for `UnboxOrThrow(dictionary:)` for more information.
+ */
+public func UnboxOrThrow<T: UnboxableWithContext>(dictionary: UnboxableDictionary, context: T.ContextType) throws -> T {
+    let unboxer = Unboxer(dictionary: dictionary, context: context)
+    let unboxed = T(unboxer: unboxer, context: context)
+    
+    try unboxer.throwIfFailed()
+    
+    return unboxed
+}
+
+/**
+ *  Unbox (decode) a set of data into a model using a context, or throw an UnboxError if the operation failed
+ *
+ *  @param data The data to decode. Must be convertible into a valid JSON dictionary.
+ *  @param context The contextual object to use during unboxing.
+ *
+ *  @discussion See the documentation for `UnboxOrThrow(data:)` for more information.
+ */
+public func UnboxOrThrow<T: UnboxableWithContext>(data: NSData, context: T.ContextType) throws -> T {
+    if let dictionary = try NSJSONSerialization.JSONObjectWithData(data, options: []) as? UnboxableDictionary {
+        return try UnboxOrThrow(dictionary, context: context)
     }
     
     throw UnboxError.InvalidDictionary
@@ -147,6 +208,15 @@ public enum UnboxError: ErrorType, CustomStringConvertible {
 public protocol Unboxable {
     /// Initialize an instance of this model by unboxing a dictionary using an Unboxer
     init(unboxer: Unboxer)
+}
+
+/// Protocol used to declare a model as being Unboxable with a certain context, for use with the Unbox(context:) function
+public protocol UnboxableWithContext {
+    /// The type of the contextual object that this model requires when unboxed
+    typealias ContextType
+    
+    /// Initialize an instance of this model by unboxing a dictionary & using a context
+    init(unboxer: Unboxer, context: ContextType)
 }
 
 /// Protocol that types that can be used in an unboxing process must conform to
@@ -371,6 +441,20 @@ public class Unboxer {
     /// Make this Unboxer to fail for a certain key and invalid value. This will cause the `Unbox()` function that triggered this Unboxer to return `nil`.
     public func failForInvalidValue(invalidValue: Any?, forKey key: String) {
         self.failureInfo = (key, invalidValue)
+    }
+    
+    // MARK: - Private
+    
+    private func throwIfFailed() throws {
+        guard let failureInfo = self.failureInfo else {
+            return
+        }
+        
+        if let failedValue: Any = failureInfo.value {
+            throw UnboxError.InvalidValue(failureInfo.key, "\(failedValue)")
+        }
+        
+        throw UnboxError.MissingKey(failureInfo.key)
     }
 }
 
