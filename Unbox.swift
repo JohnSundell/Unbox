@@ -158,6 +158,9 @@ public protocol UnboxCompatibleType {
 /// Protocol used to enable a raw type for Unboxing. See default implementations further down.
 public protocol UnboxableRawType: UnboxCompatibleType {}
 
+/// Protocol used to enable an enum to be directly unboxable
+public protocol UnboxableEnum: RawRepresentable, UnboxCompatibleType {}
+
 /// Protocol used to enable any type as being unboxable, by transforming a raw value
 public protocol UnboxableByTransform: UnboxCompatibleType {
     /// The type of raw value that this type can be transformed from
@@ -167,7 +170,7 @@ public protocol UnboxableByTransform: UnboxCompatibleType {
     static func transformUnboxedValue(unboxedValue: UnboxRawValueType) -> Self?
 }
 
-// MARK: - Raw types
+// MARK: - Extensions
 
 /// Extension making Bool an Unboxable raw type
 extension Bool: UnboxableRawType {
@@ -203,8 +206,6 @@ extension String: UnboxableRawType {
         return ""
     }
 }
-
-// MARK: - Default transformation implementations
 
 /// Extension making NSURL Unboxable by transform
 extension NSURL: UnboxableByTransform {
@@ -279,6 +280,20 @@ public class Unboxer {
     /// Unbox an optional Dictionary
     public func unbox<T>(key: String) -> [String : T]? {
         return UnboxValueResolver<[String : T]>(self).resolveOptionalValueForKey(key)
+    }
+    
+    /// Unbox a required enum value
+    public func unbox<T: UnboxableEnum>(key: String) -> T {
+        return UnboxValueResolver<T.RawValue>(self).resolveRequiredValueForKey(key, fallbackValue: T.unboxFallbackValue(), transform: {
+            return T(rawValue: $0)
+        })
+    }
+    
+    /// Unbox an optional enum value
+    public func unbox<T: UnboxableEnum>(key: String) -> T? {
+        return UnboxValueResolver<T.RawValue>(self).resolveOptionalValueForKey(key, transform: {
+            return T(rawValue: $0)
+        })
     }
     
     /// Unbox a required nested Unboxable, by unboxing a Dictionary and then using a transform
