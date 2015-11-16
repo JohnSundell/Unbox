@@ -368,7 +368,7 @@ public class Unboxer {
     
     /// Unbox a required nested Unboxable, by unboxing a Dictionary and then using a transform
     public func unbox<T: Unboxable>(key: String) -> T {
-        return UnboxValueResolver<UnboxableDictionary>(self).resolveRequiredValueForKey(key, fallbackValue: T(unboxer: self), transform: {
+        return UnboxValueResolver<UnboxableDictionary>(self).resolveRequiredValueForKey(key, fallbackValue: T.unboxFallbackValue(), transform: {
             return Unbox($0, context: self.context)
         })
     }
