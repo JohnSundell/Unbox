@@ -450,17 +450,6 @@ public class Unboxer {
         })
     }
     
-    /// Return a required contextual object of type `T` attached to this Unboxer, or cause the Unboxer to fail (using a dummy fallback value)
-    public func requiredContextWithFallbackValue<T>(@autoclosure fallbackValue: () -> T) -> T {
-        if let context = self.context as? T {
-            return context
-        }
-        
-        self.failForInvalidValue(self.context, forKey: "Unboxer.Context")
-        
-        return fallbackValue()
-    }
-    
     /// Make this Unboxer to fail for a certain key. This will cause the `Unbox()` function that triggered this Unboxer to return `nil`.
     public func failForKey(key: String) {
         self.failForInvalidValue(nil, forKey: key)
