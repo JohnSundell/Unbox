@@ -459,20 +459,6 @@ public class Unboxer {
     public func failForInvalidValue(invalidValue: Any?, forKey key: String) {
         self.failureInfo = (key, invalidValue)
     }
-    
-    // MARK: - Private
-    
-    private func throwIfFailed() throws {
-        guard let failureInfo = self.failureInfo else {
-            return
-        }
-        
-        if let failedValue: Any = failureInfo.value {
-            throw UnboxError.InvalidValue(failureInfo.key, "\(failedValue)")
-        }
-        
-        throw UnboxError.MissingKey(failureInfo.key)
-    }
 }
 
 // MARK: - UnboxValueResolver
@@ -599,5 +585,19 @@ private extension Unboxable {
 private extension UnboxableWithContext {
     static func unboxFallbackValueWithContext(context: ContextType) -> Self {
         return self.init(unboxer: Unboxer(dictionary: [:], context: context), context: context)
+    }
+}
+
+private extension Unboxer {
+    func throwIfFailed() throws {
+        guard let failureInfo = self.failureInfo else {
+            return
+        }
+        
+        if let failedValue: Any = failureInfo.value {
+            throw UnboxError.InvalidValue(failureInfo.key, "\(failedValue)")
+        }
+        
+        throw UnboxError.MissingKey(failureInfo.key)
     }
 }
