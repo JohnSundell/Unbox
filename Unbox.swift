@@ -422,6 +422,20 @@ public class Unboxer {
         })
     }
     
+    /// Unbox a required Array of nested UnboxableWithContext types, by unboxing an Array of Dictionaries and then using a transform
+    public func unbox<T: UnboxableWithContext>(key: String, context: T.ContextType) -> [T] {
+        return UnboxValueResolver<[UnboxableDictionary]>(self).resolveCollectionValuesForKey(key, required: true, valueTransform: {
+            return Unbox($0, context: context)
+        })
+    }
+    
+    /// Unbox an optional Array of nested UnboxableWithContext types, by unboxing an Array of Dictionaries and then using a transform
+    public func unbox<T: UnboxableWithContext>(key: String, context: T.ContextType) -> [T]? {
+        return UnboxValueResolver<[UnboxableDictionary]>(self).resolveCollectionValuesForKey(key, required: false, valueTransform: {
+            return Unbox($0, context: context)
+        })
+    }
+    
     /// Unbox a required value that can be transformed into its final form
     public func unbox<T: UnboxableByTransform>(key: String) -> T {
         return UnboxValueResolver<T.UnboxRawValueType>(self).resolveRequiredValueForKey(key, fallbackValue: T.unboxFallbackValue(), transform: {
