@@ -408,6 +408,20 @@ public class Unboxer {
         })
     }
     
+    /// Unbox a required nested UnboxableWithContext type
+    public func unbox<T: UnboxableWithContext>(key: String, context: T.ContextType) -> T {
+        return UnboxValueResolver<UnboxableDictionary>(self).resolveRequiredValueForKey(key, fallbackValue: T.unboxFallbackValueWithContext(context), transform: {
+            return Unbox($0, context: context)
+        })
+    }
+    
+    /// Unbox an optional nested UnboxableWithContext type
+    public func unbox<T: UnboxableWithContext>(key: String, context: T.ContextType) -> T? {
+        return UnboxValueResolver<UnboxableDictionary>(self).resolveOptionalValueForKey(key, transform: {
+            return Unbox($0, context: context)
+        })
+    }
+    
     /// Unbox a required value that can be transformed into its final form
     public func unbox<T: UnboxableByTransform>(key: String) -> T {
         return UnboxValueResolver<T.UnboxRawValueType>(self).resolveRequiredValueForKey(key, fallbackValue: T.unboxFallbackValue(), transform: {
