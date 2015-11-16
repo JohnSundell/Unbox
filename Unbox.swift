@@ -383,28 +383,28 @@ public class Unboxer {
     /// Unbox a required Array of nested Unboxables, by unboxing an Array of Dictionaries and then using a transform
     public func unbox<T: Unboxable>(key: String) -> [T] {
         return UnboxValueResolver<[UnboxableDictionary]>(self).resolveCollectionValuesForKey(key, required: true, valueTransform: {
-            return Unbox($0)
+            return Unbox($0, context: self.context)
         })
     }
     
     /// Unbox an optional Array of nested Unboxables, by unboxing an Array of Dictionaries and then using a transform
     public func unbox<T: Unboxable>(key: String) -> [T]? {
         return UnboxValueResolver<[UnboxableDictionary]>(self).resolveCollectionValuesForKey(key, required: false, valueTransform: {
-            return Unbox($0)
+            return Unbox($0, context: self.context)
         })
     }
     
     /// Unbox a required Dictionary of nested Unboxables, by unboxing an Dictionary of Dictionaries and then using a transform
     public func unbox<T: Unboxable>(key: String) -> [String : T] {
         return UnboxValueResolver<[String : UnboxableDictionary]>(self).resolveDictionaryValuesForKey(key, required: true, valueTransform: {
-            return Unbox($0)
+            return Unbox($0, context: self.context)
         })
     }
     
     /// Unbox an optional Dictionary of nested Unboxables, by unboxing an Dictionary of Dictionaries and then using a transform
     public func unbox<T: Unboxable>(key: String) -> [String : T]? {
         return UnboxValueResolver<[String : UnboxableDictionary]>(self).resolveDictionaryValuesForKey(key, required: false, valueTransform: {
-            return Unbox($0)
+            return Unbox($0, context: self.context)
         })
     }
     
