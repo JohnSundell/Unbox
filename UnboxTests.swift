@@ -131,8 +131,8 @@ class UnboxTests: XCTestCase {
     }
     
     func testContext() {
-        class UnboxableWithContext: Unboxable {
-            let nestedUnboxable: UnboxableWithContext?
+        class Model: Unboxable {
+            let nestedUnboxable: Model?
             
             required init(unboxer: Unboxer) {
                 if let context = unboxer.context as? String {
@@ -145,9 +145,34 @@ class UnboxTests: XCTestCase {
             }
         }
         
-        let unboxed: UnboxableWithContext? = Unbox(["nested" : UnboxableDictionary()], context: "context")
+        let unboxed: Model? = Unbox(["nested" : UnboxableDictionary()], context: "context")
         
         XCTAssertFalse(unboxed == nil, "Could not unbox with a context")
+    }
+    
+    func testRequiredContext() {
+        let dictionary = [
+            "nested" : [:],
+            "nestedArray": [[:]]
+        ]
+        
+        if let model: UnboxTestContextMock = Unbox(dictionary, context: "context") {
+            XCTAssertEqual(model.context, "context")
+            
+            if let nestedModel = model.nested {
+                XCTAssertEqual(nestedModel.context, "nestedContext")
+            } else {
+                XCTFail("Failed to unbox nested model")
+            }
+            
+            if let nestedArrayModel = model.nestedArray?.first {
+                XCTAssertEqual(nestedArrayModel.context, "nestedArrayContext")
+            } else {
+                XCTFail("Failed to unbox nested model array")
+            }
+        } else {
+            XCTFail("Failed to unbox")
+        }
     }
 
     func testAccessingNestedDictionaryWithKeyPath() {
@@ -397,5 +422,17 @@ private class UnboxTestMock: UnboxTestBaseMock {
         self.optionalUnboxableDictionary = unboxer.unbox(UnboxTestMock.optionalUnboxableDictionaryKey)
         
         super.init(unboxer: unboxer)
+    }
+}
+
+private final class UnboxTestContextMock: UnboxableWithContext {
+    let context: String
+    let nested: UnboxTestContextMock?
+    let nestedArray: [UnboxTestContextMock]?
+    
+    init(unboxer: Unboxer, context: String) {
+        self.context = context
+        self.nested = unboxer.unbox("nested", context: "nestedContext")
+        self.nestedArray = unboxer.unbox("nestedArray", context: "nestedArrayContext")
     }
 }
