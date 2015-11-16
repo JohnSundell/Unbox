@@ -570,3 +570,17 @@ extension UnboxValueResolver where T: CollectionType, T: DictionaryLiteralConver
         return [:]
     }
 }
+
+// MARK: - Private extensions
+
+private extension Unboxable {
+    static func unboxFallbackValue() -> Self {
+        return self.init(unboxer: Unboxer(dictionary: [:], context: nil))
+    }
+}
+
+private extension UnboxableWithContext {
+    static func unboxFallbackValueWithContext(context: ContextType) -> Self {
+        return self.init(unboxer: Unboxer(dictionary: [:], context: context), context: context)
+    }
+}
