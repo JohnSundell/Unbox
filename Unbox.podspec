@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "Unbox"
-  s.version      = "1.0"
+  s.version      = "1.1"
   s.summary      = "The easy to use Swift JSON decoder."
   s.description  = <<-DESC
     Unbox is an easy to use Swift JSON decoder. Don't spend hours writing JSON decoding code - just unbox it instead!
@@ -14,7 +14,7 @@ Pod::Spec.new do |s|
   s.ios.deployment_target = "8.0"
   s.osx.deployment_target = "10.10"
   s.watchos.deployment_target = "2.0"
-  s.source       = { :git => "https://github.com/JohnSundell/Unbox.git", :tag => "1.0" }
+  s.source       = { :git => "https://github.com/JohnSundell/Unbox.git", :tag => "1.1" }
   s.source_files  = "Unbox.swift"
   s.framework  = "Foundation"
 end
