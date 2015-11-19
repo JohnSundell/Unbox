@@ -131,8 +131,8 @@ class UnboxTests: XCTestCase {
     }
     
     func testContext() {
-        class UnboxableWithContext: Unboxable {
-            let nestedUnboxable: UnboxableWithContext?
+        class Model: Unboxable {
+            let nestedUnboxable: Model?
             
             required init(unboxer: Unboxer) {
                 if let context = unboxer.context as? String {
@@ -145,9 +145,34 @@ class UnboxTests: XCTestCase {
             }
         }
         
-        let unboxed: UnboxableWithContext? = Unbox(["nested" : UnboxableDictionary()], context: "context")
+        let unboxed: Model? = Unbox(["nested" : UnboxableDictionary()], context: "context")
         
         XCTAssertFalse(unboxed == nil, "Could not unbox with a context")
+    }
+    
+    func testRequiredContext() {
+        let dictionary = [
+            "nested" : [:],
+            "nestedArray": [[:]]
+        ]
+        
+        if let model: UnboxTestContextMock = Unbox(dictionary, context: "context") {
+            XCTAssertEqual(model.context, "context")
+            
+            if let nestedModel = model.nested {
+                XCTAssertEqual(nestedModel.context, "nestedContext")
+            } else {
+                XCTFail("Failed to unbox nested model")
+            }
+            
+            if let nestedArrayModel = model.nestedArray?.first {
+                XCTAssertEqual(nestedArrayModel.context, "nestedArrayContext")
+            } else {
+                XCTFail("Failed to unbox nested model array")
+            }
+        } else {
+            XCTFail("Failed to unbox")
+        }
     }
 
     func testAccessingNestedDictionaryWithKeyPath() {
@@ -176,6 +201,25 @@ class UnboxTests: XCTestCase {
             XCTFail()
         }
     }
+    
+    func testAllKeys() {
+        let dictionary = [
+            "a" : "A",
+            "b" : 12,
+            "c" : ["C"]
+        ]
+        
+        struct Model: Unboxable {
+            init(unboxer: Unboxer) {
+                XCTAssertEqual(unboxer.allKeys.count, 3)
+                XCTAssertTrue(unboxer.allKeys.contains("a"))
+                XCTAssertTrue(unboxer.allKeys.contains("b"))
+                XCTAssertTrue(unboxer.allKeys.contains("c"))
+            }
+        }
+        
+        Unbox(dictionary) as Model?
+    }
 }
 
 private func UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: Bool) -> UnboxableDictionary {
@@ -184,6 +228,7 @@ private func UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: Bool)
         UnboxTestMock.requiredIntKey : 15,
         UnboxTestMock.requiredDoubleKey : Double(1.5),
         UnboxTestMock.requiredFloatKey : Float(3.14),
+        UnboxTestMock.requiredEnumKey : 1,
         UnboxTestMock.requiredStringKey :  "hello",
         UnboxTestMock.requiredURLKey : "http://www.google.com",
         UnboxTestMock.requiredArrayKey : ["unbox", "is", "pretty", "cool", "right?"]
@@ -200,6 +245,15 @@ private func UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: Bool)
 
 // MARK: - Mocks
 
+private enum UnboxTestEnum: Int, UnboxableEnum {
+    case First
+    case Second
+    
+    private static func unboxFallbackValue() -> UnboxTestEnum {
+        return .First
+    }
+}
+
 private class UnboxTestBaseMock: Unboxable {
     static let requiredBoolKey = "requiredBool"
     static let optionalBoolKey = "optionalBool"
@@ -209,6 +263,8 @@ private class UnboxTestBaseMock: Unboxable {
     static let optionalDoubleKey = "optionalDouble"
     static let requiredFloatKey = "requiredFloat"
     static let optionalFloatKey = "optionalFloat"
+    static let requiredEnumKey = "requiredEnum"
+    static let optionalEnumKey = "optionalEnum"
     static let requiredStringKey = "requiredString"
     static let optionalStringKey = "optionalString"
     static let requiredURLKey = "requiredURL"
@@ -224,6 +280,8 @@ private class UnboxTestBaseMock: Unboxable {
     let optionalDouble: Double?
     let requiredFloat: Float
     let optionalFloat: Float?
+    let requiredEnum: UnboxTestEnum
+    let optionalEnum: UnboxTestEnum?
     let requiredString: String
     let optionalString: String?
     let requiredURL: NSURL
@@ -240,6 +298,8 @@ private class UnboxTestBaseMock: Unboxable {
         self.optionalDouble = unboxer.unbox(UnboxTestBaseMock.optionalDoubleKey)
         self.requiredFloat = unboxer.unbox(UnboxTestBaseMock.requiredFloatKey)
         self.optionalFloat = unboxer.unbox(UnboxTestBaseMock.optionalFloatKey)
+        self.requiredEnum = unboxer.unbox(UnboxTestBaseMock.requiredEnumKey)
+        self.optionalEnum = unboxer.unbox(UnboxTestBaseMock.optionalEnumKey)
         self.requiredString = unboxer.unbox(UnboxTestBaseMock.requiredStringKey)
         self.optionalString = unboxer.unbox(UnboxTestBaseMock.optionalStringKey)
         self.requiredURL = unboxer.unbox(UnboxTestBaseMock.requiredURLKey)
@@ -269,6 +329,10 @@ private class UnboxTestBaseMock: Unboxable {
                 verificationOutcome = self.verifyPropertyValue(self.requiredFloat, againstDictionaryValue: value)
             case UnboxTestBaseMock.optionalFloatKey:
                 verificationOutcome = self.verifyPropertyValue(self.optionalFloat, againstDictionaryValue: value)
+            case UnboxTestBaseMock.requiredEnumKey:
+                verificationOutcome = self.verifyEnumPropertyValue(self.requiredEnum, againstDictionaryValue: value)
+            case UnboxTestBaseMock.optionalEnumKey:
+                verificationOutcome = self.verifyEnumPropertyValue(self.optionalEnum, againstDictionaryValue: value)
             case UnboxTestBaseMock.requiredStringKey:
                 verificationOutcome = self.verifyPropertyValue(self.requiredString, againstDictionaryValue: value)
             case UnboxTestBaseMock.optionalStringKey:
@@ -293,6 +357,16 @@ private class UnboxTestBaseMock: Unboxable {
         if let propertyValue = propertyValue {
             if let typedDictionaryValue = dictionaryValue as? T {
                 return propertyValue == typedDictionaryValue
+            }
+        }
+        
+        return false
+    }
+    
+    func verifyEnumPropertyValue<T: UnboxableEnum where T: Equatable>(propertyValue: T?, againstDictionaryValue dictionaryValue: AnyObject?) -> Bool {
+        if let rawValue = dictionaryValue as? T.RawValue {
+            if let enumValue = T(rawValue: rawValue) {
+                return propertyValue == enumValue
             }
         }
         
@@ -348,5 +422,17 @@ private class UnboxTestMock: UnboxTestBaseMock {
         self.optionalUnboxableDictionary = unboxer.unbox(UnboxTestMock.optionalUnboxableDictionaryKey)
         
         super.init(unboxer: unboxer)
+    }
+}
+
+private final class UnboxTestContextMock: UnboxableWithContext {
+    let context: String
+    let nested: UnboxTestContextMock?
+    let nestedArray: [UnboxTestContextMock]?
+    
+    init(unboxer: Unboxer, context: String) {
+        self.context = context
+        self.nested = unboxer.unbox("nested", context: "nestedContext")
+        self.nestedArray = unboxer.unbox("nestedArray", context: "nestedArrayContext")
     }
 }

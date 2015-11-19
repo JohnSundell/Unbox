@@ -67,6 +67,7 @@ The first was a pretty simple example, but Unbox can decode even the most compli
 
 ```swift
 struct SpaceShip: Unboxable {
+    let type: SpaceShipType
     let weight: Double
     let engine: Engine
     let passengers: [Astronaut]
@@ -74,11 +75,21 @@ struct SpaceShip: Unboxable {
     let lastPilot: Astronaut?
     
     init(unboxer: Unboxer) {
+        self.type = unboxer.unbox("type")
         self.weight = unboxer.unbox("weight")
         self.engine = unboxer.unbox("engine")
         self.passengers = unboxer.unbox("passengers")
         self.launchLiveStreamURL = unboxer.unbox("liveStreamURL")
         self.lastPilot = unboxer.unbox("lastPilot")
+    }
+}
+
+enum SpaceShipType: UnboxableEnum {
+    case Apollo
+    case Sputnik
+
+    static func unboxFallbackValue() {
+        return .Apollo
     }
 }
 
@@ -99,6 +110,8 @@ struct Astronaut: Unboxable {
         self.name = unboxer.unbox("name")
     }
 }
+
+
 ```
 
 ### Error handling
@@ -129,37 +142,50 @@ It also supports `Arrays` and `Dictionaries` that contain nested unboxable types
 
 Finally, it also supports `NSURL` through the use of a transformer.
 
-### Transformers
+### Transformations
 
-Unbox also supports transformers that let you treat any value or object as if it was a raw JSON type.
+Unbox also supports transformations that let you treat any value or object as if it was a raw JSON type.
 
-It ships with a default `String` -> `NSURL` transformer, which lets you unbox any `NSURL` property from a string describing an URL without writing any transformation code.
+It ships with a default `String` -> `NSURL` transformation, which lets you unbox any `NSURL` property from a string describing an URL without writing any transformation code.
 
-To enable your own types to be unboxable using a transformer, all you have to do is make your type conform to `UnboxableByTransform` and implement an `UnboxTransformer` for it, like this:
+To enable your own types to be unboxable using a transformation, all you have to do is make your type conform to `UnboxableByTransform` and implement its protocol methods.
+
+Here’s an example that makes a native Swift `UniqueIdentifier` type unboxable using a transformation:
 
 ```swift
-enum Profession {
-    case Developer
-    case Astronaut
-}
+struct UniqueIdentifier: UnboxableByTransform {
+    typealias UnboxRawValueType = String
 
-extension Profession: UnboxableByTransform {
-    typealias UnboxTransformerType = ProfessionUnboxTransformer
-}
-
-class ProfessionUnboxTransformer: UnboxTransformer {
-   static func transformUnboxedValue(unboxedValue: String) -> Profession? {
-        switch unboxedValue {
-            case "DEVELOPER":
-                return .Developer
-            case "ASTRONAUT":
-                return .Astronaut
-            default:
-                return nil
+    let identifierString: String
+    
+    init?(identifierString: String) {
+        if let UUID = NSUUID(UUIDString: identifierString) {
+            self.identifierString = UUID.UUIDString
+        } else {
+            return nil
         }
     }
+
+    static func transformUnboxedValue(unboxedValue: String) -> Identifier? {
+        return Identifier(identifierString: unboxedValue)
+    }
     
-   static func fallbackValue() -> Profession {
+    static func unboxFallbackValue() -> Identifier {
+        return Identifier()
+    }
+}
+```
+
+### Built-in enum support
+
+You can also unbox `enums` directly, without having to handle the case if they failed to initialize. All you have to do is make any `enum` type you wish to unbox conform to `UnboxableEnum`, like this:
+
+```swift
+enum Profession: Int, UnboxableEnum {
+    case Developer
+    case Astronaut
+
+    static func unboxFallbackValue() {
         return .Developer
     }
 }
@@ -184,6 +210,8 @@ Sometimes you need to use data other than what's contained in a dictionary durin
 To pass a contextual object, use the `Unbox(dictionary:context:)` overload when you start the unboxing process.
 
 The `Unboxer` passed to your `Unboxable`'s init method will then make your contextual object available through its `context` property.
+
+You can also **require** that a contextual object is present during the unboxing process by using the `UnboxableWithContext` protocol. Types that conform to this protocol can then be unboxed using `Unbox(dictionary:context:)`, where `context` must be of the type’s defined `ContextType`.
 
 ### Key path support
 
