@@ -84,7 +84,7 @@ struct SpaceShip: Unboxable {
     }
 }
 
-enum SpaceShipType: UnboxableEnum {
+enum SpaceShipType: Int, UnboxableEnum {
     case Apollo
     case Sputnik
 
