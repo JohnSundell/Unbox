@@ -88,7 +88,7 @@ enum SpaceShipType: Int, UnboxableEnum {
     case Apollo
     case Sputnik
 
-    static func unboxFallbackValue() {
+    static func unboxFallbackValue() -> SpaceShipType {
         return .Apollo
     }
 }
