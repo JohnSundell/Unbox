@@ -47,12 +47,7 @@ public typealias UnboxableDictionary = [String : AnyObject]
  *  error handling instead of optionals; use `UnboxOrThrow` instead.
  */
 public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, context: Any? = nil) -> T? {
-    do {
-        let unboxed: T = try UnboxOrThrow(dictionary, context: context)
-        return unboxed
-    } catch {
-        return nil
-    }
+    return try? UnboxOrThrow(dictionary, context: context)
 }
 
 /**
@@ -64,12 +59,7 @@ public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, context: Any? =
  *  @discussion See the documentation for the main `Unbox(dictionary:)` function above for more information.
  */
 public func Unbox<T: Unboxable>(data: NSData, context: Any? = nil) -> T? {
-    do {
-        let unboxed: T = try UnboxOrThrow(data, context: context)
-        return unboxed
-    } catch {
-        return nil
-    }
+    return try? UnboxOrThrow(data, context: context)
 }
 
 /**
@@ -81,12 +71,7 @@ public func Unbox<T: Unboxable>(data: NSData, context: Any? = nil) -> T? {
  *  @discussion See the documentation for `Unbox(dictionary:)` for more information.
  */
 public func Unbox<T: UnboxableWithContext>(dictionary: UnboxableDictionary, context: T.ContextType) -> T? {
-    do {
-        let unboxed: T = try UnboxOrThrow(dictionary, context: context)
-        return unboxed
-    } catch {
-        return nil
-    }
+    return try? UnboxOrThrow(dictionary, context: context)
 }
 
 /**
@@ -98,12 +83,7 @@ public func Unbox<T: UnboxableWithContext>(dictionary: UnboxableDictionary, cont
  *  @discussion See the documentation for `Unbox(data:)` for more information.
  */
 public func Unbox<T: UnboxableWithContext>(data: NSData, context: T.ContextType) -> T? {
-    do {
-        let unboxed: T = try UnboxOrThrow(data, context: context)
-        return unboxed
-    } catch {
-        return nil
-    }
+    return try? UnboxOrThrow(data, context: context)
 }
 
 // MARK: - Unbox functions with error handling
