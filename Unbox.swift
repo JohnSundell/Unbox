@@ -553,11 +553,15 @@ private extension UnboxableWithContext {
 
 private extension Unboxer {
     static func unboxerFromData(data: NSData, context: Any?) throws -> Unboxer {
-        guard let dictionary = try NSJSONSerialization.JSONObjectWithData(data, options: []) as? UnboxableDictionary else {
+        do {
+            guard let dictionary = try NSJSONSerialization.JSONObjectWithData(data, options: []) as? UnboxableDictionary else {
+                throw UnboxError.InvalidData
+            }
+            
+            return Unboxer(dictionary: dictionary, context: context)
+        } catch {
             throw UnboxError.InvalidData
         }
-        
-        return Unboxer(dictionary: dictionary, context: context)
     }
     
     func performUnboxing<T: Unboxable>() throws -> T {

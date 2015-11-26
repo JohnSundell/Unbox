@@ -122,8 +122,10 @@ class UnboxTests: XCTestCase {
             do {
                 let _: UnboxTestMock = try UnboxOrThrow(data)
                 XCTFail("Unbox should have thrown for invalid data")
-            } catch {
+            } catch UnboxError.InvalidData {
                 // Test passed
+            } catch {
+                XCTFail("Unbox did not return the correct error type")
             }
         } else {
             XCTFail("Could not create data from a string")
