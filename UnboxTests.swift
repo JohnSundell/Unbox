@@ -76,6 +76,24 @@ class UnboxTests: XCTestCase {
         }
     }
     
+    func testUnboxingArrayOfDictionaries() {
+        let dictionaries = [
+            UnboxTestDictionaryWithAllRequiredKeysWithValidValues(false),
+            UnboxTestDictionaryWithAllRequiredKeysWithValidValues(false),
+            UnboxTestDictionaryWithAllRequiredKeysWithValidValues(false)
+        ]
+        
+        guard let unboxedArray: [UnboxTestMock] = Unbox(dictionaries) else {
+            return XCTFail()
+        }
+        
+        XCTAssertEqual(unboxedArray.count, 3)
+        
+        for unboxed in unboxedArray {
+            unboxed.verifyAgainstDictionary(UnboxTestDictionaryWithAllRequiredKeysWithValidValues(false))
+        }
+    }
+    
     func testThrowingForMissingRequiredValues() {
         let validDictionary = UnboxTestDictionaryWithAllRequiredKeysWithValidValues(false)
         
@@ -129,6 +147,38 @@ class UnboxTests: XCTestCase {
             }
         } else {
             XCTFail("Could not create data from a string")
+        }
+    }
+    
+    func testThrowingForInvalidDataArray() {
+        let notDictionaryArray = [12, 13, 9]
+        
+        guard let data = try? NSJSONSerialization.dataWithJSONObject(notDictionaryArray, options: []) else {
+            return XCTFail()
+        }
+        
+        do {
+            try UnboxOrThrow(data) as UnboxTestMock
+            XCTFail()
+        } catch UnboxError.InvalidData {
+            // Test passed
+        } catch {
+            XCTFail("Unbox did not return the correct error type")
+        }
+    }
+    
+    func testThrowingForSingleInvalidDictionaryInArray() {
+        let dictionaries = [
+            UnboxTestDictionaryWithAllRequiredKeysWithValidValues(false),
+            ["invalid" : "dictionary"],
+            UnboxTestDictionaryWithAllRequiredKeysWithValidValues(false)
+        ]
+        
+        do {
+            try UnboxOrThrow(dictionaries) as [UnboxTestMock]
+            XCTFail()
+        } catch {
+            // Test passed
         }
     }
     
