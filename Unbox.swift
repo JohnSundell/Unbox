@@ -150,8 +150,8 @@ public enum UnboxError: ErrorType, CustomStringConvertible {
             return baseDescription + "Missing key (\(key))"
         case .InvalidValue(let key, let valueDescription):
             return baseDescription + "Invalid value (\(valueDescription)) for key (\(key))"
-        case .InvalidDictionary:
-            return "Invalid dictionary"
+        case .InvalidData:
+            return "Invalid data"
         }
     }
     
@@ -160,8 +160,8 @@ public enum UnboxError: ErrorType, CustomStringConvertible {
     /// Thrown when a required key contained an invalid value in an unboxed dictionary. Contains the invalid
     /// key and a description of the invalid data.
     case InvalidValue(String, String)
-    /// Thrown when an unboxed dictionary was either missing or contained invalid data
-    case InvalidDictionary
+    /// Thrown when a piece of data (NSData) could not be unboxed because it was considered invalid
+    case InvalidData
 }
 
 // MARK: - Protocols
@@ -554,7 +554,7 @@ private extension UnboxableWithContext {
 private extension Unboxer {
     static func unboxerFromData(data: NSData, context: Any?) throws -> Unboxer {
         guard let dictionary = try NSJSONSerialization.JSONObjectWithData(data, options: []) as? UnboxableDictionary else {
-            throw UnboxError.InvalidDictionary
+            throw UnboxError.InvalidData
         }
         
         return Unboxer(dictionary: dictionary, context: context)
