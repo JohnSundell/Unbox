@@ -98,12 +98,7 @@ public func Unbox<T: UnboxableWithContext>(data: NSData, context: T.ContextType)
  *  for any reason. See the documentation for the main Unbox() function above for more information.
  */
 public func UnboxOrThrow<T: Unboxable>(dictionary: UnboxableDictionary, context: Any? = nil) throws -> T {
-    let unboxer = Unboxer(dictionary: dictionary, context: context)
-    let unboxed = T(unboxer: unboxer)
-    
-    try unboxer.throwIfFailed()
-    
-    return unboxed
+    return try Unboxer(dictionary: dictionary, context: context).performUnboxing()
 }
 
 /**
@@ -116,11 +111,7 @@ public func UnboxOrThrow<T: Unboxable>(dictionary: UnboxableDictionary, context:
  *  any reason. See the documentation for the main Unbox() function above for more information.
  */
 public func UnboxOrThrow<T: Unboxable>(data: NSData, context: Any? = nil) throws -> T {
-    if let dictionary = try NSJSONSerialization.JSONObjectWithData(data, options: []) as? UnboxableDictionary {
-        return try UnboxOrThrow(dictionary)
-    }
-    
-    throw UnboxError.InvalidDictionary
+    return try Unboxer.unboxerFromData(data, context: context).performUnboxing()
 }
 
 /**
@@ -132,12 +123,7 @@ public func UnboxOrThrow<T: Unboxable>(data: NSData, context: Any? = nil) throws
  *  @discussion See the documentation for `UnboxOrThrow(dictionary:)` for more information.
  */
 public func UnboxOrThrow<T: UnboxableWithContext>(dictionary: UnboxableDictionary, context: T.ContextType) throws -> T {
-    let unboxer = Unboxer(dictionary: dictionary, context: context)
-    let unboxed = T(unboxer: unboxer, context: context)
-    
-    try unboxer.throwIfFailed()
-    
-    return unboxed
+    return try Unboxer(dictionary: dictionary, context: context).performUnboxingWithContext(context)
 }
 
 /**
@@ -149,11 +135,7 @@ public func UnboxOrThrow<T: UnboxableWithContext>(dictionary: UnboxableDictionar
  *  @discussion See the documentation for `UnboxOrThrow(data:)` for more information.
  */
 public func UnboxOrThrow<T: UnboxableWithContext>(data: NSData, context: T.ContextType) throws -> T {
-    if let dictionary = try NSJSONSerialization.JSONObjectWithData(data, options: []) as? UnboxableDictionary {
-        return try UnboxOrThrow(dictionary, context: context)
-    }
-    
-    throw UnboxError.InvalidDictionary
+    return try Unboxer.unboxerFromData(data, context: context).performUnboxingWithContext(context)
 }
 
 // MARK: - Error type
@@ -569,6 +551,26 @@ private extension UnboxableWithContext {
 }
 
 private extension Unboxer {
+    static func unboxerFromData(data: NSData, context: Any?) throws -> Unboxer {
+        guard let dictionary = try NSJSONSerialization.JSONObjectWithData(data, options: []) as? UnboxableDictionary else {
+            throw UnboxError.InvalidDictionary
+        }
+        
+        return Unboxer(dictionary: dictionary, context: context)
+    }
+    
+    func performUnboxing<T: Unboxable>() throws -> T {
+        let unboxed = T(unboxer: self)
+        try self.throwIfFailed()
+        return unboxed
+    }
+    
+    func performUnboxingWithContext<T: UnboxableWithContext>(context: T.ContextType) throws -> T {
+        let unboxed = T(unboxer: self, context: context)
+        try self.throwIfFailed()
+        return unboxed
+    }
+    
     func throwIfFailed() throws {
         guard let failureInfo = self.failureInfo else {
             return
