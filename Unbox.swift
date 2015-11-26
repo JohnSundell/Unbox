@@ -328,14 +328,14 @@ public class Unboxer {
     
     /// Unbox a required Array of nested Unboxables, by unboxing an Array of Dictionaries and then using a transform
     public func unbox<T: Unboxable>(key: String) -> [T] {
-        return UnboxValueResolver<[UnboxableDictionary]>(self).resolveCollectionValuesForKey(key, required: true, valueTransform: {
+        return UnboxValueResolver<[UnboxableDictionary]>(self).resolveRequiredValueForKey(key, fallbackValue: [], transform: {
             return Unbox($0, context: self.context)
         })
     }
     
     /// Unbox an optional Array of nested Unboxables, by unboxing an Array of Dictionaries and then using a transform
     public func unbox<T: Unboxable>(key: String) -> [T]? {
-        return UnboxValueResolver<[UnboxableDictionary]>(self).resolveCollectionValuesForKey(key, required: false, valueTransform: {
+        return UnboxValueResolver<[UnboxableDictionary]>(self).resolveOptionalValueForKey(key, transform: {
             return Unbox($0, context: self.context)
         })
     }
@@ -370,14 +370,14 @@ public class Unboxer {
     
     /// Unbox a required Array of nested UnboxableWithContext types, by unboxing an Array of Dictionaries and then using a transform
     public func unbox<T: UnboxableWithContext>(key: String, context: T.ContextType) -> [T] {
-        return UnboxValueResolver<[UnboxableDictionary]>(self).resolveCollectionValuesForKey(key, required: true, valueTransform: {
+        return UnboxValueResolver<[UnboxableDictionary]>(self).resolveRequiredValueForKey(key, fallbackValue: [], transform: {
             return Unbox($0, context: context)
         })
     }
     
     /// Unbox an optional Array of nested UnboxableWithContext types, by unboxing an Array of Dictionaries and then using a transform
     public func unbox<T: UnboxableWithContext>(key: String, context: T.ContextType) -> [T]? {
-        return UnboxValueResolver<[UnboxableDictionary]>(self).resolveCollectionValuesForKey(key, required: false, valueTransform: {
+        return UnboxValueResolver<[UnboxableDictionary]>(self).resolveOptionalValueForKey(key, transform: {
             return Unbox($0, context: context)
         })
     }
@@ -464,29 +464,6 @@ private class UnboxValueResolver<T> {
         }
         
         return nil
-    }
-}
-
-extension UnboxValueResolver where T: CollectionType {
-    func resolveCollectionValuesForKey<R>(key: String, required: Bool, valueTransform: T.Generator.Element -> R?) -> [R] {
-        if let unboxedArray = self.resolveOptionalValueForKey(key) {
-            var transformedArray = [R]()
-            
-            for unboxedValue in unboxedArray {
-                if let transformed = valueTransform(unboxedValue) {
-                    transformedArray.append(transformed)
-                } else if required {
-                    self.unboxer.failForInvalidValue(unboxedValue, forKey: key)
-                    return []
-                }
-            }
-            
-            return transformedArray
-        } else if required {
-            self.unboxer.failForInvalidValue(self.unboxer.dictionary[key], forKey: key)
-        }
-        
-        return []
     }
 }
 
