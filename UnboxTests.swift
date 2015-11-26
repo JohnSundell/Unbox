@@ -84,7 +84,7 @@ class UnboxTests: XCTestCase {
             invalidDictionary.removeValueForKey(key)
             
             do {
-                let _: UnboxTestMock = try UnboxOrThrow(invalidDictionary)
+                try UnboxOrThrow(invalidDictionary) as UnboxTestMock
                 XCTFail("Unbox should have thrown for a missing value")
             } catch UnboxError.MissingKey(key) {
                 // Test passed
@@ -104,7 +104,7 @@ class UnboxTests: XCTestCase {
             invalidDictionary[key] = invalidValue
             
             do {
-                let _: UnboxTestMock = try UnboxOrThrow(invalidDictionary)
+                try UnboxOrThrow(invalidDictionary) as UnboxTestMock
                 XCTFail("Unbox should have thrown for an invalid value")
             } catch UnboxError.InvalidValue(key, invalidValueDescription) {
                 // Test passed
@@ -120,7 +120,7 @@ class UnboxTests: XCTestCase {
     func testThrowingForInvalidData() {
         if let data = "Not a dictionary".dataUsingEncoding(NSUTF8StringEncoding) {
             do {
-                let _: UnboxTestMock = try UnboxOrThrow(data)
+                try UnboxOrThrow(data) as UnboxTestMock
                 XCTFail("Unbox should have thrown for invalid data")
             } catch UnboxError.InvalidData {
                 // Test passed
