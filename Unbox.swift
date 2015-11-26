@@ -456,13 +456,14 @@ private class UnboxValueResolver<T> {
     
     func resolveOptionalValueForKey<R>(var key: String, transform: T -> R?) -> R? {
         var dictionary = self.unboxer.dictionary
-        let isKeyPath = key.rangeOfString(".") != nil
-        if isKeyPath {
+        
+        if key.containsString(".") {
             let components = key.componentsSeparatedByString(".")
+            
             for var i = 0; i < components.count; i++ {
                 let keyPathComponent = components[i]
-                let isLast = i == components.count - 1
-                if isLast {
+                
+                if i == components.count - 1 {
                     key = keyPathComponent
                 } else if let nestedDictionary = dictionary[keyPathComponent] as? UnboxableDictionary {
                     dictionary = nestedDictionary
