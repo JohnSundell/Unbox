@@ -176,6 +176,10 @@ struct UniqueIdentifier: UnboxableByTransform {
 }
 ```
 
+### Array support
+
+If the JSON you want to unbox comes in the format of a root `Array`, you can also easily unbox it into an array of models in one go using the exact same `Unbox()` API.
+
 ### Built-in enum support
 
 You can also unbox `enums` directly, without having to handle the case if they failed to initialize. All you have to do is make any `enum` type you wish to unbox conform to `UnboxableEnum`, like this:
