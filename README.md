@@ -176,9 +176,9 @@ struct UniqueIdentifier: UnboxableByTransform {
 }
 ```
 
-### Array support
+### Supports JSON with both Array and Dictionary root objects
 
-If the JSON you want to unbox comes in the format of a root `Array`, you can also easily unbox it into an array of models in one go using the exact same `Unbox()` API.
+No matter if the root object of the JSON that you want to unbox is an `Array` or `Dictionary` - you can use the same `Unbox()` or `UnboxOrThrow()` functions and Unbox will return either a single model or an array of models (based on type inference).
 
 ### Built-in enum support
 
