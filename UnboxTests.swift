@@ -76,6 +76,24 @@ class UnboxTests: XCTestCase {
         }
     }
     
+    func testUnboxingArrayOfDictionaries() {
+        let dictionaries = [
+            UnboxTestDictionaryWithAllRequiredKeysWithValidValues(false),
+            UnboxTestDictionaryWithAllRequiredKeysWithValidValues(false),
+            UnboxTestDictionaryWithAllRequiredKeysWithValidValues(false)
+        ]
+        
+        guard let unboxedArray: [UnboxTestMock] = Unbox(dictionaries) else {
+            return XCTFail()
+        }
+        
+        XCTAssertEqual(unboxedArray.count, 3)
+        
+        for unboxed in unboxedArray {
+            unboxed.verifyAgainstDictionary(UnboxTestDictionaryWithAllRequiredKeysWithValidValues(false))
+        }
+    }
+    
     func testThrowingForMissingRequiredValues() {
         let validDictionary = UnboxTestDictionaryWithAllRequiredKeysWithValidValues(false)
         
@@ -84,7 +102,7 @@ class UnboxTests: XCTestCase {
             invalidDictionary.removeValueForKey(key)
             
             do {
-                let _: UnboxTestMock = try UnboxOrThrow(invalidDictionary)
+                try UnboxOrThrow(invalidDictionary) as UnboxTestMock
                 XCTFail("Unbox should have thrown for a missing value")
             } catch UnboxError.MissingKey(key) {
                 // Test passed
@@ -104,7 +122,7 @@ class UnboxTests: XCTestCase {
             invalidDictionary[key] = invalidValue
             
             do {
-                let _: UnboxTestMock = try UnboxOrThrow(invalidDictionary)
+                try UnboxOrThrow(invalidDictionary) as UnboxTestMock
                 XCTFail("Unbox should have thrown for an invalid value")
             } catch UnboxError.InvalidValue(key, invalidValueDescription) {
                 // Test passed
@@ -120,13 +138,47 @@ class UnboxTests: XCTestCase {
     func testThrowingForInvalidData() {
         if let data = "Not a dictionary".dataUsingEncoding(NSUTF8StringEncoding) {
             do {
-                let _: UnboxTestMock = try UnboxOrThrow(data)
+                try UnboxOrThrow(data) as UnboxTestMock
                 XCTFail("Unbox should have thrown for invalid data")
-            } catch {
+            } catch UnboxError.InvalidData {
                 // Test passed
+            } catch {
+                XCTFail("Unbox did not return the correct error type")
             }
         } else {
             XCTFail("Could not create data from a string")
+        }
+    }
+    
+    func testThrowingForInvalidDataArray() {
+        let notDictionaryArray = [12, 13, 9]
+        
+        guard let data = try? NSJSONSerialization.dataWithJSONObject(notDictionaryArray, options: []) else {
+            return XCTFail()
+        }
+        
+        do {
+            try UnboxOrThrow(data) as UnboxTestMock
+            XCTFail()
+        } catch UnboxError.InvalidData {
+            // Test passed
+        } catch {
+            XCTFail("Unbox did not return the correct error type")
+        }
+    }
+    
+    func testThrowingForSingleInvalidDictionaryInArray() {
+        let dictionaries = [
+            UnboxTestDictionaryWithAllRequiredKeysWithValidValues(false),
+            ["invalid" : "dictionary"],
+            UnboxTestDictionaryWithAllRequiredKeysWithValidValues(false)
+        ]
+        
+        do {
+            try UnboxOrThrow(dictionaries) as [UnboxTestMock]
+            XCTFail()
+        } catch {
+            // Test passed
         }
     }
     

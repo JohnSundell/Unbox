@@ -32,110 +32,94 @@ public typealias UnboxableDictionary = [String : AnyObject]
 
 // MARK: - Main Unbox functions
 
-/**
- *  Unbox (decode) a dictionary into a model
- *
- *  @param dictionary The dictionary to decode. Must be a valid JSON dictionary.
- *  @param context Any contextual object that should be available during unboxing.
- *
- *  @discussion This function gets its return type from the context in which it's called.
- *  If the context is ambigious, you need to supply it, like:
- *
- *  `let unboxed: MyUnboxable? = Unbox(dictionary)`
- *
- *  @return A model of type `T` or `nil` if an error was occured. If you prefer do, try, catch
- *  error handling instead of optionals; use `UnboxOrThrow` instead.
- */
+/// Unbox a JSON dictionary into a model `T`, while optionally using a contextual object
 public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, context: Any? = nil) -> T? {
     return try? UnboxOrThrow(dictionary, context: context)
 }
 
-/**
- *  Unbox (decode) a set of data into a model
- *
- *  @param data The data to decode. Must be convertible into a valid JSON dictionary.
- *  @param context Any contextual object that should be available during unboxing.
- *
- *  @discussion See the documentation for the main `Unbox(dictionary:)` function above for more information.
- */
+/// Unbox an array of JSON dictionaries into an array of `T`, while optionally using a contextual object
+public func Unbox<T: Unboxable>(dictionaries: [UnboxableDictionary], context: Any? = nil) -> [T]? {
+    return try? UnboxOrThrow(dictionaries, context: context)
+}
+
+/// Unbox binary data into a model `T`, while optionally using a contextual object
 public func Unbox<T: Unboxable>(data: NSData, context: Any? = nil) -> T? {
     return try? UnboxOrThrow(data, context: context)
 }
 
-/**
- *  Unbox (decode) a dictionary into a model using a context
- *
- *  @param dictionary The dictionary to decode. Must be a valid JSON dictionary.
- *  @param context The contextual object to use during unboxing.
- *
- *  @discussion See the documentation for `Unbox(dictionary:)` for more information.
- */
+/// Unbox binary data into an array of `T`, while optionally using a contextual object
+public func Unbox<T: Unboxable>(data: NSData, context: Any? = nil) -> [T]? {
+    return try? UnboxOrThrow(data, context: context)
+}
+
+/// Unbox a JSON dictionary into a model `T`, while using a required contextual object
 public func Unbox<T: UnboxableWithContext>(dictionary: UnboxableDictionary, context: T.ContextType) -> T? {
     return try? UnboxOrThrow(dictionary, context: context)
 }
 
-/**
- *  Unbox (decode) a set of data into a model using a context
- *
- *  @param data The data to decode. Must be convertible into a valid JSON dictionary.
- *  @param context The contextual object to use during unboxing.
- *
- *  @discussion See the documentation for `Unbox(data:)` for more information.
- */
+/// Unbox an array of JSON dictionaries into an array of `T`, while using a required contextual object
+public func Unbox<T: UnboxableWithContext>(dictionaries: [UnboxableDictionary], context: T.ContextType) -> [T]? {
+    return try? UnboxOrThrow(dictionaries, context: context)
+}
+
+/// Unbox binary data into a model `T`, while using a required contextual object
 public func Unbox<T: UnboxableWithContext>(data: NSData, context: T.ContextType) -> T? {
     return try? UnboxOrThrow(data, context: context)
 }
 
-// MARK: - Unbox functions with error handling
+/// Unbox binary data into an array of `T`, while using a required contextual object
+public func Unbox<T: UnboxableWithContext>(data: NSData, context: T.ContextType) -> [T]? {
+    return try? UnboxOrThrow(data, context: context)
+}
 
-/**
- *  Unbox (decode) a dictionary into a model, or throw an UnboxError if the operation failed
- *
- *  @param dictionary The dictionary to decode. Must be a valid JSON dictionary.
- *  @param context Any contextual object that should be available during unboxing.
- *
- *  @discussion This function throws an UnboxError if the supplied dictionary couldn't be decoded
- *  for any reason. See the documentation for the main Unbox() function above for more information.
- */
+// MARK: - Throwing Unbox functions
+
+/// Unbox a JSON dictionary into a model `T`, while optionally using a contextual object. Throws `UnboxError`.
 public func UnboxOrThrow<T: Unboxable>(dictionary: UnboxableDictionary, context: Any? = nil) throws -> T {
     return try Unboxer(dictionary: dictionary, context: context).performUnboxing()
 }
 
-/**
- *  Unbox (decode) a set of data into a model, or throw an UnboxError if the operation failed
- *
- *  @param data The data to decode. Must be convertible into a valid JSON dictionary.
- *  @param context Any contextual object that should be available during unboxing.
- *
- *  @discussion This function throws an UnboxError if the supplied data couldn't be decoded for
- *  any reason. See the documentation for the main Unbox() function above for more information.
- */
+/// Unbox an array of JSON dictionaries into an array of `T`, while optionally using a contextual object. Throws `UnboxError`.
+public func UnboxOrThrow<T: Unboxable>(dictionaries: [UnboxableDictionary], context: Any? = nil) throws -> [T] {
+    return try dictionaries.map({
+        try UnboxOrThrow($0, context: context)
+    })
+}
+
+/// Unbox binary data into a model `T`, while optionally using a contextual object. Throws `UnboxError`.
 public func UnboxOrThrow<T: Unboxable>(data: NSData, context: Any? = nil) throws -> T {
     return try Unboxer.unboxerFromData(data, context: context).performUnboxing()
 }
 
-/**
- *  Unbox (decode) a dictionary into a model using a context, or throw an UnboxError if the operation failed
- *
- *  @param dictionary The dictionary to decode. Must be a valid JSON dictionary.
- *  @param context The contextual object to use during unboxing.
- *
- *  @discussion See the documentation for `UnboxOrThrow(dictionary:)` for more information.
- */
+/// Unbox binary data into an array of `T`, while optionally using a contextual object. Throws `UnboxError`.
+public func UnboxOrThrow<T: Unboxable>(data: NSData, context: Any? = nil) throws -> [T] {
+    return try Unboxer.unboxersFromData(data, context: context).map({
+        return try $0.performUnboxing()
+    })
+}
+
+/// Unbox a JSON dictionary into a model `T`, while using a required contextual object. Throws `UnboxError`.
 public func UnboxOrThrow<T: UnboxableWithContext>(dictionary: UnboxableDictionary, context: T.ContextType) throws -> T {
     return try Unboxer(dictionary: dictionary, context: context).performUnboxingWithContext(context)
 }
 
-/**
- *  Unbox (decode) a set of data into a model using a context, or throw an UnboxError if the operation failed
- *
- *  @param data The data to decode. Must be convertible into a valid JSON dictionary.
- *  @param context The contextual object to use during unboxing.
- *
- *  @discussion See the documentation for `UnboxOrThrow(data:)` for more information.
- */
+/// Unbox an array of JSON dictionaries into an array of `T`, while using a required contextual object. Throws `UnboxError`.
+public func UnboxOrThrow<T: UnboxableWithContext>(dictionaries: [UnboxableDictionary], context: T.ContextType) throws -> [T] {
+    return try dictionaries.map({
+        try UnboxOrThrow($0, context: context)
+    })
+}
+
+/// Unbox binary data into a model `T`, while using a required contextual object. Throws `UnboxError`.
 public func UnboxOrThrow<T: UnboxableWithContext>(data: NSData, context: T.ContextType) throws -> T {
     return try Unboxer.unboxerFromData(data, context: context).performUnboxingWithContext(context)
+}
+
+/// Unbox binary data into an array of `T`, while using a required contextual object. Throws `UnboxError`.
+public func UnboxOrThrow<T: UnboxableWithContext>(data: NSData, context: T.ContextType) throws -> [T] {
+    return try Unboxer.unboxersFromData(data, context: context).map({
+        return try $0.performUnboxingWithContext(context)
+    })
 }
 
 // MARK: - Error type
@@ -150,8 +134,8 @@ public enum UnboxError: ErrorType, CustomStringConvertible {
             return baseDescription + "Missing key (\(key))"
         case .InvalidValue(let key, let valueDescription):
             return baseDescription + "Invalid value (\(valueDescription)) for key (\(key))"
-        case .InvalidDictionary:
-            return "Invalid dictionary"
+        case .InvalidData:
+            return "Invalid data"
         }
     }
     
@@ -160,8 +144,8 @@ public enum UnboxError: ErrorType, CustomStringConvertible {
     /// Thrown when a required key contained an invalid value in an unboxed dictionary. Contains the invalid
     /// key and a description of the invalid data.
     case InvalidValue(String, String)
-    /// Thrown when an unboxed dictionary was either missing or contained invalid data
-    case InvalidDictionary
+    /// Thrown when a piece of data (NSData) could not be unboxed because it was considered invalid
+    case InvalidData
 }
 
 // MARK: - Protocols
@@ -344,14 +328,14 @@ public class Unboxer {
     
     /// Unbox a required Array of nested Unboxables, by unboxing an Array of Dictionaries and then using a transform
     public func unbox<T: Unboxable>(key: String) -> [T] {
-        return UnboxValueResolver<[UnboxableDictionary]>(self).resolveCollectionValuesForKey(key, required: true, valueTransform: {
+        return UnboxValueResolver<[UnboxableDictionary]>(self).resolveRequiredValueForKey(key, fallbackValue: [], transform: {
             return Unbox($0, context: self.context)
         })
     }
     
     /// Unbox an optional Array of nested Unboxables, by unboxing an Array of Dictionaries and then using a transform
     public func unbox<T: Unboxable>(key: String) -> [T]? {
-        return UnboxValueResolver<[UnboxableDictionary]>(self).resolveCollectionValuesForKey(key, required: false, valueTransform: {
+        return UnboxValueResolver<[UnboxableDictionary]>(self).resolveOptionalValueForKey(key, transform: {
             return Unbox($0, context: self.context)
         })
     }
@@ -386,14 +370,14 @@ public class Unboxer {
     
     /// Unbox a required Array of nested UnboxableWithContext types, by unboxing an Array of Dictionaries and then using a transform
     public func unbox<T: UnboxableWithContext>(key: String, context: T.ContextType) -> [T] {
-        return UnboxValueResolver<[UnboxableDictionary]>(self).resolveCollectionValuesForKey(key, required: true, valueTransform: {
+        return UnboxValueResolver<[UnboxableDictionary]>(self).resolveRequiredValueForKey(key, fallbackValue: [], transform: {
             return Unbox($0, context: context)
         })
     }
     
     /// Unbox an optional Array of nested UnboxableWithContext types, by unboxing an Array of Dictionaries and then using a transform
     public func unbox<T: UnboxableWithContext>(key: String, context: T.ContextType) -> [T]? {
-        return UnboxValueResolver<[UnboxableDictionary]>(self).resolveCollectionValuesForKey(key, required: false, valueTransform: {
+        return UnboxValueResolver<[UnboxableDictionary]>(self).resolveOptionalValueForKey(key, transform: {
             return Unbox($0, context: context)
         })
     }
@@ -483,29 +467,6 @@ private class UnboxValueResolver<T> {
     }
 }
 
-extension UnboxValueResolver where T: CollectionType {
-    func resolveCollectionValuesForKey<R>(key: String, required: Bool, valueTransform: T.Generator.Element -> R?) -> [R] {
-        if let unboxedArray = self.resolveOptionalValueForKey(key) {
-            var transformedArray = [R]()
-            
-            for unboxedValue in unboxedArray {
-                if let transformed = valueTransform(unboxedValue) {
-                    transformedArray.append(transformed)
-                } else if required {
-                    self.unboxer.failForInvalidValue(unboxedValue, forKey: key)
-                    return []
-                }
-            }
-            
-            return transformedArray
-        } else if required {
-            self.unboxer.failForInvalidValue(self.unboxer.dictionary[key], forKey: key)
-        }
-        
-        return []
-    }
-}
-
 extension UnboxValueResolver where T: CollectionType, T: DictionaryLiteralConvertible, T.Key: Hashable, T.Generator == DictionaryGenerator<T.Key, T.Value> {
     func resolveDictionaryValuesForKey<K, V>(key: String, required: Bool, keyTransform: (T.Key -> K?)? = nil, valueTransform: T.Value -> V?) -> [K : V] {
         if let unboxedDictionary = self.resolveOptionalValueForKey(key) {
@@ -553,11 +514,29 @@ private extension UnboxableWithContext {
 
 private extension Unboxer {
     static func unboxerFromData(data: NSData, context: Any?) throws -> Unboxer {
-        guard let dictionary = try NSJSONSerialization.JSONObjectWithData(data, options: []) as? UnboxableDictionary else {
-            throw UnboxError.InvalidDictionary
+        do {
+            guard let dictionary = try NSJSONSerialization.JSONObjectWithData(data, options: []) as? UnboxableDictionary else {
+                throw UnboxError.InvalidData
+            }
+            
+            return Unboxer(dictionary: dictionary, context: context)
+        } catch {
+            throw UnboxError.InvalidData
         }
-        
-        return Unboxer(dictionary: dictionary, context: context)
+    }
+    
+    static func unboxersFromData(data: NSData, context: Any?) throws -> [Unboxer] {
+        do {
+            guard let array = try NSJSONSerialization.JSONObjectWithData(data, options: [.AllowFragments]) as? [UnboxableDictionary] else {
+                throw UnboxError.InvalidData
+            }
+            
+            return array.map({
+                return Unboxer(dictionary: $0, context: context)
+            })
+        } catch {
+            throw UnboxError.InvalidData
+        }
     }
     
     func performUnboxing<T: Unboxable>() throws -> T {
