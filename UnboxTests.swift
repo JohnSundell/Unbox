@@ -280,6 +280,7 @@ private func UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: Bool)
         UnboxTestMock.requiredIntKey : 15,
         UnboxTestMock.requiredDoubleKey : Double(1.5),
         UnboxTestMock.requiredFloatKey : Float(3.14),
+        UnboxTestMock.requiredCGFloatKey : 0.72,
         UnboxTestMock.requiredEnumKey : 1,
         UnboxTestMock.requiredStringKey :  "hello",
         UnboxTestMock.requiredURLKey : "http://www.google.com",
@@ -315,6 +316,8 @@ private class UnboxTestBaseMock: Unboxable {
     static let optionalDoubleKey = "optionalDouble"
     static let requiredFloatKey = "requiredFloat"
     static let optionalFloatKey = "optionalFloat"
+    static let requiredCGFloatKey = "requiredCGFloat"
+    static let optionalCGFloatKey = "optionalCGFloat"
     static let requiredEnumKey = "requiredEnum"
     static let optionalEnumKey = "optionalEnum"
     static let requiredStringKey = "requiredString"
@@ -332,6 +335,8 @@ private class UnboxTestBaseMock: Unboxable {
     let optionalDouble: Double?
     let requiredFloat: Float
     let optionalFloat: Float?
+    let requiredCGFloat: CGFloat
+    let optionalCGFloat: CGFloat?
     let requiredEnum: UnboxTestEnum
     let optionalEnum: UnboxTestEnum?
     let requiredString: String
@@ -350,6 +355,8 @@ private class UnboxTestBaseMock: Unboxable {
         self.optionalDouble = unboxer.unbox(UnboxTestBaseMock.optionalDoubleKey)
         self.requiredFloat = unboxer.unbox(UnboxTestBaseMock.requiredFloatKey)
         self.optionalFloat = unboxer.unbox(UnboxTestBaseMock.optionalFloatKey)
+        self.requiredCGFloat = unboxer.unbox(UnboxTestBaseMock.requiredCGFloatKey)
+        self.optionalCGFloat = unboxer.unbox(UnboxTestBaseMock.optionalCGFloatKey)
         self.requiredEnum = unboxer.unbox(UnboxTestBaseMock.requiredEnumKey)
         self.optionalEnum = unboxer.unbox(UnboxTestBaseMock.optionalEnumKey)
         self.requiredString = unboxer.unbox(UnboxTestBaseMock.requiredStringKey)
@@ -381,6 +388,10 @@ private class UnboxTestBaseMock: Unboxable {
                 verificationOutcome = self.verifyPropertyValue(self.requiredFloat, againstDictionaryValue: value)
             case UnboxTestBaseMock.optionalFloatKey:
                 verificationOutcome = self.verifyPropertyValue(self.optionalFloat, againstDictionaryValue: value)
+            case UnboxTestBaseMock.requiredCGFloatKey:
+                verificationOutcome = self.verifyPropertyValue(self.requiredCGFloat, againstDictionaryValue: value)
+            case UnboxTestBaseMock.optionalCGFloatKey:
+                verificationOutcome = self.verifyPropertyValue(self.optionalCGFloat, againstDictionaryValue: value)
             case UnboxTestBaseMock.requiredEnumKey:
                 verificationOutcome = self.verifyEnumPropertyValue(self.requiredEnum, againstDictionaryValue: value)
             case UnboxTestBaseMock.optionalEnumKey:

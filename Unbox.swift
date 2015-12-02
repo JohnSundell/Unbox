@@ -26,6 +26,7 @@
  */
 
 import Foundation
+import CoreGraphics
 
 /// Type alias defining what type of Dictionary that is Unboxable (valid JSON)
 public typealias UnboxableDictionary = [String : AnyObject]
@@ -212,6 +213,13 @@ extension Double: UnboxableRawType {
 /// Extension making Float an Unboxable raw type
 extension Float: UnboxableRawType {
     public static func unboxFallbackValue() -> Float {
+        return 0
+    }
+}
+
+/// Extension making CGFloat an Unboxable raw type
+extension CGFloat: UnboxableRawType {
+    public static func unboxFallbackValue() -> CGFloat {
         return 0
     }
 }
