@@ -73,7 +73,8 @@ struct SpaceShip: Unboxable {
     let passengers: [Astronaut]
     let launchLiveStreamURL: NSURL?
     let lastPilot: Astronaut?
-    
+    let lastLaunchDate: NSDate?
+
     init(unboxer: Unboxer) {
         self.type = unboxer.unbox("type")
         self.weight = unboxer.unbox("weight")
@@ -81,6 +82,10 @@ struct SpaceShip: Unboxable {
         self.passengers = unboxer.unbox("passengers")
         self.launchLiveStreamURL = unboxer.unbox("liveStreamURL")
         self.lastPilot = unboxer.unbox("lastPilot")
+
+        let dateFormatter = NSDateFormatter()
+        dateFormatter.dateFormat = "YYYY-MM-dd"
+        self.lastLaunchDate = unboxer.unbox("lastLaunchDate", formatter: dateFormatter)
     }
 }
 
@@ -140,7 +145,7 @@ Unbox supports decoding all standard JSON types, like:
 
 It also supports `Arrays` and `Dictionaries` that contain nested unboxable types, as you can see in the **Advanced example** above (where an array of the unboxable `Astronaut` struct is being unboxed).
 
-Finally, it also supports `NSURL` through the use of a transformer.
+Finally, it also supports `NSURL` through the use of a transformer, and `NSDate` by using any `NSDateFormatter`.
 
 ### Transformations
 
