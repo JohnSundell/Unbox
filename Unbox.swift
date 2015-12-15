@@ -188,7 +188,7 @@ public protocol UnboxableByTransform: UnboxCompatibleType {
 }
 
 /// Protocol used to enable any type as being unboxable with a certain formatter type
-public protocol UnboxableByFormatting: UnboxCompatibleType {
+public protocol UnboxableWithFormatter: UnboxCompatibleType {
     /// The type of formatter to use to format an unboxed value into a value of this type
     typealias UnboxFormatterType: UnboxFormatter
 }
@@ -261,8 +261,8 @@ extension NSURL: UnboxableByTransform {
     }
 }
 
-/// Extension making NSDate Unboxable by formatting
-extension NSDate: UnboxableByFormatting {
+/// Extension making NSDate unboxable with an NSDateFormatter
+extension NSDate: UnboxableWithFormatter {
     public typealias UnboxFormatterType = NSDateFormatter
     
     public static func unboxFallbackValue() -> Self {
@@ -438,14 +438,14 @@ public class Unboxer {
     }
     
     /// Unbox a required value that can be formatted using a formatter
-    public func unbox<T: UnboxableByFormatting, F: UnboxFormatter where F.UnboxFormattedType == T>(key: String, formatter: F) -> T {
+    public func unbox<T: UnboxableWithFormatter, F: UnboxFormatter where F.UnboxFormattedType == T>(key: String, formatter: F) -> T {
         return UnboxValueResolver<F.UnboxRawValueType>(self).resolveRequiredValueForKey(key, fallbackValue: T.unboxFallbackValue(), transform: {
             return formatter.formatUnboxedValue($0)
         })
     }
     
     /// Unbox an optional value that can be formatted using a formatter
-    public func unbox<T: UnboxableByFormatting, F: UnboxFormatter where F.UnboxFormattedType == T>(key: String, formatter: F) -> T? {
+    public func unbox<T: UnboxableWithFormatter, F: UnboxFormatter where F.UnboxFormattedType == T>(key: String, formatter: F) -> T? {
         return UnboxValueResolver<F.UnboxRawValueType>(self).resolveOptionalValueForKey(key, transform: {
             return formatter.formatUnboxedValue($0)
         })
