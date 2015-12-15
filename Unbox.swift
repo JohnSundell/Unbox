@@ -187,6 +187,23 @@ public protocol UnboxableByTransform: UnboxCompatibleType {
     static func transformUnboxedValue(unboxedValue: UnboxRawValueType) -> Self?
 }
 
+/// Protocol used to enable any type as being unboxable with a certain formatter type
+public protocol UnboxableByFormatting: UnboxCompatibleType {
+    /// The type of formatter to use to format an unboxed value into a value of this type
+    typealias UnboxFormatterType: UnboxFormatter
+}
+
+/// Protocol used by objects that may format raw values into some other value
+public protocol UnboxFormatter {
+    /// The type of raw value that this formatter accepts as input
+    typealias UnboxRawValueType: UnboxableRawType
+    /// The type of value that this formatter produces as output
+    typealias UnboxFormattedType
+    
+    /// Format an unboxed value into another value (or nil if the formatting failed)
+    func formatUnboxedValue(unboxedValue: UnboxRawValueType) -> UnboxFormattedType?
+}
+
 // MARK: - Extensions
 
 /// Extension making Bool an Unboxable raw type
@@ -241,6 +258,22 @@ extension NSURL: UnboxableByTransform {
     
     public static func unboxFallbackValue() -> Self {
         return self.init()
+    }
+}
+
+/// Extension making NSDate Unboxable by formatting
+extension NSDate: UnboxableByFormatting {
+    public typealias UnboxFormatterType = NSDateFormatter
+    
+    public static func unboxFallbackValue() -> Self {
+        return self.init()
+    }
+}
+
+/// Extension making NSDateFormatter usable as a UnboxFormatter
+extension NSDateFormatter: UnboxFormatter {
+    public func formatUnboxedValue(unboxedValue: String) -> NSDate? {
+        return self.dateFromString(unboxedValue)
     }
 }
 
@@ -401,6 +434,20 @@ public class Unboxer {
     public func unbox<T: UnboxableByTransform>(key: String) -> T? {
         return UnboxValueResolver<T.UnboxRawValueType>(self).resolveOptionalValueForKey(key, transform: {
             return T.transformUnboxedValue($0)
+        })
+    }
+    
+    /// Unbox a required value that can be formatted using a formatter
+    public func unbox<T: UnboxableByFormatting, F: UnboxFormatter where F.UnboxFormattedType == T>(key: String, formatter: F) -> T {
+        return UnboxValueResolver<F.UnboxRawValueType>(self).resolveRequiredValueForKey(key, fallbackValue: T.unboxFallbackValue(), transform: {
+            return formatter.formatUnboxedValue($0)
+        })
+    }
+    
+    /// Unbox an optional value that can be formatted using a formatter
+    public func unbox<T: UnboxableByFormatting, F: UnboxFormatter where F.UnboxFormattedType == T>(key: String, formatter: F) -> T? {
+        return UnboxValueResolver<F.UnboxRawValueType>(self).resolveOptionalValueForKey(key, transform: {
+            return formatter.formatUnboxedValue($0)
         })
     }
     

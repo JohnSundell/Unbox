@@ -43,6 +43,67 @@ class UnboxTests: XCTestCase {
         XCTAssertNil(unboxed, "Unbox did not return nil for a dictionary with an invalid required URL value")
     }
     
+    func testRequiredDateFormatting() {
+        struct Model: Unboxable {
+            let date: NSDate
+            
+            init(unboxer: Unboxer) {
+                let formatter = NSDateFormatter()
+                formatter.dateFormat = "YYYY-MM-dd"
+                self.date = unboxer.unbox("date", formatter: formatter)
+            }
+        }
+        
+        let dictionary: UnboxableDictionary = [
+            "date" : "2015-12-15"
+        ]
+        
+        do {
+            let unboxed: Model = try UnboxOrThrow(dictionary)
+            
+            let calendar = NSCalendar.currentCalendar()
+            XCTAssertEqual(calendar.component(.Year, fromDate: unboxed.date), 2015)
+            XCTAssertEqual(calendar.component(.Month, fromDate: unboxed.date), 12)
+            XCTAssertEqual(calendar.component(.Day, fromDate: unboxed.date), 15)
+        } catch {
+            XCTFail("\(error)")
+        }
+        
+        do {
+            let invalidDictionary: UnboxableDictionary = [
+                "date" : "2015-12-tuesday"
+            ]
+            
+            try UnboxOrThrow(invalidDictionary) as Model
+            XCTFail("Should have thrown")
+        } catch {
+            // Test passed
+        }
+    }
+    
+    func testOptionalDateFormattingFailureNotThrowing() {
+        struct Model: Unboxable {
+            let date: NSDate?
+            
+            init(unboxer: Unboxer) {
+                let formatter = NSDateFormatter()
+                formatter.dateFormat = "YYYY-MM-dd"
+                self.date = unboxer.unbox("date", formatter: formatter)
+            }
+        }
+        
+        do {
+            let invalidDictionary: UnboxableDictionary = [
+                "date" : "2015-12-tuesday"
+            ]
+            
+            let unboxed: Model = try UnboxOrThrow(invalidDictionary)
+            XCTAssertNil(unboxed.date)
+        } catch {
+            XCTFail("\(error)")
+        }
+    }
+    
     func testWithInvalidRequiredUnboxable() {
         var invalidDictionary = UnboxTestDictionaryWithAllRequiredKeysWithValidValues(false)
         invalidDictionary[UnboxTestMock.requiredUnboxableKey] = "Totally not unboxable"
