@@ -104,6 +104,102 @@ class UnboxTests: XCTestCase {
         }
     }
     
+    func testCustomDictionaryKeyType() {
+        struct Model: Unboxable {
+            let requiredIntDictionary: [UnboxTestDictionaryKey : Int]
+            let optionalIntDictionary: [UnboxTestDictionaryKey : Int]?
+            let requiredModelDictionary: [UnboxTestDictionaryKey : UnboxTestSimpleMock]
+            let optionalModelDictionary: [UnboxTestDictionaryKey : UnboxTestSimpleMock]?
+            
+            init(unboxer: Unboxer) {
+                self.requiredIntDictionary = unboxer.unbox("requiredIntDictionary")
+                self.optionalIntDictionary = unboxer.unbox("optionalIntDictionary")
+                self.requiredModelDictionary = unboxer.unbox("requiredModelDictionary")
+                self.optionalModelDictionary = unboxer.unbox("optionalModelDictionary")
+            }
+        }
+        
+        do {
+            let unboxed: Model = try UnboxOrThrow([
+                "requiredIntDictionary" : ["key" : 12],
+                "optionalIntDictionary" : ["optionalKey" : 27],
+                "requiredModelDictionary" : [
+                    "key" : [
+                        "int" : 31
+                    ]
+                ],
+                "optionalModelDictionary" : [
+                    "optionalKey" : [
+                        "int" : 19
+                    ]
+                ]
+            ])
+            
+            XCTAssertEqual(unboxed.requiredIntDictionary, [UnboxTestDictionaryKey(key: "key") : 12])
+            XCTAssertEqual(unboxed.optionalIntDictionary ?? [:], [UnboxTestDictionaryKey(key: "optionalKey") : 27])
+            XCTAssertEqual(unboxed.requiredModelDictionary, [UnboxTestDictionaryKey(key: "key") : UnboxTestSimpleMock(int: 31)])
+            XCTAssertEqual(unboxed.optionalModelDictionary ?? [:], [UnboxTestDictionaryKey(key: "optionalKey") : UnboxTestSimpleMock(int: 19)])
+            
+            let unboxedWithoutOptionals: Model = try UnboxOrThrow([
+                "requiredIntDictionary" : ["key" : 12],
+                "requiredModelDictionary" : [
+                    "key" : [
+                        "int" : 31
+                    ]
+                ]
+            ])
+            
+            XCTAssertEqual(unboxedWithoutOptionals.requiredIntDictionary, [UnboxTestDictionaryKey(key: "key") : 12])
+            XCTAssertEqual(unboxedWithoutOptionals.requiredModelDictionary, [UnboxTestDictionaryKey(key: "key") : UnboxTestSimpleMock(int: 31)])
+        } catch {
+            XCTFail("\(error)")
+        }
+    }
+    
+    func testOptionalInvalidCustomDictionaryKeyDoesNotFail() {
+        struct Model: Unboxable {
+            let dictionary: [UnboxTestDictionaryKey : Int]?
+            
+            init(unboxer: Unboxer) {
+                self.dictionary = unboxer.unbox("dictionary")
+            }
+        }
+        
+        do {
+            let unboxed: Model = try UnboxOrThrow([
+                "dictionary" : [
+                    "FAIL" : 59
+                ]
+            ])
+            
+            XCTAssertNil(unboxed.dictionary)
+        } catch {
+            XCTFail("\(error)")
+        }
+    }
+    
+    func testRequiredInvalidCustomDictionaryKeyThrows() {
+        struct Model: Unboxable {
+            let dictionary: [UnboxTestDictionaryKey : Int]
+            
+            init(unboxer: Unboxer) {
+                self.dictionary = unboxer.unbox("dictionary")
+            }
+        }
+        
+        do {
+            try UnboxOrThrow([
+                "dictionary" : [
+                    "FAIL" : 59
+                ]
+            ]) as Model
+            
+            XCTFail("Should have thrown")
+        } catch {
+            // Test passed
+        }
+    }
+    
     func testWithInvalidRequiredUnboxable() {
         var invalidDictionary = UnboxTestDictionaryWithAllRequiredKeysWithValidValues(false)
         invalidDictionary[UnboxTestMock.requiredUnboxableKey] = "Totally not unboxable"
@@ -368,6 +464,28 @@ private enum UnboxTestEnum: Int, UnboxableEnum {
     }
 }
 
+private struct UnboxTestDictionaryKey: UnboxableKey {
+    var hashValue: Int { return self.key.hashValue }
+    
+    let key: String
+    
+    static func transformUnboxedKey(unboxedKey: String) -> UnboxTestDictionaryKey? {
+        if unboxedKey == "FAIL" {
+            return nil
+        }
+        
+        return UnboxTestDictionaryKey(key: unboxedKey)
+    }
+    
+    static func unboxFallbackValue() -> UnboxTestDictionaryKey {
+        return UnboxTestDictionaryKey(key: "")
+    }
+}
+
+private func ==(lhs: UnboxTestDictionaryKey, rhs: UnboxTestDictionaryKey) -> Bool {
+    return lhs.key == rhs.key
+}
+
 private class UnboxTestBaseMock: Unboxable {
     static let requiredBoolKey = "requiredBool"
     static let optionalBoolKey = "optionalBool"
@@ -559,4 +677,20 @@ private final class UnboxTestContextMock: UnboxableWithContext {
         self.nested = unboxer.unbox("nested", context: "nestedContext")
         self.nestedArray = unboxer.unbox("nestedArray", context: "nestedArrayContext")
     }
+}
+
+private struct UnboxTestSimpleMock: Unboxable, Equatable {
+    let int: Int
+    
+    init(int: Int) {
+        self.int = int
+    }
+    
+    init(unboxer: Unboxer) {
+        self.int = unboxer.unbox("int")
+    }
+}
+
+private func ==(lhs: UnboxTestSimpleMock, rhs: UnboxTestSimpleMock) -> Bool {
+    return lhs.int == rhs.int
 }

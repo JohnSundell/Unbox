@@ -178,6 +178,12 @@ public protocol UnboxableRawType: UnboxCompatibleType {}
 /// Protocol used to enable an enum to be directly unboxable
 public protocol UnboxableEnum: RawRepresentable, UnboxCompatibleType {}
 
+/// Protocol used to enable any type to be transformed from a JSON key into a dictionary key
+public protocol UnboxableKey: Hashable, UnboxCompatibleType {
+    /// Transform an unboxed key into a key that will be used in an unboxed dictionary
+    static func transformUnboxedKey(unboxedKey: String) -> Self?
+}
+
 /// Protocol used to enable any type as being unboxable, by transforming a raw value
 public protocol UnboxableByTransform: UnboxCompatibleType {
     /// The type of raw value that this type can be transformed from
@@ -261,6 +267,13 @@ extension NSURL: UnboxableByTransform {
     }
 }
 
+/// Extension making String values usable as an Unboxable keys
+extension String: UnboxableKey {
+    public static func transformUnboxedKey(unboxedKey: String) -> String? {
+        return unboxedKey
+    }
+}
+
 /// Extension making NSDate unboxable with an NSDateFormatter
 extension NSDate: UnboxableWithFormatter {
     public typealias UnboxFormatterType = NSDateFormatter
@@ -329,14 +342,14 @@ public class Unboxer {
         return UnboxValueResolver<[T]>(self).resolveOptionalValueForKey(key)
     }
     
-    /// Unbox a required Dictionary
-    public func unbox<T>(key: String) -> [String : T] {
-        return UnboxValueResolver<[String : T]>(self).resolveRequiredValueForKey(key, fallbackValue: [:])
+    /// Unbox a required Dictionary without applying a transform on its values
+    public func unbox<K: UnboxableKey, V>(key: String) -> [K : V] {
+        return UnboxValueResolver<[String : V]>(self).resolveDictionaryValuesForKey(key, required: true, valueTransform: { $0 }) ?? [:]
     }
     
-    /// Unbox an optional Dictionary
-    public func unbox<T>(key: String) -> [String : T]? {
-        return UnboxValueResolver<[String : T]>(self).resolveOptionalValueForKey(key)
+    /// Unbox an optional Dictionary without applying a transform on its values
+    public func unbox<K: UnboxableKey, V>(key: String) -> [K : V]? {
+        return UnboxValueResolver<[String : V]>(self).resolveDictionaryValuesForKey(key, required: false, valueTransform: { $0 })
     }
     
     /// Unbox a required enum value
@@ -382,14 +395,14 @@ public class Unboxer {
     }
     
     /// Unbox a required Dictionary of nested Unboxables, by unboxing an Dictionary of Dictionaries and then using a transform
-    public func unbox<T: Unboxable>(key: String) -> [String : T] {
+    public func unbox<K: UnboxableKey, V: Unboxable>(key: String) -> [K : V] {
         return UnboxValueResolver<[String : UnboxableDictionary]>(self).resolveDictionaryValuesForKey(key, required: true, valueTransform: {
             return Unbox($0, context: self.context)
-        })
+        }) ?? [:]
     }
     
     /// Unbox an optional Dictionary of nested Unboxables, by unboxing an Dictionary of Dictionaries and then using a transform
-    public func unbox<T: Unboxable>(key: String) -> [String : T]? {
+    public func unbox<K: UnboxableKey, V: Unboxable>(key: String) -> [K : V]? {
         return UnboxValueResolver<[String : UnboxableDictionary]>(self).resolveDictionaryValuesForKey(key, required: false, valueTransform: {
             return Unbox($0, context: self.context)
         })
@@ -522,26 +535,21 @@ private class UnboxValueResolver<T> {
     }
 }
 
-extension UnboxValueResolver where T: CollectionType, T: DictionaryLiteralConvertible, T.Key: Hashable, T.Generator == DictionaryGenerator<T.Key, T.Value> {
-    func resolveDictionaryValuesForKey<K, V>(key: String, required: Bool, keyTransform: (T.Key -> K?)? = nil, valueTransform: T.Value -> V?) -> [K : V] {
+extension UnboxValueResolver where T: CollectionType, T: DictionaryLiteralConvertible, T.Key == String, T.Generator == DictionaryGenerator<T.Key, T.Value> {
+    func resolveDictionaryValuesForKey<K: UnboxableKey, V>(key: String, required: Bool, valueTransform: T.Value -> V?) -> [K : V]? {
         if let unboxedDictionary = self.resolveOptionalValueForKey(key) {
             var transformedDictionary = [K : V]()
             
             for (unboxedKey, unboxedValue) in unboxedDictionary {
-                let transformedKey: K?
-                
-                if let keyTransform = keyTransform {
-                    transformedKey = keyTransform(unboxedKey)
-                } else {
-                    transformedKey = unboxedKey as? K
+                guard let transformedKey = K.transformUnboxedKey(unboxedKey), transformedValue = valueTransform(unboxedValue) else {
+                    if required {
+                        self.unboxer.failForInvalidValue(unboxedDictionary, forKey: key)
+                    }
+                    
+                    return nil
                 }
                 
-                if let transformedKey = transformedKey, transformedValue = valueTransform(unboxedValue) {
-                    transformedDictionary[transformedKey] = transformedValue
-                } else if required {
-                    self.unboxer.failForInvalidValue(unboxedValue, forKey: key)
-                    return [:]
-                }
+                transformedDictionary[transformedKey] = transformedValue
             }
             
             return transformedDictionary
