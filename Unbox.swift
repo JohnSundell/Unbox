@@ -342,13 +342,23 @@ public class Unboxer {
         return UnboxValueResolver<[T]>(self).resolveOptionalValueForKey(key)
     }
     
-    /// Unbox a required Dictionary without applying a transform on its values
-    public func unbox<K: UnboxableKey, V>(key: String) -> [K : V] {
+    /// Unbox a required Dictionary with untyped values, without applying a transform on them
+    public func unbox<K: UnboxableKey>(key: String) -> [K : AnyObject] {
+        return UnboxValueResolver<[String : AnyObject]>(self).resolveDictionaryValuesForKey(key, required: true, valueTransform: { $0 }) ?? [:]
+    }
+    
+    /// Unbox an optional Dictionary with untyped values, without applying a transform on them
+    public func unbox<K: UnboxableKey>(key: String) -> [K : AnyObject]? {
+        return UnboxValueResolver<[String : AnyObject]>(self).resolveDictionaryValuesForKey(key, required: false, valueTransform: { $0 })
+    }
+    
+    /// Unbox a required Dictionary with raw values
+    public func unbox<K: UnboxableKey, V: UnboxableRawType>(key: String) -> [K : V] {
         return UnboxValueResolver<[String : V]>(self).resolveDictionaryValuesForKey(key, required: true, valueTransform: { $0 }) ?? [:]
     }
     
-    /// Unbox an optional Dictionary without applying a transform on its values
-    public func unbox<K: UnboxableKey, V>(key: String) -> [K : V]? {
+    /// Unbox an optional Dictionary with raw values
+    public func unbox<K: UnboxableKey, V: UnboxableRawType>(key: String) -> [K : V]? {
         return UnboxValueResolver<[String : V]>(self).resolveDictionaryValuesForKey(key, required: false, valueTransform: { $0 })
     }
     
