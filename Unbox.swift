@@ -332,13 +332,13 @@ public class Unboxer {
         return UnboxValueResolver<T>(self).resolveOptionalValueForKey(key)
     }
     
-    /// Unbox a required Array
-    public func unbox<T>(key: String) -> [T] {
+    /// Unbox a required Array of raw values
+    public func unbox<T where T: UnboxableRawType>(key: String) -> [T] {
         return UnboxValueResolver<[T]>(self).resolveRequiredValueForKey(key, fallbackValue: [])
     }
     
-    /// Unbox an optional Array
-    public func unbox<T>(key: String) -> [T]? {
+    /// Unbox an optional Array of raw values
+    public func unbox<T where T: UnboxableRawType>(key: String) -> [T]? {
         return UnboxValueResolver<[T]>(self).resolveOptionalValueForKey(key)
     }
     
