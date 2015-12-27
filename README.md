@@ -274,7 +274,7 @@ In case your unboxing code isn’t working like you expect it to, here are some 
 
 Swift cannot find the appropriate overload of the `unbox` method to call. Make sure you have conformed to any required protocol (such as `Unboxable`, `UnboxableEnum`, etc). Also remember that you can only reference concrete types (not `Protocol` types) in order for Swift to be able to select what overload to use.
 
-**Unbox() returns nil**
+**`Unbox()` returns nil**
 
 Either set a breakpoint in `Unboxer.failForInvalidValue(forKey:)` to see what key/value combination that caused the unboxing process to fail, or use the `do, try, catch` pattern and `UnboxOrThrow` function, which will enable you to access any `UnboxError` thrown in the `catch` block.
 
