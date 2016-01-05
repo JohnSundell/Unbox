@@ -158,25 +158,22 @@ To enable your own types to be unboxable using a transformation, all you have to
 Here’s an example that makes a native Swift `UniqueIdentifier` type unboxable using a transformation:
 
 ```swift
-struct UniqueIdentifier: UnboxableByTransform {
+struct UniqueIdentifier {
+    var identifierString: String?
+    init(identifierString: String) {self.identifierString = identifierString}
+    init() {}
+}
+
+extension UniqueIdentifier: UnboxableByTransform {
+    /// The transformer type to use. See UnboxTransformer for more information.
     typealias UnboxRawValueType = String
 
-    let identifierString: String
-
-    init?(identifierString: String) {
-        if let UUID = NSUUID(UUIDString: identifierString) {
-            self.identifierString = UUID.UUIDString
-        } else {
-            return nil
-        }
+    static func transformUnboxedValue(rawValue: String) -> UniqueIdentifier? {
+        return self.init(identifierString: rawValue)
     }
 
-    static func transformUnboxedValue(unboxedValue: String) -> Identifier? {
-        return Identifier(identifierString: unboxedValue)
-    }
-
-    static func unboxFallbackValue() -> Identifier {
-        return Identifier()
+    static func unboxFallbackValue() -> UniqueIdentifier {
+        return self.init()
     }
 }
 ```
