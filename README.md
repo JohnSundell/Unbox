@@ -171,12 +171,16 @@ struct UniqueIdentifier: UnboxableByTransform {
         }
     }
 
-    static func transformUnboxedValue(unboxedValue: String) -> Identifier? {
-        return Identifier(identifierString: unboxedValue)
+    init() {
+        self.identifierString = NSUUID().UUIDString
     }
 
-    static func unboxFallbackValue() -> Identifier {
-        return Identifier()
+    static func transformUnboxedValue(unboxedValue: String) -> UniqueIdentifier? {
+        return UniqueIdentifier(identifierString: unboxedValue)
+    }
+
+    static func unboxFallbackValue() -> UniqueIdentifier {
+        return UniqueIdentifier()
     }
 }
 ```
