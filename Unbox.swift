@@ -311,7 +311,7 @@ public class Unboxer {
     public let context: Any?
     
     private var failureInfo: (key: String, value: Any?)?
-    private let dictionary: UnboxableDictionary
+    public let dictionary: UnboxableDictionary
     
     // MARK: - Private initializer
     
