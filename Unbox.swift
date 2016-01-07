@@ -305,13 +305,14 @@ extension NSDateFormatter: UnboxFormatter {
 public class Unboxer {
     /// All keys contained within the underlying JSON data that is being unboxed
     public var allKeys: [String] { return Array(self.dictionary.keys) }
+    /// The underlying JSON dictionary that is being unboxed
+    public let dictionary: UnboxableDictionary
     /// Whether the Unboxer has failed, and a `nil` value will be returned from the `Unbox()` function that triggered it.
     public var hasFailed: Bool { return self.failureInfo != nil }
     /// Any contextual object that was supplied when unboxing was started
     public let context: Any?
     
     private var failureInfo: (key: String, value: Any?)?
-    public let dictionary: UnboxableDictionary
     
     // MARK: - Private initializer
     
