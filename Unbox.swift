@@ -303,8 +303,6 @@ extension NSDateFormatter: UnboxFormatter {
  *  An Unboxer may also be manually failed, by using the `failForKey()` or `failForInvalidValue(forKey:)` APIs.
  */
 public class Unboxer {
-    /// All keys contained within the underlying JSON data that is being unboxed
-    public var allKeys: [String] { return Array(self.dictionary.keys) }
     /// The underlying JSON dictionary that is being unboxed
     public let dictionary: UnboxableDictionary
     /// Whether the Unboxer has failed, and a `nil` value will be returned from the `Unbox()` function that triggered it.
