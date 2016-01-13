@@ -1,6 +1,6 @@
 # Unbox
 
-![Travis](https://img.shields.io/travis/JohnSundell/Unbox.svg)
+![Travis](https://img.shields.io/travis/JohnSundell/Unbox/master.svg)
 ![CocoaPods](https://img.shields.io/cocoapods/v/Unbox.svg)
 [![Carthage](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
 
