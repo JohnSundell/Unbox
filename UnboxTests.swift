@@ -410,6 +410,52 @@ class UnboxTests: XCTestCase {
             XCTFail()
         }
     }
+    
+    func testCustomUnboxing() {
+        struct Model {
+            let int: Int
+            let double: Double
+            let string: String
+        }
+        
+        do {
+            let dictionary: UnboxableDictionary = [
+                "int" : 5,
+                "string" : "Hello"
+            ]
+            let data = try NSJSONSerialization.dataWithJSONObject(dictionary, options: [])
+            let context = "Context"
+            
+            let unboxingClosure: Unboxer -> Model? = {
+                XCTAssertEqual($0.context as? String, context)
+                return Model(int: $0.unbox("int"), double: 3.14, string: $0.unbox("string"))
+            }
+            
+            let unboxedFromDictionary: Model = try Unboxer.performCustomUnboxingWithDictionary(dictionary, context: context, closure: unboxingClosure)
+            XCTAssertEqual(unboxedFromDictionary.int, 5)
+            XCTAssertEqual(unboxedFromDictionary.double, 3.14)
+            XCTAssertEqual(unboxedFromDictionary.string, "Hello")
+            
+            let unboxedFromData: Model = try Unboxer.performCustomUnboxingWithData(data, context: context, closure: unboxingClosure)
+            XCTAssertEqual(unboxedFromData.int, 5)
+            XCTAssertEqual(unboxedFromData.double, 3.14)
+            XCTAssertEqual(unboxedFromData.string, "Hello")
+        } catch {
+            XCTFail("Unexpected error thrown: \(error)")
+        }
+    }
+    
+    func testCustomUnboxingFailedThrows() {
+        do {
+            try Unboxer.performCustomUnboxingWithDictionary([:], closure: { $0
+                return nil
+            }) as UnboxTestMock
+        } catch UnboxError.CustomUnboxingFailed {
+            // Test passed
+        } catch {
+            XCTFail("Unexpected error thrown: \(error)")
+        }
+    }
 }
 
 private func UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: Bool) -> UnboxableDictionary {
