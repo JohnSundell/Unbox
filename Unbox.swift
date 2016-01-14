@@ -137,6 +137,8 @@ public enum UnboxError: ErrorType, CustomStringConvertible {
             return baseDescription + "Invalid value (\(valueDescription)) for key (\(key))"
         case .InvalidData:
             return "Invalid data"
+        case .CustomUnboxingFailed:
+            return "A custom unboxing closure returned nil"
         }
     }
     
@@ -147,6 +149,8 @@ public enum UnboxError: ErrorType, CustomStringConvertible {
     case InvalidValue(String, String)
     /// Thrown when a piece of data (NSData) could not be unboxed because it was considered invalid
     case InvalidData
+    /// Thrown when a custom unboxing closure returned nil
+    case CustomUnboxingFailed
 }
 
 // MARK: - Protocols
@@ -319,7 +323,19 @@ public class Unboxer {
         self.context = context
     }
     
-    // MARK: - Public API
+    // MARK: - Custom unboxing API
+    
+    /// Perform custom unboxing using an Unboxer (created from a dictionary) passed to a closure, or throw an UnboxError
+    public static func performCustomUnboxingWithDictionary<T>(dictionary: UnboxableDictionary, context: Any? = nil, closure: Unboxer -> T?) throws -> T {
+        return try Unboxer(dictionary: dictionary, context: context).performCustomUnboxingWithClosure(closure)
+    }
+    
+    /// Perform custom unboxing using an Unboxer (created from NSData) passed to a closure, or throw an UnboxError
+    public static func performCustomUnboxingWithData<T>(data: NSData, context: Any? = nil, closure: Unboxer -> T?) throws -> T {
+        return try Unboxer.unboxerFromData(data, context: context).performCustomUnboxingWithClosure(closure)
+    }
+    
+    // MARK: - Value accessing API
     
     /// Unbox a required raw type
     public func unbox<T: UnboxableRawType>(key: String) -> T {
@@ -620,6 +636,16 @@ private extension Unboxer {
     func performUnboxingWithContext<T: UnboxableWithContext>(context: T.ContextType) throws -> T {
         let unboxed = T(unboxer: self, context: context)
         try self.throwIfFailed()
+        return unboxed
+    }
+    
+    func performCustomUnboxingWithClosure<T>(closure: Unboxer -> T?) throws -> T {
+        guard let unboxed: T = closure(self) else {
+            throw UnboxError.CustomUnboxingFailed
+        }
+        
+        try self.throwIfFailed()
+        
         return unboxed
     }
     
