@@ -357,6 +357,28 @@ public class Unboxer {
         return UnboxValueResolver<[T]>(self).resolveOptionalValueForKey(key)
     }
     
+    /// Unbox a required raw value from a certain index in a nested Array
+    public func unbox<T where T: UnboxableRawType>(key: String, index: Int) -> T {
+        return UnboxValueResolver<[T]>(self).resolveRequiredValueForKey(key, fallbackValue: T.unboxFallbackValue(), transform: {
+            if index < 0 || index >= $0.count {
+                return nil
+            }
+            
+            return $0[index]
+        })
+    }
+    
+    /// Unbox an optional raw value from a certain index in a nested Array
+    public func unbox<T where T: UnboxableRawType>(key: String, index: Int) -> T? {
+        return UnboxValueResolver<[T]>(self).resolveOptionalValueForKey(key, transform: {
+            if index < 0 || index >= $0.count {
+                return nil
+            }
+            
+            return $0[index]
+        })
+    }
+    
     /// Unbox a required Dictionary with untyped values, without applying a transform on them
     public func unbox<K: UnboxableKey>(key: String) -> [K : AnyObject] {
         return UnboxValueResolver<[String : AnyObject]>(self).resolveDictionaryValuesForKey(key, required: true, valueTransform: { $0 }) ?? [:]

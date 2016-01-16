@@ -233,6 +233,52 @@ class UnboxTests: XCTestCase {
         }
     }
     
+    func testUnboxingValueFromArray() {
+        struct Model: Unboxable {
+            let required: String
+            let optional: String?
+            
+            init(unboxer: Unboxer) {
+                self.required = unboxer.unbox("required", index: 0)
+                self.optional = unboxer.unbox("optional", index: 1)
+            }
+        }
+        
+        let dictionary: UnboxableDictionary = [
+            "required" : ["Hello", "This"],
+            "optional" : ["Is", "Unbox"]
+        ]
+        
+        do {
+            let unboxed: Model = try UnboxOrThrow(dictionary)
+            XCTAssertEqual(unboxed.required, "Hello")
+            XCTAssertEqual(unboxed.optional, "Unbox")
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+    
+    func testUnboxingValueFromOutOfArrayBoundsThrows() {
+        struct Model: Unboxable {
+            let int: Int
+            
+            init(unboxer: Unboxer) {
+                self.int = unboxer.unbox("values", index: 3)
+            }
+        }
+        
+        let dictionary: UnboxableDictionary = [
+            "values" : [7, 9, 22]
+        ]
+        
+        do {
+            try UnboxOrThrow(dictionary) as Model
+            XCTFail("Should have thrown")
+        } catch {
+            // Test passed
+        }
+    }
+    
     func testUnboxingArrayOfDictionaries() {
         let dictionaries = [
             UnboxTestDictionaryWithAllRequiredKeysWithValidValues(false),
