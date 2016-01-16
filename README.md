@@ -256,6 +256,24 @@ struct User: Unboxable {
 }
 ```
 
+### Custom unboxing
+
+Sometimes you need more fine grained control over the decoding process, and even though Unbox was designed for simplicity, it also features a powerful custom unboxing API that enables you to take control of how an object gets unboxed. This comes very much in handy when using Unbox together with Core Data, when using dependency injection, or when aggregating data from multiple sources. Here's an example:
+
+```swift
+let dependency = DependencyManager.loadDependency()
+
+let model: Model = try Unboxer.performCustomUnboxingWithDictionary(dictionary, closure: {
+    let unboxer = $0
+
+    var model = Model(dependency: dependency)
+    model.name = unboxer.unbox("name")
+    model.count = unboxer.unbox("count")
+
+    return model
+})
+```
+
 ### Installation
 
 **CocoaPods:**
