@@ -276,7 +276,7 @@ In case your unboxing code isn’t working like you expect it to, here are some 
 
 **Compile time error: `Ambiguous reference to member 'unbox'`**
 
-Swift cannot find the appropriate overload of the `unbox` method to call. Make sure you have conformed to any required protocol (such as `Unboxable`, `UnboxableEnum`, etc). Also remember that you can only reference concrete types (not `Protocol` types) in order for Swift to be able to select what overload to use.
+Swift cannot find the appropriate overload of the `unbox` method to call. Make sure you have conformed to any required protocol (such as `Unboxable`, `UnboxableEnum`, etc). Note that you can only conform to one Unbox protocol for each type (that is, a type cannot be both an `UnboxableEnum` and `UnboxableByTransform`). Also remember that you can only reference concrete types (not `Protocol` types) in order for Swift to be able to select what overload to use.
 
 **`Unbox()` returns nil**
 
