@@ -438,10 +438,10 @@ class UnboxTests: XCTestCase {
             init(unboxer: Unboxer) {
                 let intKeyPathComponents = [UnboxTestMock.requiredUnboxableDictionaryKey, "test", UnboxTestMock.requiredIntKey]
                 let keyPath = intKeyPathComponents.joinWithSeparator(".")
-                self.intValue = unboxer.unbox(keyPath)
+                self.intValue = unboxer.unbox(keyPath, isKeyPath: true)
 
                 let dictionaryKeyPath = [UnboxTestMock.requiredUnboxableDictionaryKey, "test"].joinWithSeparator(".")
-                self.dictionary = unboxer.unbox(dictionaryKeyPath)
+                self.dictionary = unboxer.unbox(dictionaryKeyPath, isKeyPath: true)
             }
         }
 
@@ -454,6 +454,31 @@ class UnboxTests: XCTestCase {
             XCTAssertEqual(["unbox", "is", "pretty", "cool", "right?"], result)
         } else {
             XCTFail()
+        }
+    }
+    
+    func testKeysWithDotNotTreatedAsKeyPath() {
+        struct Model: Unboxable {
+            let int: Int
+            let string: String
+            
+            init(unboxer: Unboxer) {
+                self.int = unboxer.unbox("int.value")
+                self.string = unboxer.unbox("string.value")
+            }
+        }
+        
+        let dictionary: UnboxableDictionary = [
+            "int.value" : 15,
+            "string.value" : "hello"
+        ]
+        
+        do {
+            let unboxed: Model = try UnboxOrThrow(dictionary)
+            XCTAssertEqual(unboxed.int, 15)
+            XCTAssertEqual(unboxed.string, "hello")
+        } catch {
+            XCTFail("Unexpected error: \(error)")
         }
     }
     
