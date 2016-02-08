@@ -1,0 +1,6 @@
+coverage_service: coveralls
+ci_service: travis_ci
+xcodeproj: Unbox.xcodeproj
+ignore:
+  - "../**/Developer/*"
+  - "UnboxTests.swift"
