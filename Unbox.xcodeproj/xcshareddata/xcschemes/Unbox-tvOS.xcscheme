@@ -32,9 +32,9 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "52D6D9F81BEFFFBE002C0205"
-               BuildableName = "Unbox-tvOSTests.xctest"
-               BlueprintName = "Unbox-tvOSTests"
+               BlueprintIdentifier = "DD75028C1C690C7A006590AF"
+               BuildableName = "Unbox-tvOS Tests.xctest"
+               BlueprintName = "Unbox-tvOS Tests"
                ReferencedContainer = "container:Unbox.xcodeproj">
             </BuildableReference>
          </TestableReference>
