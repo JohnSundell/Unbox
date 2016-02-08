@@ -17,5 +17,5 @@ Pod::Spec.new do |s|
   s.tvos.deployment_target = "9.0"
   s.source       = { :git => "https://github.com/JohnSundell/Unbox.git", :tag => "1.3" }
   s.source_files  = "Unbox.swift"
-  s.framework  = "Foundation"
+  s.frameworks  = "Foundation", "CoreGraphics"
 end
