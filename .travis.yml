@@ -17,6 +17,8 @@ script:
   # See the [Travis-CI issue #4716](https://github.com/travis-ci/travis-ci/issues/4716).
   - sleep 3
 
+after_success: ./ci/after_success.sh
+
 deploy:
   provider: releases
   api_key:
