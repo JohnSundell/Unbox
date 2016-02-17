@@ -251,7 +251,7 @@ struct User: Unboxable {
     init(unboxer: Unboxer) {
         self.name = unboxer.unbox("name")
         self.age = unboxer.unbox("age")
-        self.runningDistance = unboxer.unbox("activities.running.distance")
+        self.runningDistance = unboxer.unbox("activities.running.distance", isKeyPath: true)
     }
 }
 ```
