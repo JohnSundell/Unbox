@@ -16,7 +16,6 @@
 		DD7502861C68FDDC006590AF /* UnboxTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D6D9971BEFF375002C0205 /* UnboxTests.swift */; };
 		DD7502881C68FEDE006590AF /* Unbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52D6DA0F1BF000BD002C0205 /* Unbox.framework */; };
 		DD7502921C690C7A006590AF /* Unbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52D6D9F01BEFFFBE002C0205 /* Unbox.framework */; };
-		DD7502991C690C94006590AF /* Tests-tvOS.plist in Resources */ = {isa = PBXBuildFile; fileRef = DD7502981C690C94006590AF /* Tests-tvOS.plist */; };
 		DD75029A1C690CBE006590AF /* UnboxTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D6D9971BEFF375002C0205 /* UnboxTests.swift */; };
 /* End PBXBuildFile section */
 
@@ -60,8 +59,6 @@
 		DD75027A1C68FCFC006590AF /* Unbox-OSX Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Unbox-OSX Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DD7502851C68FD26006590AF /* Tests-OSX.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Tests-OSX.plist"; sourceTree = "<group>"; };
 		DD75028D1C690C7A006590AF /* Unbox-tvOS Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Unbox-tvOS Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		DD75028F1C690C7A006590AF /* Unbox_tvOS_Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Unbox_tvOS_Tests.swift; sourceTree = "<group>"; };
-		DD7502911C690C7A006590AF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DD7502981C690C94006590AF /* Tests-tvOS.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Tests-tvOS.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -127,7 +124,6 @@
 				52D6D9961BEFF375002C0205 /* Unbox.swift */,
 				52D6D9971BEFF375002C0205 /* UnboxTests.swift */,
 				52D6D99C1BEFF38C002C0205 /* Configs */,
-				DD75028E1C690C7A006590AF /* Unbox-tvOS Tests */,
 				52D6D97D1BEFF229002C0205 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -174,15 +170,6 @@
 				DD7502851C68FD26006590AF /* Tests-OSX.plist */,
 			);
 			name = Tests;
-			sourceTree = "<group>";
-		};
-		DD75028E1C690C7A006590AF /* Unbox-tvOS Tests */ = {
-			isa = PBXGroup;
-			children = (
-				DD75028F1C690C7A006590AF /* Unbox_tvOS_Tests.swift */,
-				DD7502911C690C7A006590AF /* Info.plist */,
-			);
-			path = "Unbox-tvOS Tests";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -406,7 +393,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DD7502991C690C94006590AF /* Tests-tvOS.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -634,6 +620,7 @@
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.unbox.Unbox-iOS";
 				PRODUCT_NAME = Unbox;
 				SKIP_INSTALL = YES;
@@ -923,6 +910,7 @@
 				DD7502841C68FCFC006590AF /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		DD7502951C690C7A006590AF /* Build configuration list for PBXNativeTarget "Unbox-tvOS Tests" */ = {
 			isa = XCConfigurationList;
@@ -931,6 +919,7 @@
 				DD7502971C690C7A006590AF /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
