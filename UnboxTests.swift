@@ -753,10 +753,12 @@ private class UnboxTestBaseMock: Unboxable {
         if let propertyValue = propertyValue {
             if let dictionaryArrayValue = dictionaryValue as? [T.RawValue] {
                 for i in 0..<dictionaryArrayValue.count {
-                    if let enumValue = T(rawValue: dictionaryArrayValue[i]) {
-                        guard case enumValue = propertyValue[i] else {
-                            return false
-                        }
+                    guard let enumValue = T(rawValue: dictionaryArrayValue[i]) else {
+                        return false
+                    }
+                    
+                    guard case enumValue = propertyValue[i] else {
+                        return false
                     }
                 }
                 
