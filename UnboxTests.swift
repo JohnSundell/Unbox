@@ -540,7 +540,8 @@ private func UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: Bool)
         UnboxTestMock.requiredEnumKey : 1,
         UnboxTestMock.requiredStringKey :  "hello",
         UnboxTestMock.requiredURLKey : "http://www.google.com",
-        UnboxTestMock.requiredArrayKey : ["unbox", "is", "pretty", "cool", "right?"]
+        UnboxTestMock.requiredArrayKey : ["unbox", "is", "pretty", "cool", "right?"],
+        UnboxTestMock.requiredEnumArrayKey : [0, 1],
     ]
     
     if !nested {
@@ -604,6 +605,8 @@ private class UnboxTestBaseMock: Unboxable {
     static let optionalURLKey = "optionalURL"
     static let requiredArrayKey = "requiredArray"
     static let optionalArrayKey = "optionalArray"
+    static let requiredEnumArrayKey = "requiredEnumArray"
+    static let optionalEnumArrayKey = "optionalEnumArray"
     
     let requiredBool: Bool
     let optionalBool: Bool?
@@ -623,6 +626,8 @@ private class UnboxTestBaseMock: Unboxable {
     let optionalURL: NSURL?
     let requiredArray: [String]
     let optionalArray: [String]?
+    let requiredEnumArray: [UnboxTestEnum]
+    let optionalEnumArray: [UnboxTestEnum]?
     
     required init(unboxer: Unboxer) {
         self.requiredBool = unboxer.unbox(UnboxTestBaseMock.requiredBoolKey)
@@ -643,6 +648,8 @@ private class UnboxTestBaseMock: Unboxable {
         self.optionalURL = unboxer.unbox(UnboxTestBaseMock.optionalURLKey)
         self.requiredArray = unboxer.unbox(UnboxTestBaseMock.requiredArrayKey)
         self.optionalArray = unboxer.unbox(UnboxTestBaseMock.optionalArrayKey)
+        self.requiredEnumArray = unboxer.unbox(UnboxTestBaseMock.requiredEnumArrayKey)
+        self.optionalEnumArray = unboxer.unbox(UnboxTestBaseMock.optionalEnumArrayKey)
     }
     
     func verifyAgainstDictionary(dictionary: UnboxableDictionary) {
@@ -686,6 +693,10 @@ private class UnboxTestBaseMock: Unboxable {
                 verificationOutcome = self.verifyArrayPropertyValue(self.requiredArray, againstDictionaryValue: value)
             case UnboxTestBaseMock.optionalArrayKey:
                 verificationOutcome = self.verifyArrayPropertyValue(self.optionalArray, againstDictionaryValue: value)
+            case UnboxTestBaseMock.requiredEnumArrayKey:
+                verificationOutcome = self.verifyEnumArrayPropertyValue(self.requiredEnumArray, againstDictionaryValue: value)
+            case UnboxTestBaseMock.optionalEnumArrayKey:
+                verificationOutcome = self.verifyEnumArrayPropertyValue(self.optionalEnumArray, againstDictionaryValue: value)
             default:
                 verificationOutcome = true
             }
@@ -727,6 +738,26 @@ private class UnboxTestBaseMock: Unboxable {
             if let dictionaryArrayValue = dictionaryValue as? [T] {
                 for i in 0..<dictionaryArrayValue.count {
                     if dictionaryArrayValue[i] != propertyValue[i] {
+                        return false
+                    }
+                }
+                
+                return true
+            }
+        }
+        
+        return false
+    }
+    
+    func verifyEnumArrayPropertyValue<T: UnboxableEnum where T: Equatable>(propertyValue: [T]?, againstDictionaryValue dictionaryValue: AnyObject?) -> Bool {
+        if let propertyValue = propertyValue {
+            if let dictionaryArrayValue = dictionaryValue as? [T.RawValue] {
+                for i in 0..<dictionaryArrayValue.count {
+                    guard let enumValue = T(rawValue: dictionaryArrayValue[i]) else {
+                        return false
+                    }
+                    
+                    guard case enumValue = propertyValue[i] else {
                         return false
                     }
                 }

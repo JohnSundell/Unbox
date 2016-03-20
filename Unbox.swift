@@ -413,6 +413,20 @@ public class Unboxer {
         })
     }
     
+    /// Unbox a required Array of enum raw values to an Array of enums using a transform
+    public func unbox<T: UnboxableEnum>(key: String, isKeyPath: Bool = false) -> [T] {
+        return UnboxValueResolver<[T.RawValue]>(self).resolveRequiredValueForKey(key, isKeyPath: isKeyPath, fallbackValue: [], transform: { (array) -> [T]? in
+            return array.flatMap({ T(rawValue: $0) })
+        })
+    }
+    
+    /// Unbox an optional Array of enum raw values to an Array of enums using a transform
+    public func unbox<T: UnboxableEnum>(key: String, isKeyPath: Bool = false) -> [T]? {
+        return UnboxValueResolver<[T.RawValue]>(self).resolveOptionalValueForKey(key, isKeyPath: isKeyPath, transform: { (array) -> [T]? in
+            return array.flatMap({ T(rawValue: $0) })
+        })
+    }
+    
     /// Unbox a required nested Unboxable, by unboxing a Dictionary and then using a transform
     public func unbox<T: Unboxable>(key: String, isKeyPath: Bool = false) -> T {
         return UnboxValueResolver<UnboxableDictionary>(self).resolveRequiredValueForKey(key, isKeyPath: isKeyPath, fallbackValue: T.unboxFallbackValue(), transform: {
