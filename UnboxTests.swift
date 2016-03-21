@@ -528,6 +528,50 @@ class UnboxTests: XCTestCase {
             XCTFail("Unexpected error thrown: \(error)")
         }
     }
+    
+    func testCustomUnboxingFromArrayWithMultipleClasses() {
+        struct ModelA {
+            let int: Int
+        }
+        
+        struct ModelB {
+            let string: String
+        }
+        
+        let array: [UnboxableDictionary] = [
+            [
+                "type" : "A",
+                "int" : 22
+            ],
+            [
+                "type" : "B",
+                "string" : "hello"
+            ]
+        ]
+        
+        do {
+            let unboxed: [Any] = try Unboxer.performCustomUnboxingWithArray(array, closure: {
+                let unboxer = $0
+                let type = unboxer.unbox("type") as String
+                
+                switch type {
+                case "A":
+                    return ModelA(int: unboxer.unbox("int"))
+                case "B":
+                    return ModelB(string: unboxer.unbox("string"))
+                default:
+                    XCTFail()
+                }
+                
+                return nil
+            })
+            
+            XCTAssertEqual((unboxed.first as! ModelA).int, 22)
+            XCTAssertEqual((unboxed.last as! ModelB).string, "hello")
+        } catch {
+            XCTFail("Unexpected error thrown: \(error)")
+        }
+    }
 }
 
 private func UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: Bool) -> UnboxableDictionary {

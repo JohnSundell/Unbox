@@ -330,6 +330,18 @@ public class Unboxer {
         return try Unboxer(dictionary: dictionary, context: context).performCustomUnboxingWithClosure(closure)
     }
     
+    /// Perform custom unboxing on an array of dictionaries, executing a closure with a new Unboxer for each one, or throw an UnboxError
+    public static func performCustomUnboxingWithArray<T>(array: [UnboxableDictionary], context: Any? = nil, closure: Unboxer -> T?) throws -> [T] {
+        var unboxedArray = [T]()
+        
+        for dictionary in array {
+            let unboxed = try self.performCustomUnboxingWithDictionary(dictionary, context: context, closure: closure)
+            unboxedArray.append(unboxed)
+        }
+        
+        return unboxedArray
+    }
+    
     /// Perform custom unboxing using an Unboxer (created from NSData) passed to a closure, or throw an UnboxError
     public static func performCustomUnboxingWithData<T>(data: NSData, context: Any? = nil, closure: Unboxer -> T?) throws -> T {
         return try Unboxer.unboxerFromData(data, context: context).performCustomUnboxingWithClosure(closure)
