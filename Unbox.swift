@@ -360,17 +360,17 @@ public class Unboxer {
     }
     
     /// Unbox a required Array of raw values
-    public func unbox<T where T: UnboxableRawType>(key: String, isKeyPath: Bool = false) -> [T] {
+    public func unbox<T: UnboxableRawType>(key: String, isKeyPath: Bool = false) -> [T] {
         return UnboxValueResolver<[T]>(self).resolveRequiredValueForKey(key, isKeyPath: isKeyPath, fallbackValue: [])
     }
     
     /// Unbox an optional Array of raw values
-    public func unbox<T where T: UnboxableRawType>(key: String, isKeyPath: Bool = false) -> [T]? {
+    public func unbox<T: UnboxableRawType>(key: String, isKeyPath: Bool = false) -> [T]? {
         return UnboxValueResolver<[T]>(self).resolveOptionalValueForKey(key, isKeyPath: isKeyPath)
     }
     
     /// Unbox a required raw value from a certain index in a nested Array
-    public func unbox<T where T: UnboxableRawType>(key: String, isKeyPath: Bool = false, index: Int) -> T {
+    public func unbox<T: UnboxableRawType>(key: String, isKeyPath: Bool = false, index: Int) -> T {
         return UnboxValueResolver<[T]>(self).resolveRequiredValueForKey(key, isKeyPath: isKeyPath, fallbackValue: T.unboxFallbackValue(), transform: {
             if index < 0 || index >= $0.count {
                 return nil
@@ -381,7 +381,7 @@ public class Unboxer {
     }
     
     /// Unbox an optional raw value from a certain index in a nested Array
-    public func unbox<T where T: UnboxableRawType>(key: String, isKeyPath: Bool = false, index: Int) -> T? {
+    public func unbox<T: UnboxableRawType>(key: String, isKeyPath: Bool = false, index: Int) -> T? {
         return UnboxValueResolver<[T]>(self).resolveOptionalValueForKey(key, isKeyPath: isKeyPath, transform: {
             if index < 0 || index >= $0.count {
                 return nil
