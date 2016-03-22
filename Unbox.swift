@@ -164,7 +164,7 @@ public protocol Unboxable {
 /// Protocol used to declare a model as being Unboxable with a certain context, for use with the Unbox(context:) function
 public protocol UnboxableWithContext {
     /// The type of the contextual object that this model requires when unboxed
-    typealias ContextType
+    associatedtype ContextType
     
     /// Initialize an instance of this model by unboxing a dictionary & using a context
     init(unboxer: Unboxer, context: ContextType)
@@ -191,7 +191,7 @@ public protocol UnboxableKey: Hashable, UnboxCompatibleType {
 /// Protocol used to enable any type as being unboxable, by transforming a raw value
 public protocol UnboxableByTransform: UnboxCompatibleType {
     /// The type of raw value that this type can be transformed from
-    typealias UnboxRawValueType: UnboxableRawType
+    associatedtype UnboxRawValueType: UnboxableRawType
     
     /// Attempt to transform a raw unboxed value into an instance of this type
     static func transformUnboxedValue(unboxedValue: UnboxRawValueType) -> Self?
@@ -200,15 +200,15 @@ public protocol UnboxableByTransform: UnboxCompatibleType {
 /// Protocol used to enable any type as being unboxable with a certain formatter type
 public protocol UnboxableWithFormatter: UnboxCompatibleType {
     /// The type of formatter to use to format an unboxed value into a value of this type
-    typealias UnboxFormatterType: UnboxFormatter
+    associatedtype UnboxFormatterType: UnboxFormatter
 }
 
 /// Protocol used by objects that may format raw values into some other value
 public protocol UnboxFormatter {
     /// The type of raw value that this formatter accepts as input
-    typealias UnboxRawValueType: UnboxableRawType
+    associatedtype UnboxRawValueType: UnboxableRawType
     /// The type of value that this formatter produces as output
-    typealias UnboxFormattedType
+    associatedtype UnboxFormattedType
     
     /// Format an unboxed value into another value (or nil if the formatting failed)
     func formatUnboxedValue(unboxedValue: UnboxRawValueType) -> UnboxFormattedType?
@@ -360,17 +360,17 @@ public class Unboxer {
     }
     
     /// Unbox a required Array of raw values
-    public func unbox<T where T: UnboxableRawType>(key: String, isKeyPath: Bool = false) -> [T] {
+    public func unbox<T: UnboxableRawType>(key: String, isKeyPath: Bool = false) -> [T] {
         return UnboxValueResolver<[T]>(self).resolveRequiredValueForKey(key, isKeyPath: isKeyPath, fallbackValue: [])
     }
     
     /// Unbox an optional Array of raw values
-    public func unbox<T where T: UnboxableRawType>(key: String, isKeyPath: Bool = false) -> [T]? {
+    public func unbox<T: UnboxableRawType>(key: String, isKeyPath: Bool = false) -> [T]? {
         return UnboxValueResolver<[T]>(self).resolveOptionalValueForKey(key, isKeyPath: isKeyPath)
     }
     
     /// Unbox a required raw value from a certain index in a nested Array
-    public func unbox<T where T: UnboxableRawType>(key: String, isKeyPath: Bool = false, index: Int) -> T {
+    public func unbox<T: UnboxableRawType>(key: String, isKeyPath: Bool = false, index: Int) -> T {
         return UnboxValueResolver<[T]>(self).resolveRequiredValueForKey(key, isKeyPath: isKeyPath, fallbackValue: T.unboxFallbackValue(), transform: {
             if index < 0 || index >= $0.count {
                 return nil
@@ -381,7 +381,7 @@ public class Unboxer {
     }
     
     /// Unbox an optional raw value from a certain index in a nested Array
-    public func unbox<T where T: UnboxableRawType>(key: String, isKeyPath: Bool = false, index: Int) -> T? {
+    public func unbox<T: UnboxableRawType>(key: String, isKeyPath: Bool = false, index: Int) -> T? {
         return UnboxValueResolver<[T]>(self).resolveOptionalValueForKey(key, isKeyPath: isKeyPath, transform: {
             if index < 0 || index >= $0.count {
                 return nil
@@ -579,17 +579,17 @@ private class UnboxValueResolver<T> {
         })
     }
     
-    func resolveOptionalValueForKey<R>(var key: String, isKeyPath: Bool, transform: T -> R?) -> R? {
+    func resolveOptionalValueForKey<R>(key: String, isKeyPath: Bool, transform: T -> R?) -> R? {
         var dictionary = self.unboxer.dictionary
-        
+        var modifiedKey = key
+
         if isKeyPath && key.containsString(".") {
             let components = key.componentsSeparatedByString(".")
-            
-            for var i = 0; i < components.count; i++ {
+            for i in 0 ..< components.count {
                 let keyPathComponent = components[i]
                 
                 if i == components.count - 1 {
-                    key = keyPathComponent
+                    modifiedKey = keyPathComponent
                 } else if let nestedDictionary = dictionary[keyPathComponent] as? UnboxableDictionary {
                     dictionary = nestedDictionary
                 } else {
@@ -598,7 +598,7 @@ private class UnboxValueResolver<T> {
             }
         }
 
-        if let value = dictionary[key] as? T {
+        if let value = dictionary[modifiedKey] as? T {
             if let transformed = transform(value) {
                 return transformed
             }
