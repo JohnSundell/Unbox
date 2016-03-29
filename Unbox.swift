@@ -50,7 +50,7 @@ public func Unbox<T: Unboxable>(data: NSData, context: Any? = nil) -> T? {
 
 /// Unbox binary data into an array of `T`, while optionally using a contextual object
 public func Unbox<T: Unboxable>(data: NSData, context: Any? = nil, skipInvalidData: Bool = false) -> [T]? {
-    return try? UnboxOrThrow(data, context: context, skipInvalidData: skipInvalidData)
+    return try? UnboxOrThrow(data, context: context)
 }
 
 /// Unbox a JSON dictionary into a model `T`, while using a required contextual object
@@ -93,8 +93,8 @@ public func UnboxOrThrow<T: Unboxable>(data: NSData, context: Any? = nil) throws
 }
 
 /// Unbox binary data into an array of `T`, while optionally using a contextual object. Throws `UnboxError`.
-public func UnboxOrThrow<T: Unboxable>(data: NSData, context: Any? = nil, skipInvalidData: Bool = false) throws -> [T] {
-    return try Unboxer.unboxersFromData(data, context: context, skipInvalidData: skipInvalidData).map({
+public func UnboxOrThrow<T: Unboxable>(data: NSData, context: Any? = nil) throws -> [T] {
+    return try Unboxer.unboxersFromData(data, context: context).map({
         return try $0.performUnboxing()
     })
 }
@@ -121,6 +121,64 @@ public func UnboxOrThrow<T: UnboxableWithContext>(data: NSData, context: T.Conte
     return try Unboxer.unboxersFromData(data, context: context).map({
         return try $0.performUnboxingWithContext(context)
     })
+}
+
+// MARK: - Skip Unbox functions
+
+/// Unbox a JSON dictionary into a model `T`, while optionally using a contextual object. Throws `UnboxError`.
+public func UnboxOrSkip<T: Unboxable>(dictionary: UnboxableDictionary, context: Any? = nil) -> T? {
+    return try? Unboxer(dictionary: dictionary, context: context, skipInvalidData: true).performUnboxing()
+}
+
+/// Unbox an array of JSON dictionaries into an array of `T`, while optionally using a contextual object. Throws `UnboxError`.
+public func UnboxOrSkip<T: Unboxable>(dictionaries: [UnboxableDictionary], context: Any? = nil) -> [T] {
+    return dictionaries.flatMap {
+        UnboxOrSkip($0, context: context)
+    }
+}
+
+/// Unbox binary data into a model `T`, while optionally using a contextual object. Throws `UnboxError`.
+public func UnboxOrSkip<T: Unboxable>(data: NSData, context: Any? = nil) -> T? {
+    return try? Unboxer.unboxerFromData(data, context: context, skipInvalidData: true).performUnboxing()
+}
+
+/// Unbox binary data into an array of `T`, while optionally using a contextual object. Throws `UnboxError`.
+public func UnboxOrSkip<T: Unboxable>(data: NSData, context: Any? = nil) -> [T] {
+    guard let items = try? Unboxer.unboxersFromData(data, context: context, skipInvalidData: true) else {
+        return []
+    }
+    
+    return items.flatMap {
+        return try? $0.performUnboxing()
+    }
+}
+
+/// Unbox a JSON dictionary into a model `T`, while using a required contextual object. Throws `UnboxError`.
+public func UnboxOrSkip<T: UnboxableWithContext>(dictionary: UnboxableDictionary, context: T.ContextType) -> T? {
+    return try? Unboxer(dictionary: dictionary, context: context, skipInvalidData: true).performUnboxingWithContext(context)
+}
+
+/// Unbox an array of JSON dictionaries into an array of `T`, while using a required contextual object. Throws `UnboxError`.
+public func UnboxOrSkip<T: UnboxableWithContext>(dictionaries: [UnboxableDictionary], context: T.ContextType) -> [T] {
+    return dictionaries.flatMap {
+        UnboxOrSkip($0, context: context)
+    }
+}
+
+/// Unbox binary data into a model `T`, while using a required contextual object. Throws `UnboxError`.
+public func UnboxOrSkip<T: UnboxableWithContext>(data: NSData, context: T.ContextType) -> T? {
+    return try? Unboxer.unboxerFromData(data, context: context, skipInvalidData: true).performUnboxingWithContext(context)
+}
+
+/// Unbox binary data into an array of `T`, while using a required contextual object. Throws `UnboxError`.
+public func UnboxOrSkip<T: UnboxableWithContext>(data: NSData, context: T.ContextType) -> [T] {
+    guard let items = try? Unboxer.unboxersFromData(data, context: context, skipInvalidData: true) else {
+        return []
+    }
+
+    return items.flatMap {
+        return try? $0.performUnboxingWithContext(context)
+    }
 }
 
 // MARK: - Error type
@@ -652,13 +710,13 @@ private extension UnboxableWithContext {
 }
 
 private extension Unboxer {
-    static func unboxerFromData(data: NSData, context: Any?) throws -> Unboxer {
+    static func unboxerFromData(data: NSData, context: Any?, skipInvalidData: Bool = false) throws -> Unboxer {
         do {
             guard let dictionary = try NSJSONSerialization.JSONObjectWithData(data, options: []) as? UnboxableDictionary else {
                 throw UnboxError.InvalidData
             }
             
-            return Unboxer(dictionary: dictionary, context: context)
+            return Unboxer(dictionary: dictionary, context: context, skipInvalidData: skipInvalidData)
         } catch {
             throw UnboxError.InvalidData
         }
