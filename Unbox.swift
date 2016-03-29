@@ -49,8 +49,8 @@ public func Unbox<T: Unboxable>(data: NSData, context: Any? = nil) -> T? {
 }
 
 /// Unbox binary data into an array of `T`, while optionally using a contextual object
-public func Unbox<T: Unboxable>(data: NSData, context: Any? = nil) -> [T]? {
-    return try? UnboxOrThrow(data, context: context)
+public func Unbox<T: Unboxable>(data: NSData, context: Any? = nil, skipInvalidData: Bool = false) -> [T]? {
+    return try? UnboxOrThrow(data, context: context, skipInvalidData: skipInvalidData)
 }
 
 /// Unbox a JSON dictionary into a model `T`, while using a required contextual object
@@ -93,8 +93,8 @@ public func UnboxOrThrow<T: Unboxable>(data: NSData, context: Any? = nil) throws
 }
 
 /// Unbox binary data into an array of `T`, while optionally using a contextual object. Throws `UnboxError`.
-public func UnboxOrThrow<T: Unboxable>(data: NSData, context: Any? = nil) throws -> [T] {
-    return try Unboxer.unboxersFromData(data, context: context).map({
+public func UnboxOrThrow<T: Unboxable>(data: NSData, context: Any? = nil, skipInvalidData: Bool = false) throws -> [T] {
+    return try Unboxer.unboxersFromData(data, context: context, skipInvalidData: skipInvalidData).map({
         return try $0.performUnboxing()
     })
 }
@@ -313,14 +313,17 @@ public class Unboxer {
     public var hasFailed: Bool { return self.failureInfo != nil }
     /// Any contextual object that was supplied when unboxing was started
     public let context: Any?
+    /// Allow Unboxer to continue on invalid data
+    public let skipInvalidData: Bool
     
     private var failureInfo: (key: String, value: Any?)?
     
     // MARK: - Private initializer
     
-    private init(dictionary: UnboxableDictionary, context: Any?) {
+    private init(dictionary: UnboxableDictionary, context: Any?, skipInvalidData: Bool = false) {
         self.dictionary = dictionary
         self.context = context
+        self.skipInvalidData = skipInvalidData
     }
     
     // MARK: - Custom unboxing API
@@ -661,14 +664,14 @@ private extension Unboxer {
         }
     }
     
-    static func unboxersFromData(data: NSData, context: Any?) throws -> [Unboxer] {
+    static func unboxersFromData(data: NSData, context: Any?, skipInvalidData: Bool = false) throws -> [Unboxer] {
         do {
             guard let array = try NSJSONSerialization.JSONObjectWithData(data, options: [.AllowFragments]) as? [UnboxableDictionary] else {
                 throw UnboxError.InvalidData
             }
             
             return array.map({
-                return Unboxer(dictionary: $0, context: context)
+                return Unboxer(dictionary: $0, context: context, skipInvalidData: skipInvalidData)
             })
         } catch {
             throw UnboxError.InvalidData
@@ -699,6 +702,10 @@ private extension Unboxer {
     
     func throwIfFailed() throws {
         guard let failureInfo = self.failureInfo else {
+            return
+        }
+        
+        if skipInvalidData {
             return
         }
         
