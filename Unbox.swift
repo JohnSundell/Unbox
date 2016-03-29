@@ -350,8 +350,8 @@ public class Unboxer {
     // MARK: - Value accessing API
     
     /// Unbox a required raw type
-    public func unbox<T: UnboxableRawType>(key: String, isKeyPath: Bool = false) -> T {
-        return UnboxValueResolver<T>(self).resolveRequiredValueForKey(key, isKeyPath: isKeyPath, fallbackValue: T.unboxFallbackValue())
+    public func unbox<T: UnboxableRawType>(key: String, isKeyPath: Bool = false, fallbackValue: T = T.unboxFallbackValue()) -> T {
+        return UnboxValueResolver<T>(self).resolveRequiredValueForKey(key, isKeyPath: isKeyPath, fallbackValue: fallbackValue)
     }
     
     /// Unbox an optional raw type
@@ -370,8 +370,8 @@ public class Unboxer {
     }
     
     /// Unbox a required raw value from a certain index in a nested Array
-    public func unbox<T: UnboxableRawType>(key: String, isKeyPath: Bool = false, index: Int) -> T {
-        return UnboxValueResolver<[T]>(self).resolveRequiredValueForKey(key, isKeyPath: isKeyPath, fallbackValue: T.unboxFallbackValue(), transform: {
+    public func unbox<T: UnboxableRawType>(key: String, isKeyPath: Bool = false, index: Int, fallbackValue: T = T.unboxFallbackValue()) -> T {
+        return UnboxValueResolver<[T]>(self).resolveRequiredValueForKey(key, isKeyPath: isKeyPath, fallbackValue: fallbackValue, transform: {
             if index < 0 || index >= $0.count {
                 return nil
             }
@@ -412,8 +412,8 @@ public class Unboxer {
     }
     
     /// Unbox a required enum value
-    public func unbox<T: UnboxableEnum>(key: String, isKeyPath: Bool = false) -> T {
-        return UnboxValueResolver<T.RawValue>(self).resolveRequiredValueForKey(key, isKeyPath: isKeyPath, fallbackValue: T.unboxFallbackValue(), transform: {
+    public func unbox<T: UnboxableEnum>(key: String, isKeyPath: Bool = false, fallbackValue: T = T.unboxFallbackValue()) -> T {
+        return UnboxValueResolver<T.RawValue>(self).resolveRequiredValueForKey(key, isKeyPath: isKeyPath, fallbackValue: fallbackValue, transform: {
             return T(rawValue: $0)
         })
     }
@@ -440,8 +440,8 @@ public class Unboxer {
     }
     
     /// Unbox a required nested Unboxable, by unboxing a Dictionary and then using a transform
-    public func unbox<T: Unboxable>(key: String, isKeyPath: Bool = false) -> T {
-        return UnboxValueResolver<UnboxableDictionary>(self).resolveRequiredValueForKey(key, isKeyPath: isKeyPath, fallbackValue: T.unboxFallbackValue(), transform: {
+    public func unbox<T: Unboxable>(key: String, isKeyPath: Bool = false, fallbackValue: T = T.unboxFallbackValue()) -> T {
+        return UnboxValueResolver<UnboxableDictionary>(self).resolveRequiredValueForKey(key, isKeyPath: isKeyPath, fallbackValue: fallbackValue, transform: {
             return Unbox($0, context: self.context)
         })
     }
