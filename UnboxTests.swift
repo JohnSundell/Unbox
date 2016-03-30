@@ -573,7 +573,7 @@ class UnboxTests: XCTestCase {
         }
     }
     
-    func testUnboxWithAllowInvalidElements() {
+    func testUnboxWithAllowInvalidElementsForDictionary() {
         struct Model: Unboxable {
             let successProperty: String
             let failedProperty: String
@@ -594,6 +594,32 @@ class UnboxTests: XCTestCase {
         ]
         
         guard let items: [Model] = Unbox(array, allowInvalidElements: true) else {
+            XCTFail("Could not unbox collections from data")
+            return
+        }
+        
+        XCTAssert(items.count == 2, "Unbox did not return correct number of elements with invalid data")
+    }
+    
+    func testUnboxWithAllowInvalidElementsForData() {
+        struct Model: Unboxable {
+            let successProperty: String
+            let failedProperty: String
+            
+            init(unboxer: Unboxer) {
+                self.successProperty = unboxer.unbox("success")
+                self.failedProperty = unboxer.unbox("notexist")
+            }
+        }
+        
+        let json = "[{\"success\":\"Hello\"},{\"success\":\"Unbox\"}]"
+        
+        guard let data = json.dataUsingEncoding(NSUTF8StringEncoding) else {
+             XCTFail("Could not create data from a string")
+             return
+         }
+        
+         guard let items: [Model] = Unbox(data, allowInvalidElements: true) else {
             XCTFail("Could not unbox collections from data")
             return
         }
