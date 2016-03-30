@@ -40,7 +40,7 @@ public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, context: Any? =
 
 /// Unbox an array of JSON dictionaries into an array of `T`, while optionally using a contextual object
 public func Unbox<T: Unboxable>(dictionaries: [UnboxableDictionary], context: Any? = nil, allowInvalidElements: Bool = false) -> [T]? {
-    return try? Unboxer.performUnboxingWithDictionary(dictionaries, context: context, allowInvalidElements: allowInvalidElements)
+    return try? Unboxer.performUnboxingWithDictionaries(dictionaries, context: context, allowInvalidElements: allowInvalidElements)
 }
 
 /// Unbox binary data into a model `T`, while optionally using a contextual object
@@ -60,7 +60,7 @@ public func Unbox<T: UnboxableWithContext>(dictionary: UnboxableDictionary, cont
 
 /// Unbox an array of JSON dictionaries into an array of `T`, while using a required contextual object
 public func Unbox<T: UnboxableWithContext>(dictionaries: [UnboxableDictionary], context: T.ContextType, allowInvalidElements: Bool = false) -> [T]? {
-    return try? Unboxer.performUnboxingWithDictionaryAndContext(dictionaries, context: context, allowInvalidElements: allowInvalidElements)
+    return try? Unboxer.performUnboxingWithDictionariesAndContext(dictionaries, context: context, allowInvalidElements: allowInvalidElements)
 }
 
 /// Unbox binary data into a model `T`, while using a required contextual object
@@ -82,7 +82,7 @@ public func UnboxOrThrow<T: Unboxable>(dictionary: UnboxableDictionary, context:
 
 /// Unbox an array of JSON dictionaries into an array of `T`, while optionally using a contextual object. Throws `UnboxError`.
 public func UnboxOrThrow<T: Unboxable>(dictionaries: [UnboxableDictionary], context: Any? = nil) throws -> [T] {
-    return try Unboxer.performUnboxingWithDictionary(dictionaries, context: context)
+    return try Unboxer.performUnboxingWithDictionaries(dictionaries, context: context)
 }
 
 /// Unbox binary data into a model `T`, while optionally using a contextual object. Throws `UnboxError`.
@@ -102,7 +102,7 @@ public func UnboxOrThrow<T: UnboxableWithContext>(dictionary: UnboxableDictionar
 
 /// Unbox an array of JSON dictionaries into an array of `T`, while using a required contextual object. Throws `UnboxError`.
 public func UnboxOrThrow<T: UnboxableWithContext>(dictionaries: [UnboxableDictionary], context: T.ContextType) throws -> [T] {
-    return try Unboxer.performUnboxingWithDictionaryAndContext(dictionaries, context: context)
+    return try Unboxer.performUnboxingWithDictionariesAndContext(dictionaries, context: context)
 }
 
 /// Unbox binary data into a model `T`, while using a required contextual object. Throws `UnboxError`.
@@ -674,7 +674,7 @@ private extension Unboxer {
         return try Unboxer(dictionary: dictionary, context: context, allowInvalidElements: allowInvalidElements).performUnboxing()
     }
 
-    static func performUnboxingWithDictionary<T: Unboxable>(dictionaries: [UnboxableDictionary], context: Any? = nil, allowInvalidElements: Bool = false) throws -> [T] {
+    static func performUnboxingWithDictionaries<T: Unboxable>(dictionaries: [UnboxableDictionary], context: Any? = nil, allowInvalidElements: Bool = false) throws -> [T] {
         if allowInvalidElements {
             return dictionaries.flatMap {
                 try? performUnboxingWithDictionary($0, context: context, allowInvalidElements: allowInvalidElements)
@@ -700,7 +700,7 @@ private extension Unboxer {
         return try Unboxer(dictionary: dictionary, context: context, allowInvalidElements: allowInvalidElements).performUnboxingWithContext(context)
     }
 
-    static func performUnboxingWithDictionaryAndContext<T: UnboxableWithContext>(dictionaries: [UnboxableDictionary], context: T.ContextType, allowInvalidElements: Bool = false) throws -> [T] {
+    static func performUnboxingWithDictionariesAndContext<T: UnboxableWithContext>(dictionaries: [UnboxableDictionary], context: T.ContextType, allowInvalidElements: Bool = false) throws -> [T] {
         if allowInvalidElements {
             return dictionaries.flatMap {
                 try? performUnboxingWithDictionaryAndContext($0, context: context, allowInvalidElements: allowInvalidElements)
