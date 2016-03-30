@@ -318,56 +318,6 @@ public class Unboxer {
         self.allowInvalidElements = allowInvalidElements
     }
     
-    // MARK: - Private unboxing
-
-    /// Unbox a JSON dictionary into a model `T`, while optionally using a contextual object. Throws `UnboxError`.
-    private static func performUnboxingWithDictionary<T: Unboxable>(dictionary: UnboxableDictionary, context: Any? = nil) throws -> T {
-        return try Unboxer(dictionary: dictionary, context: context, allowInvalidElements: false).performUnboxing()
-    }
-
-    /// Unbox an array of JSON dictionaries into an array of `T`, while optionally using a contextual object. Throws `UnboxError`.
-    private static func performUnboxingWithDictionary<T: Unboxable>(dictionaries: [UnboxableDictionary], context: Any? = nil, allowInvalidElements: Bool = false) throws -> [T] {
-        return allowInvalidElements
-            ? dictionaries.flatMap { try? performUnboxingWithDictionary($0, context: context) }
-            : try dictionaries.map { try performUnboxingWithDictionary($0, context: context) }
-    }
-
-    /// Unbox binary data into a model `T`, while optionally using a contextual object. Throws `UnboxError`.
-    private static func performUnboxingWithData<T: Unboxable>(data: NSData, context: Any? = nil) throws -> T {
-        return try Unboxer.unboxerFromData(data, context: context).performUnboxing()
-    }
-
-    /// Unbox binary data into an array of `T`, while optionally using a contextual object. Throws `UnboxError`.
-    private static func performUnboxingWithData<T: Unboxable>(data: NSData, context: Any? = nil, allowInvalidElements: Bool = false) throws -> [T] {
-        return try Unboxer.unboxersFromData(data, context: context, allowInvalidElements: allowInvalidElements).map {
-            return try $0.performUnboxing()
-        }
-    }
-
-    /// Unbox a JSON dictionary into a model `T`, while using a required contextual object. Throws `UnboxError`.
-    private static func performUnboxingWithDictionaryAndContext<T: UnboxableWithContext>(dictionary: UnboxableDictionary, context: T.ContextType) throws -> T {
-        return try Unboxer(dictionary: dictionary, context: context, allowInvalidElements: false).performUnboxingWithContext(context)
-    }
-
-    /// Unbox an array of JSON dictionaries into an array of `T`, while using a required contextual object. Throws `UnboxError`.
-    private static func performUnboxingWithDictionaryAndContext<T: UnboxableWithContext>(dictionaries: [UnboxableDictionary], context: T.ContextType, allowInvalidElements: Bool = false) throws -> [T] {
-        return allowInvalidElements
-            ? dictionaries.flatMap { try? UnboxOrThrow($0, context: context) }
-            : try dictionaries.map { try UnboxOrThrow($0, context: context) }
-    }
-
-    /// Unbox binary data into a model `T`, while using a required contextual object. Throws `UnboxError`.
-    private static func performUnboxingWithDataAndContext<T: UnboxableWithContext>(data: NSData, context: T.ContextType) throws -> T {
-        return try Unboxer.unboxerFromData(data, context: context).performUnboxingWithContext(context)
-    }
-
-    /// Unbox binary data into an array of `T`, while using a required contextual object. Throws `UnboxError`.
-    private static func performUnboxingWithDataAndContext<T: UnboxableWithContext>(data: NSData, context: T.ContextType, allowInvalidElements: Bool = false) throws -> [T] {
-        return try Unboxer.unboxersFromData(data, context: context, allowInvalidElements: allowInvalidElements).map {
-            return try $0.performUnboxingWithContext(context)
-        }
-    }
-    
     // MARK: - Custom unboxing API
     
     /// Perform custom unboxing using an Unboxer (created from a dictionary) passed to a closure, or throw an UnboxError
@@ -740,6 +690,54 @@ private extension Unboxer {
         try self.throwIfFailed()
         
         return unboxed
+    }
+
+    /// Unbox a JSON dictionary into a model `T`, while optionally using a contextual object. Throws `UnboxError`.
+    static func performUnboxingWithDictionary<T: Unboxable>(dictionary: UnboxableDictionary, context: Any? = nil) throws -> T {
+        return try Unboxer(dictionary: dictionary, context: context, allowInvalidElements: false).performUnboxing()
+    }
+
+    /// Unbox an array of JSON dictionaries into an array of `T`, while optionally using a contextual object. Throws `UnboxError`.
+    static func performUnboxingWithDictionary<T: Unboxable>(dictionaries: [UnboxableDictionary], context: Any? = nil, allowInvalidElements: Bool = false) throws -> [T] {
+        return allowInvalidElements
+            ? dictionaries.flatMap { try? performUnboxingWithDictionary($0, context: context) }
+            : try dictionaries.map { try performUnboxingWithDictionary($0, context: context) }
+    }
+
+    /// Unbox binary data into a model `T`, while optionally using a contextual object. Throws `UnboxError`.
+    static func performUnboxingWithData<T: Unboxable>(data: NSData, context: Any? = nil) throws -> T {
+        return try Unboxer.unboxerFromData(data, context: context).performUnboxing()
+    }
+
+    /// Unbox binary data into an array of `T`, while optionally using a contextual object. Throws `UnboxError`.
+    static func performUnboxingWithData<T: Unboxable>(data: NSData, context: Any? = nil, allowInvalidElements: Bool = false) throws -> [T] {
+        return try Unboxer.unboxersFromData(data, context: context, allowInvalidElements: allowInvalidElements).map {
+            return try $0.performUnboxing()
+        }
+    }
+
+    /// Unbox a JSON dictionary into a model `T`, while using a required contextual object. Throws `UnboxError`.
+    static func performUnboxingWithDictionaryAndContext<T: UnboxableWithContext>(dictionary: UnboxableDictionary, context: T.ContextType) throws -> T {
+        return try Unboxer(dictionary: dictionary, context: context, allowInvalidElements: false).performUnboxingWithContext(context)
+    }
+
+    /// Unbox an array of JSON dictionaries into an array of `T`, while using a required contextual object. Throws `UnboxError`.
+    static func performUnboxingWithDictionaryAndContext<T: UnboxableWithContext>(dictionaries: [UnboxableDictionary], context: T.ContextType, allowInvalidElements: Bool = false) throws -> [T] {
+        return allowInvalidElements
+            ? dictionaries.flatMap { try? UnboxOrThrow($0, context: context) }
+            : try dictionaries.map { try UnboxOrThrow($0, context: context) }
+    }
+
+    /// Unbox binary data into a model `T`, while using a required contextual object. Throws `UnboxError`.
+    static func performUnboxingWithDataAndContext<T: UnboxableWithContext>(data: NSData, context: T.ContextType) throws -> T {
+        return try Unboxer.unboxerFromData(data, context: context).performUnboxingWithContext(context)
+    }
+
+    /// Unbox binary data into an array of `T`, while using a required contextual object. Throws `UnboxError`.
+    static func performUnboxingWithDataAndContext<T: UnboxableWithContext>(data: NSData, context: T.ContextType, allowInvalidElements: Bool = false) throws -> [T] {
+        return try Unboxer.unboxersFromData(data, context: context, allowInvalidElements: allowInvalidElements).map {
+            return try $0.performUnboxingWithContext(context)
+        }
     }
     
     func throwIfFailed() throws {
