@@ -575,43 +575,30 @@ class UnboxTests: XCTestCase {
     
     func testUnboxWithAllowInvalidElements() {
         struct Model: Unboxable {
-            let id: String
-            let name: String
-            let isActive: Bool
-            let age: Int
-            let registered: NSDate?
-            let tags: [String]
-            let authorLink: String
-            let repliesLink: String
+            let successProperty: String
             let failedProperty: String
             
             init(unboxer: Unboxer) {
-                self.id = unboxer.unbox("id")
-                self.name = unboxer.unbox("name")
-                self.isActive = unboxer.unbox("isActive")
-                self.age = unboxer.unbox("age")
-                self.tags = unboxer.unbox("tags")
-                self.authorLink = unboxer.unbox("meta.link.author", isKeyPath: true)
-                self.repliesLink = unboxer.unbox("meta.link.replies", isKeyPath: true)
-                self.failedProperty = unboxer.unbox("does.not.exist", isKeyPath: true)
-                
-                let formatter = NSDateFormatter()
-                formatter.dateFormat = "YYYY-MM-dd'T'HH:mm:ss"
-                self.registered = unboxer.unbox("registered", formatter: formatter)
+                self.successProperty = unboxer.unbox("success")
+                self.failedProperty = unboxer.unbox("notexist")
             }
         }
         
-        guard let data = JSONMockString.dataUsingEncoding(NSUTF8StringEncoding) else {
-            XCTFail("Could not create data from a string")
-            return
-        }
+        let array: [UnboxableDictionary] = [
+            [
+                "success" : "Hello"
+            ],
+            [
+                "success" : "Unbox"
+            ]
+        ]
         
-        guard let items: [Model] = Unbox(data, allowInvalidElements: true) else {
+        guard let items: [Model] = Unbox(array, allowInvalidElements: true) else {
             XCTFail("Could not unbox collections from data")
             return
         }
         
-        XCTAssert(items.count == 5, "Unbox did not return correct number of elements with invalid data")
+        XCTAssert(items.count == 2, "Unbox did not return correct number of elements with invalid data")
     }
 }
 
@@ -905,134 +892,6 @@ private struct UnboxTestSimpleMock: Unboxable, Equatable {
         self.int = unboxer.unbox("int")
     }
 }
-
-// Generated from: http://www.json-generator.com
-/*
-[
-  {
-    "id": "56fb5031affd22691ea32b92",
-    "name": "Clare Lancaster",
-    "isActive": true,
-    "age": 27,
-    "registered": "2014-07-14T07:04:50",
-    "tags": [
-      "magna",
-      "velit",
-      "qui",
-      "ea",
-      "fugiat",
-      "est",
-      "eiusmod"
-    ],
-    "meta": {
-      "link": {
-        "self": "http://example.com/ex",
-        "author": "http://example.com/exercitation",
-        "collection": "http://example.com/enim",
-        "replies": "http://example.com/fugiat"
-      }
-    }
-  },
-  {
-    "id": "56fb50316dacc51823381a99",
-    "name": "Angela Chan",
-    "isActive": true,
-    "age": 22,
-    "registered": "2016-02-09T04:09:05",
-    "tags": [
-      "sunt",
-      "et",
-      "commodo",
-      "in",
-      "nulla",
-      "id",
-      "sunt"
-    ],
-    "meta": {
-      "link": {
-        "self": "http://example.com/consectetur",
-        "author": "http://example.com/minim",
-        "collection": "http://example.com/sint",
-        "replies": "http://example.com/amet"
-      }
-    }
-  },
-  {
-    "id": "56fb50319138febd691cf0cc",
-    "name": "Duncan Oneill",
-    "isActive": true,
-    "age": 33,
-    "registered": "2014-11-15T02:09:24",
-    "tags": [
-      "fugiat",
-      "ea",
-      "mollit",
-      "culpa",
-      "laborum",
-      "reprehenderit",
-      "sit"
-    ],
-    "meta": {
-      "link": {
-        "self": "http://example.com/velit",
-        "author": "http://example.com/cillum",
-        "collection": "http://example.com/minim",
-        "replies": "http://example.com/cupidatat"
-      }
-    }
-  },
-  {
-    "id": "56fb503199c6c08c8afb0dad",
-    "name": "Burke Nolan",
-    "isActive": true,
-    "age": 40,
-    "registered": "2014-06-04T01:04:40",
-    "tags": [
-      "ullamco",
-      "ullamco",
-      "in",
-      "labore",
-      "sit",
-      "nulla",
-      "Lorem"
-    ],
-    "meta": {
-      "link": {
-        "self": "http://example.com/amet",
-        "author": "http://example.com/sunt",
-        "collection": "http://example.com/reprehenderit",
-        "replies": "http://example.com/commodo"
-      }
-    }
-  },
-  {
-    "id": "56fb503151f18f3ebb06b7e3",
-    "name": "Bruce Keith",
-    "isActive": false,
-    "age": 25,
-    "registered": "2015-07-22T11:05:09",
-    "tags": [
-      "ea",
-      "tempor",
-      "laboris",
-      "nostrud",
-      "magna",
-      "aute",
-      "magna"
-    ],
-    "meta": {
-      "link": {
-        "self": "http://example.com/non",
-        "author": "http://example.com/eiusmod",
-        "collection": "http://example.com/ad",
-        "replies": "http://example.com/eiusmod"
-      }
-    }
-  }
-]
-*/
-// Minified above then escaped quotes: http://www.httputility.net/json-minifier.aspx
-private let JSONMockString: String = "[{\"id\":\"56fb5031affd22691ea32b92\",\"name\":\"Clare Lancaster\",\"isActive\":true,\"age\":27,\"registered\":\"2014-07-14T07:04:50\",\"tags\":[\"magna\",\"velit\",\"qui\",\"ea\",\"fugiat\",\"est\",\"eiusmod\"],\"meta\":{\"link\":{\"self\":\"http://example.com/ex\",\"author\":\"http://example.com/exercitation\",\"collection\":\"http://example.com/enim\",\"replies\":\"http://example.com/fugiat\"}}},{\"id\":\"56fb50316dacc51823381a99\",\"name\":\"Angela Chan\",\"isActive\":true,\"age\":22,\"registered\":\"2016-02-09T04:09:05\",\"tags\":[\"sunt\",\"et\",\"commodo\",\"in\",\"nulla\",\"id\",\"sunt\"],\"meta\":{\"link\":{\"self\":\"http://example.com/consectetur\",\"author\":\"http://example.com/minim\",\"collection\":\"http://example.com/sint\",\"replies\":\"http://example.com/amet\"}}},{\"id\":\"56fb50319138febd691cf0cc\",\"name\":\"Duncan Oneill\",\"isActive\":true,\"age\":33,\"registered\":\"2014-11-15T02:09:24\",\"tags\":[\"fugiat\",\"ea\",\"mollit\",\"culpa\",\"laborum\",\"reprehenderit\",\"sit\"],\"meta\":{\"link\":{\"self\":\"http://example.com/velit\",\"author\":\"http://example.com/cillum\",\"collection\":\"http://example.com/minim\",\"replies\":\"http://example.com/cupidatat\"}}},{\"id\":\"56fb503199c6c08c8afb0dad\",\"name\":\"Burke Nolan\",\"isActive\":true,\"age\":40,\"registered\":\"2014-06-04T01:04:40\",\"tags\":[\"ullamco\",\"ullamco\",\"in\",\"labore\",\"sit\",\"nulla\",\"Lorem\"],\"meta\":{\"link\":{\"self\":\"http://example.com/amet\",\"author\":\"http://example.com/sunt\",\"collection\":\"http://example.com/reprehenderit\",\"replies\":\"http://example.com/commodo\"}}},{\"id\":\"56fb503151f18f3ebb06b7e3\",\"name\":\"Bruce Keith\",\"isActive\":false,\"age\":25,\"registered\":\"2015-07-22T11:05:09\",\"tags\":[\"ea\",\"tempor\",\"laboris\",\"nostrud\",\"magna\",\"aute\",\"magna\"],\"meta\":{\"link\":{\"self\":\"http://example.com/non\",\"author\":\"http://example.com/eiusmod\",\"collection\":\"http://example.com/ad\",\"replies\":\"http://example.com/eiusmod\"}}}]"
 
 private func ==(lhs: UnboxTestSimpleMock, rhs: UnboxTestSimpleMock) -> Bool {
     return lhs.int == rhs.int
