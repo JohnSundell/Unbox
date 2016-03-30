@@ -599,6 +599,13 @@ class UnboxTests: XCTestCase {
         }
         
         XCTAssert(items.count == 2, "Unbox did not return correct number of elements with invalid data")
+        
+        guard let items2: [Model] = Unbox(array) else {
+            // Nil expected and correct
+            return
+        }
+        
+        XCTAssert(items2.count > 0, "Unbox should not have return data with invalid data for allowInvalidElements = false")
     }
     
     func testUnboxWithAllowInvalidElementsForData() {
@@ -617,14 +624,21 @@ class UnboxTests: XCTestCase {
         guard let data = json.dataUsingEncoding(NSUTF8StringEncoding) else {
              XCTFail("Could not create data from a string")
              return
-         }
+        }
         
-         guard let items: [Model] = Unbox(data, allowInvalidElements: true) else {
+        guard let items: [Model] = Unbox(data, allowInvalidElements: true) else {
             XCTFail("Could not unbox collections from data")
             return
         }
         
         XCTAssert(items.count == 2, "Unbox did not return correct number of elements with invalid data")
+        
+        guard let items2: [Model] = Unbox(data) else {
+            // Nil expected and correct
+            return
+        }
+        
+        XCTAssert(items2.count > 0, "Unbox should not have return data with invalid data for allowInvalidElements = false")
     }
 }
 
