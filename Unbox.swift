@@ -712,10 +712,12 @@ private extension Unboxer {
     }
     
     static func unbox<T: Unboxable>(data: NSData, context: Any? = nil) -> [T] {
-        let unboxers = try? Unboxer.unboxersFromData(data, context: context)
-        return unboxers?.flatMap {
+        guard let unboxers = try? Unboxer.unboxersFromData(data, context: context) else {
+            return []
+        }
+        return unboxers.flatMap {
             return try? $0.performUnboxing()
-        } ?? []
+        }
     }
     
     static func unbox<T: UnboxableWithContext>(dictionary: UnboxableDictionary, context: T.ContextType) -> T? {
@@ -741,10 +743,12 @@ private extension Unboxer {
     }
     
     static func unbox<T: UnboxableWithContext>(data: NSData, context: T.ContextType) -> [T] {
-        let unboxers = try? Unboxer.unboxersFromData(data, context: context)
-        return unboxers?.flatMap {
+        guard let unboxers = try? Unboxer.unboxersFromData(data, context: context) else {
+            return []
+        }
+        return unboxers.flatMap {
             return try? $0.performUnboxingWithContext(context)
-            } ?? []
+        }
     }
     
     // MARK: - Throwing Unbox functions
