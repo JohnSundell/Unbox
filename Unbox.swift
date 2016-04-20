@@ -32,6 +32,7 @@ import CoreGraphics
 public typealias UnboxableDictionary = [String : AnyObject]
 
 // MARK: - Main Unbox functions
+
 /// Unbox a JSON dictionary into a model `T`, while optionally using a contextual object
 public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, context: Any? = nil) -> T? {
     return Unboxer.unbox(dictionary, context: context)
@@ -39,6 +40,11 @@ public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, context: Any? =
 
 /// Unbox an array of JSON dictionaries into an array of `T`, while optionally using a contextual object
 public func Unbox<T: Unboxable>(dictionaries: [UnboxableDictionary], context: Any? = nil) -> [T]? {
+    return Unboxer.unbox(dictionaries, context: context)
+}
+
+/// Unbox an array of JSON dictionaries into an array of `T`, while optionally using a contextual object. Returns properly unboxed objects, silently discards failed unboxed objects
+public func Unbox<T: Unboxable>(dictionaries: [UnboxableDictionary], context: Any? = nil) -> [T] {
     return Unboxer.unbox(dictionaries, context: context)
 }
 
@@ -52,6 +58,11 @@ public func Unbox<T: Unboxable>(data: NSData, context: Any? = nil) -> [T]? {
     return Unboxer.unbox(data, context: context)
 }
 
+/// Unbox binary data into an array of `T`, while optionally using a contextual object. Returns properly unboxed objects, silently discards failed unboxed objects
+public func Unbox<T: Unboxable>(data: NSData, context: Any? = nil) -> [T] {
+    return Unboxer.unbox(data, context: context)
+}
+
 /// Unbox a JSON dictionary into a model `T`, while using a required contextual object
 public func Unbox<T: UnboxableWithContext>(dictionary: UnboxableDictionary, context: T.ContextType) -> T? {
     return Unboxer.unbox(dictionary, context: context)
@@ -62,6 +73,11 @@ public func Unbox<T: UnboxableWithContext>(dictionaries: [UnboxableDictionary], 
     return Unboxer.unbox(dictionaries, context: context)
 }
 
+/// Unbox an array of JSON dictionaries into an array of `T`, while using a required contextual object. Returns properly unboxed objects, silently discards failed unboxed objects
+public func Unbox<T: UnboxableWithContext>(dictionaries: [UnboxableDictionary], context: T.ContextType) -> [T] {
+    return Unboxer.unbox(dictionaries, context: context)
+}
+
 /// Unbox binary data into a model `T`, while using a required contextual object
 public func Unbox<T: UnboxableWithContext>(data: NSData, context: T.ContextType) -> T? {
     return Unboxer.unbox(data, context: context)
@@ -69,6 +85,11 @@ public func Unbox<T: UnboxableWithContext>(data: NSData, context: T.ContextType)
 
 /// Unbox binary data into an array of `T`, while using a required contextual object
 public func Unbox<T: UnboxableWithContext>(data: NSData, context: T.ContextType) -> [T]? {
+    return Unboxer.unbox(data, context: context)
+}
+
+/// Unbox binary data into an array of `T`, while using a required contextual object. Returns properly unboxed objects, silently discards failed unboxed objects
+public func Unbox<T: UnboxableWithContext>(data: NSData, context: T.ContextType) -> [T] {
     return Unboxer.unbox(data, context: context)
 }
 
@@ -676,12 +697,25 @@ private extension Unboxer {
         return try? Unboxer.unboxOrThrow(dictionaries, context: context)
     }
     
+    static func unbox<T: Unboxable>(dictionaries: [UnboxableDictionary], context: Any? = nil) -> [T] {
+        return dictionaries.flatMap {
+            unbox($0, context: context)
+        }
+    }
+    
     static func unbox<T: Unboxable>(data: NSData, context: Any? = nil) -> T? {
         return try? Unboxer.unboxOrThrow(data, context: context)
     }
     
     static func unbox<T: Unboxable>(data: NSData, context: Any? = nil) -> [T]? {
         return try? Unboxer.unboxOrThrow(data, context: context)
+    }
+    
+    static func unbox<T: Unboxable>(data: NSData, context: Any? = nil) -> [T] {
+        let unboxers = try? Unboxer.unboxersFromData(data, context: context)
+        return unboxers?.flatMap {
+            return try? $0.performUnboxing()
+        } ?? []
     }
     
     static func unbox<T: UnboxableWithContext>(dictionary: UnboxableDictionary, context: T.ContextType) -> T? {
@@ -692,12 +726,25 @@ private extension Unboxer {
         return try? Unboxer.unboxOrThrow(dictionaries, context: context)
     }
     
+    static func unbox<T: UnboxableWithContext>(dictionaries: [UnboxableDictionary], context: T.ContextType) -> [T] {
+        return dictionaries.flatMap {
+            unbox($0, context: context)
+        }
+    }
+    
     static func unbox<T: UnboxableWithContext>(data: NSData, context: T.ContextType) -> T? {
         return try? Unboxer.unboxOrThrow(data, context: context)
     }
     
     static func unbox<T: UnboxableWithContext>(data: NSData, context: T.ContextType) -> [T]? {
         return try? Unboxer.unboxOrThrow(data, context: context)
+    }
+    
+    static func unbox<T: UnboxableWithContext>(data: NSData, context: T.ContextType) -> [T] {
+        let unboxers = try? Unboxer.unboxersFromData(data, context: context)
+        return unboxers?.flatMap {
+            return try? $0.performUnboxingWithContext(context)
+            } ?? []
     }
     
     // MARK: - Throwing Unbox functions
