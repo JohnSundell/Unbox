@@ -573,72 +573,57 @@ class UnboxTests: XCTestCase {
         }
     }
     
-    func testUnboxWithAllowInvalidElementsForDictionary() {
+    func testUnboxDictionariesArrayWithObjectsWithFailableProperties() {
         struct Model: Unboxable {
-            let notFailableProperty: String
-            let failableProperty: String?
+            let property1: String
+            let property2: String
             
             init(unboxer: Unboxer) {
-                self.notFailableProperty = unboxer.unbox("exist")
-                self.failableProperty = unboxer.unbox("notexist")
+                self.property1 = unboxer.unbox("notfailable1")
+                self.property2 = unboxer.unbox("notfailable2")
             }
         }
         
         let array: [UnboxableDictionary] = [
             [
-                "exist" : "Hello"
+                "notfailable1" : "Hello",
+                "notfailable2" : "Hello"
             ],
             [
-                "exist" : "Unbox"
+                "notfailable1" : "Hello"
             ]
         ]
         
-        guard let items: [Model] = Unbox(array) else {
-            XCTFail("Could not unbox collections from data")
-            return
-        }
+        let items: [Model] = Unbox(array)
+        XCTAssert(items.count == 1, "Unbox did not return correct number of valid elements")
         
-        XCTAssert(items.count == 2, "Unbox did not return correct number of elements with invalid data")
-        
-        guard let items2: [Model] = Unbox(array) else {
-            // Nil expected and correct
-            return
-        }
-        
-        XCTAssert(items2.count > 0, "Unbox should not have return data with invalid data for allowInvalidElements = false")
+        let items2: [Model]? = Unbox(array)
+        XCTAssert(items2 == nil, "Unbox should not return data")
     }
     
-    func testUnboxWithAllowInvalidElementsForData() {
+    func testUnboxDataArrayWithObjectsWithFailableProperties() {
         struct Model: Unboxable {
-            let notFailableProperty: String
-            let failableProperty: String?
+            let property1: String
+            let property2: String
             
             init(unboxer: Unboxer) {
-                self.notFailableProperty = unboxer.unbox("exist")
-                self.failableProperty = unboxer.unbox("notexist")
+                self.property1 = unboxer.unbox("notfailable1")
+                self.property2 = unboxer.unbox("notfailable2")
             }
         }
         
-        let json = "[{\"exist\":\"Hello\"},{\"exist\":\"Unbox\"}]"
+        let json = "[{\"notfailable1\":\"Hello\",\"notfailable2\":\"Hello\"},{\"notfailable1\":\"Hello\"}]"
         
         guard let data = json.dataUsingEncoding(NSUTF8StringEncoding) else {
              XCTFail("Could not create data from a string")
              return
         }
         
-        guard let items: [Model] = Unbox(data) else {
-            XCTFail("Could not unbox collections from data")
-            return
-        }
+        let items: [Model] = Unbox(data)
+        XCTAssert(items.count == 1, "Unbox did not return correct number of valid elements")
         
-        XCTAssert(items.count == 2, "Unbox did not return correct number of elements with invalid data")
-        
-        guard let items2: [Model] = Unbox(data) else {
-            // Nil expected and correct
-            return
-        }
-        
-        XCTAssert(items2.count > 0, "Unbox should not have return data with invalid data for allowInvalidElements = false")
+        let items2: [Model]? = Unbox(data)
+        XCTAssert(items2 == nil, "Unbox should not return data")
     }
 }
 
