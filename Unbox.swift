@@ -680,7 +680,7 @@ private extension Unboxer {
             }
             
             return array.map({
-                return Unboxer(dictionary: $0, context: context)
+                Unboxer(dictionary: $0, context: context)
             })
         } catch {
             throw UnboxError.InvalidData
@@ -716,7 +716,7 @@ private extension Unboxer {
             return []
         }
         return unboxers.flatMap {
-            return try? $0.performUnboxing()
+            try? $0.performUnboxing()
         }
     }
     
@@ -747,7 +747,7 @@ private extension Unboxer {
             return []
         }
         return unboxers.flatMap {
-            return try? $0.performUnboxingWithContext(context)
+            try? $0.performUnboxingWithContext(context)
         }
     }
     
@@ -769,7 +769,7 @@ private extension Unboxer {
 
     static func unboxOrThrow<T: Unboxable>(data: NSData, context: Any? = nil) throws -> [T] {
         return try Unboxer.unboxersFromData(data, context: context).map {
-            return try $0.performUnboxing()
+            try $0.performUnboxing()
         }
     }
 
@@ -789,7 +789,7 @@ private extension Unboxer {
 
     static func unboxOrThrow<T: UnboxableWithContext>(data: NSData, context: T.ContextType) throws -> [T] {
         return try Unboxer.unboxersFromData(data, context: context).map {
-            return try $0.performUnboxingWithContext(context)
+            try $0.performUnboxingWithContext(context)
         }
     }
     
