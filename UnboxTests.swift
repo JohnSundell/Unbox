@@ -575,25 +575,25 @@ class UnboxTests: XCTestCase {
     
     func testUnboxWithAllowInvalidElementsForDictionary() {
         struct Model: Unboxable {
-            let successProperty: String
-            let failedProperty: String
+            let notFailableProperty: String
+            let failableProperty: String?
             
             init(unboxer: Unboxer) {
-                self.successProperty = unboxer.unbox("success")
-                self.failedProperty = unboxer.unbox("notexist")
+                self.notFailableProperty = unboxer.unbox("exist")
+                self.failableProperty = unboxer.unbox("notexist")
             }
         }
         
         let array: [UnboxableDictionary] = [
             [
-                "success" : "Hello"
+                "exist" : "Hello"
             ],
             [
-                "success" : "Unbox"
+                "exist" : "Unbox"
             ]
         ]
         
-        guard let items: [Model] = Unbox(array, allowInvalidElements: true) else {
+        guard let items: [Model] = Unbox(array) else {
             XCTFail("Could not unbox collections from data")
             return
         }
@@ -610,23 +610,23 @@ class UnboxTests: XCTestCase {
     
     func testUnboxWithAllowInvalidElementsForData() {
         struct Model: Unboxable {
-            let successProperty: String
-            let failedProperty: String
+            let notFailableProperty: String
+            let failableProperty: String?
             
             init(unboxer: Unboxer) {
-                self.successProperty = unboxer.unbox("success")
-                self.failedProperty = unboxer.unbox("notexist")
+                self.notFailableProperty = unboxer.unbox("exist")
+                self.failableProperty = unboxer.unbox("notexist")
             }
         }
         
-        let json = "[{\"success\":\"Hello\"},{\"success\":\"Unbox\"}]"
+        let json = "[{\"exist\":\"Hello\"},{\"exist\":\"Unbox\"}]"
         
         guard let data = json.dataUsingEncoding(NSUTF8StringEncoding) else {
              XCTFail("Could not create data from a string")
              return
         }
         
-        guard let items: [Model] = Unbox(data, allowInvalidElements: true) else {
+        guard let items: [Model] = Unbox(data) else {
             XCTFail("Could not unbox collections from data")
             return
         }
