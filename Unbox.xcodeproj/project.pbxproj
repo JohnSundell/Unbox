@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 47;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -48,18 +48,13 @@
 		52D6D9861BEFF229002C0205 /* Unbox-iOS Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Unbox-iOS Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		52D6D9961BEFF375002C0205 /* Unbox.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Unbox.swift; sourceTree = "<group>"; };
 		52D6D9971BEFF375002C0205 /* UnboxTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnboxTests.swift; sourceTree = "<group>"; };
-		52D6D99D1BEFF38C002C0205 /* iOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = iOS.plist; sourceTree = "<group>"; };
-		52D6D99E1BEFF38C002C0205 /* Tests-iOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Tests-iOS.plist"; sourceTree = "<group>"; };
 		52D6D9E21BEFFF6E002C0205 /* Unbox.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Unbox.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		52D6D9F01BEFFFBE002C0205 /* Unbox.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Unbox.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		52D6DA071BF00008002C0205 /* tvOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = tvOS.plist; sourceTree = "<group>"; };
-		52D6DA081BF00008002C0205 /* watchOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = watchOS.plist; sourceTree = "<group>"; };
 		52D6DA0F1BF000BD002C0205 /* Unbox.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Unbox.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		DD7502701C68FC08006590AF /* OSX.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = OSX.plist; sourceTree = "<group>"; };
+		AD2FAA261CD0B6D800659CF4 /* Unbox.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Unbox.plist; sourceTree = "<group>"; };
+		AD2FAA281CD0B6E100659CF4 /* UnboxTests.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = UnboxTests.plist; sourceTree = "<group>"; };
 		DD75027A1C68FCFC006590AF /* Unbox-OSX Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Unbox-OSX Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		DD7502851C68FD26006590AF /* Tests-OSX.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Tests-OSX.plist"; sourceTree = "<group>"; };
 		DD75028D1C690C7A006590AF /* Unbox-tvOS Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Unbox-tvOS Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		DD7502981C690C94006590AF /* Tests-tvOS.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Tests-tvOS.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -154,10 +149,7 @@
 		DD7502721C68FC1B006590AF /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				52D6D99D1BEFF38C002C0205 /* iOS.plist */,
-				DD7502701C68FC08006590AF /* OSX.plist */,
-				52D6DA071BF00008002C0205 /* tvOS.plist */,
-				52D6DA081BF00008002C0205 /* watchOS.plist */,
+				AD2FAA261CD0B6D800659CF4 /* Unbox.plist */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -165,9 +157,7 @@
 		DD7502731C68FC20006590AF /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				DD7502981C690C94006590AF /* Tests-tvOS.plist */,
-				52D6D99E1BEFF38C002C0205 /* Tests-iOS.plist */,
-				DD7502851C68FD26006590AF /* Tests-OSX.plist */,
+				AD2FAA281CD0B6E100659CF4 /* UnboxTests.plist */,
 			);
 			name = Tests;
 			sourceTree = "<group>";
@@ -366,7 +356,7 @@
 				};
 			};
 			buildConfigurationList = 52D6D9761BEFF229002C0205 /* Build configuration list for PBXProject "Unbox" */;
-			compatibilityVersion = "Xcode 3.2";
+			compatibilityVersion = "Xcode 6.3";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -616,7 +606,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = Configs/iOS.plist;
+				INFOPLIST_FILE = Configs/Unbox.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
@@ -637,7 +627,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = Configs/iOS.plist;
+				INFOPLIST_FILE = Configs/Unbox.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
@@ -651,7 +641,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				INFOPLIST_FILE = "Configs/Tests-iOS.plist";
+				INFOPLIST_FILE = Configs/UnboxTests.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.unbox.Unbox-iOS-Tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -663,7 +653,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				INFOPLIST_FILE = "Configs/Tests-iOS.plist";
+				INFOPLIST_FILE = Configs/UnboxTests.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.unbox.Unbox-iOS-Tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -678,7 +668,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = Configs/watchOS.plist;
+				INFOPLIST_FILE = Configs/Unbox.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.unbox.Unbox-watchOS";
@@ -698,7 +688,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = Configs/watchOS.plist;
+				INFOPLIST_FILE = Configs/Unbox.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.unbox.Unbox-watchOS";
@@ -718,7 +708,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = Configs/tvOS.plist;
+				INFOPLIST_FILE = Configs/Unbox.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.unbox.Unbox-tvOS";
@@ -738,7 +728,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = Configs/tvOS.plist;
+				INFOPLIST_FILE = Configs/Unbox.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.unbox.Unbox-tvOS";
@@ -761,7 +751,7 @@
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_VERSION = A;
-				INFOPLIST_FILE = Configs/OSX.plist;
+				INFOPLIST_FILE = Configs/Unbox.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
@@ -783,7 +773,7 @@
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_VERSION = A;
-				INFOPLIST_FILE = Configs/OSX.plist;
+				INFOPLIST_FILE = Configs/Unbox.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
@@ -799,7 +789,7 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_FILE = "Configs/Tests-OSX.plist";
+				INFOPLIST_FILE = Configs/UnboxTests.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.unbox.Unbox-OSX-Tests";
@@ -813,7 +803,7 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_FILE = "Configs/Tests-OSX.plist";
+				INFOPLIST_FILE = Configs/UnboxTests.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.unbox.Unbox-OSX-Tests";
@@ -825,7 +815,7 @@
 		DD7502961C690C7A006590AF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				INFOPLIST_FILE = "Configs/Tests-tvOS.plist";
+				INFOPLIST_FILE = Configs/UnboxTests.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.unbox.Unbox-tvOS-Tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -837,7 +827,7 @@
 		DD7502971C690C7A006590AF /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				INFOPLIST_FILE = "Configs/Tests-tvOS.plist";
+				INFOPLIST_FILE = Configs/UnboxTests.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.unbox.Unbox-tvOS-Tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
