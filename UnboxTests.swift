@@ -572,6 +572,59 @@ class UnboxTests: XCTestCase {
             XCTFail("Unexpected error thrown: \(error)")
         }
     }
+    
+    func testUnboxDictionariesArrayWithObjectsWithFailableProperties() {
+        struct Model: Unboxable {
+            let property1: String
+            let property2: String
+            
+            init(unboxer: Unboxer) {
+                self.property1 = unboxer.unbox("notfailable1")
+                self.property2 = unboxer.unbox("notfailable2")
+            }
+        }
+        
+        let array: [UnboxableDictionary] = [
+            [
+                "notfailable1" : "Hello",
+                "notfailable2" : "Hello"
+            ],
+            [
+                "notfailable1" : "Hello"
+            ]
+        ]
+        
+        let items: [Model] = Unbox(array)
+        XCTAssert(items.count == 1, "Unbox did not return correct number of valid elements")
+        
+        let items2: [Model]? = Unbox(array)
+        XCTAssert(items2 == nil, "Unbox should not return data")
+    }
+    
+    func testUnboxDataArrayWithObjectsWithFailableProperties() {
+        struct Model: Unboxable {
+            let property1: String
+            let property2: String
+            
+            init(unboxer: Unboxer) {
+                self.property1 = unboxer.unbox("notfailable1")
+                self.property2 = unboxer.unbox("notfailable2")
+            }
+        }
+        
+        let json = "[{\"notfailable1\":\"Hello\",\"notfailable2\":\"Hello\"},{\"notfailable1\":\"Hello\"}]"
+        
+        guard let data = json.dataUsingEncoding(NSUTF8StringEncoding) else {
+             XCTFail("Could not create data from a string")
+             return
+        }
+        
+        let items: [Model] = Unbox(data)
+        XCTAssert(items.count == 1, "Unbox did not return correct number of valid elements")
+        
+        let items2: [Model]? = Unbox(data)
+        XCTAssert(items2 == nil, "Unbox should not return data")
+    }
 }
 
 private func UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: Bool) -> UnboxableDictionary {
