@@ -572,6 +572,74 @@ class UnboxTests: XCTestCase {
             XCTFail("Unexpected error thrown: \(error)")
         }
     }
+    
+    func testUnboxWithAllowInvalidElementsForDictionary() {
+        struct Model: Unboxable {
+            let successProperty: String
+            let failedProperty: String
+            
+            init(unboxer: Unboxer) {
+                self.successProperty = unboxer.unbox("success")
+                self.failedProperty = unboxer.unbox("notexist")
+            }
+        }
+        
+        let array: [UnboxableDictionary] = [
+            [
+                "success" : "Hello"
+            ],
+            [
+                "success" : "Unbox"
+            ]
+        ]
+        
+        guard let items: [Model] = Unbox(array, allowInvalidElements: true) else {
+            XCTFail("Could not unbox collections from data")
+            return
+        }
+        
+        XCTAssert(items.count == 2, "Unbox did not return correct number of elements with invalid data")
+        
+        guard let items2: [Model] = Unbox(array) else {
+            // Nil expected and correct
+            return
+        }
+        
+        XCTAssert(items2.count > 0, "Unbox should not have return data with invalid data for allowInvalidElements = false")
+    }
+    
+    func testUnboxWithAllowInvalidElementsForData() {
+        struct Model: Unboxable {
+            let successProperty: String
+            let failedProperty: String
+            
+            init(unboxer: Unboxer) {
+                self.successProperty = unboxer.unbox("success")
+                self.failedProperty = unboxer.unbox("notexist")
+            }
+        }
+        
+        let json = "[{\"success\":\"Hello\"},{\"success\":\"Unbox\"}]"
+        
+        guard let data = json.dataUsingEncoding(NSUTF8StringEncoding) else {
+             XCTFail("Could not create data from a string")
+             return
+        }
+        
+        guard let items: [Model] = Unbox(data, allowInvalidElements: true) else {
+            XCTFail("Could not unbox collections from data")
+            return
+        }
+        
+        XCTAssert(items.count == 2, "Unbox did not return correct number of elements with invalid data")
+        
+        guard let items2: [Model] = Unbox(data) else {
+            // Nil expected and correct
+            return
+        }
+        
+        XCTAssert(items2.count > 0, "Unbox should not have return data with invalid data for allowInvalidElements = false")
+    }
 }
 
 private func UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: Bool) -> UnboxableDictionary {
