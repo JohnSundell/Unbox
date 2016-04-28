@@ -45,20 +45,11 @@ struct User: Unboxable {
 Unbox automatically (or, actually, Swift does) figures out what types your properties are, and decodes them accordingly. Now, we can decode a `User` like this:
 
 ```swift
-let user: User? = Unbox(dictionary)
+let user: User = try Unbox(dictionary)
 ```
 or even:
 ```swift
-let user: User? = Unbox(data)
-```
-
-or if you prefer Swift 2-style error handling instead of optionals:
-```swift
-do {
-    let user: User = try UnboxOrThrow(dictionary)
-} catch {
-    // Error handling
-}
+let user: User = try Unbox(data)
 ```
 
 ### Advanced example
@@ -125,7 +116,7 @@ Decoding JSON is inherently a failable operation. The JSON might be in an unexpe
 
 What all these techniques share is that you never have to manually exit out of an initializer (which in Swift requires you to assign default values to all stored properites, generating a lot of unwanted boilerplate).
 
-Instead, if an error occurs, the currently used `Unboxer` is marked as failed, which in turn will cause `nil` to be returned from the `Unbox()` function call that triggered the unboxing process. Optionally, you can also chose to call `UnboxOrThrow()` when starting the unboxing process to use Swift 2-style error handling in case of an error.
+Instead, if an error occurs, the currently used `Unboxer` is marked as failed, which in turn will cause the `Unbox()` function call that triggered the unboxing process to throw an `UnboxError`.
 
 #### Missing or invalid required properties
 If a non-optional property couldn’t be unboxed, this will automatically cause the current `Unboxer` to be marked as failed.
@@ -187,7 +178,7 @@ struct UniqueIdentifier: UnboxableByTransform {
 
 ### Supports JSON with both Array and Dictionary root objects
 
-No matter if the root object of the JSON that you want to unbox is an `Array` or `Dictionary` - you can use the same `Unbox()` or `UnboxOrThrow()` functions and Unbox will return either a single model or an array of models (based on type inference).
+No matter if the root object of the JSON that you want to unbox is an `Array` or `Dictionary` - you can use the same `Unbox()` function and Unbox will return either a single model or an array of models (based on type inference).
 
 ### Built-in enum support
 
@@ -296,9 +287,9 @@ In case your unboxing code isn’t working like you expect it to, here are some 
 
 Swift cannot find the appropriate overload of the `unbox` method to call. Make sure you have conformed to any required protocol (such as `Unboxable`, `UnboxableEnum`, etc). Note that you can only conform to one Unbox protocol for each type (that is, a type cannot be both an `UnboxableEnum` and `UnboxableByTransform`). Also remember that you can only reference concrete types (not `Protocol` types) in order for Swift to be able to select what overload to use.
 
-**`Unbox()` returns nil**
+**`Unbox()` throws**
 
-Either set a breakpoint in `Unboxer.failForInvalidValue(forKey:)` to see what key/value combination that caused the unboxing process to fail, or use the `do, try, catch` pattern and `UnboxOrThrow` function, which will enable you to access any `UnboxError` thrown in the `catch` block.
+Either set a breakpoint in `Unboxer.failForInvalidValue(forKey:)` to see what key/value combination that caused the unboxing process to fail, or catch an `UnboxError` in the `catch` block when calling `try Unbox()`.
 
 If you need any help in resolving any problems that you might encounter while using Unbox, feel free to open an Issue.
 
