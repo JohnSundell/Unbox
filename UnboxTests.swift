@@ -356,6 +356,41 @@ class UnboxTests: XCTestCase {
         }
     }
     
+    func testUnboxingNestedDictionaryWhileAllowingInvalidElements() {
+        struct Model: Unboxable {
+            let nestedModels: [String : NestedModel]
+            
+            init(unboxer: Unboxer) {
+                self.nestedModels = unboxer.unbox("nested", allowInvalidElements: true)
+            }
+        }
+        
+        struct NestedModel: Unboxable {
+            let string: String
+            
+            init(unboxer: Unboxer) {
+                self.string = unboxer.unbox("string")
+            }
+        }
+        
+        let dictionary: UnboxableDictionary = [
+            "nested" : [
+                "one" : ["string" : "one"],
+                "two" : ["invalid" : "element"],
+                "three" : ["string" : "two"]
+            ]
+        ]
+        
+        do {
+            let unboxed: Model = try Unbox(dictionary)
+            XCTAssertEqual(unboxed.nestedModels.count, 2)
+            XCTAssertEqual(unboxed.nestedModels["one"]?.string, "one")
+            XCTAssertEqual(unboxed.nestedModels["three"]?.string, "two")
+        } catch {
+            XCTFail("\(error)")
+        }
+    }
+    
     func testNestedArray() {
         struct Model: Unboxable {
             let arrays: [[Int]]
