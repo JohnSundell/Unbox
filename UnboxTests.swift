@@ -298,6 +298,30 @@ class UnboxTests: XCTestCase {
         }
     }
     
+    func testUnboxingArrayOfDictionariesWhileAllowingInvalidElements() {
+        struct Model: Unboxable {
+            let string: String
+            
+            init(unboxer: Unboxer) {
+                self.string = unboxer.unbox("string")
+            }
+        }
+        
+        let dictionaries: [UnboxableDictionary] = [
+            ["string" : "one"],
+            ["invalid" : "element"],
+            ["string" : "two"]
+        ]
+        
+        do {
+            let unboxed: [Model] = try Unbox(dictionaries, allowInvalidElements: true)
+            XCTAssertEqual(unboxed.first?.string, "one")
+            XCTAssertEqual(unboxed.last?.string, "two")
+        } catch {
+            XCTFail("\(error)")
+        }
+    }
+    
     func testThrowingForMissingRequiredValues() {
         let validDictionary = UnboxTestDictionaryWithAllRequiredKeysWithValidValues(false)
         
