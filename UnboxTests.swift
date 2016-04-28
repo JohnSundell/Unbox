@@ -298,6 +298,64 @@ class UnboxTests: XCTestCase {
         }
     }
     
+    func testUnboxingArrayOfDictionariesWhileAllowingInvalidElements() {
+        struct Model: Unboxable {
+            let string: String
+            
+            init(unboxer: Unboxer) {
+                self.string = unboxer.unbox("string")
+            }
+        }
+        
+        let dictionaries: [UnboxableDictionary] = [
+            ["string" : "one"],
+            ["invalid" : "element"],
+            ["string" : "two"]
+        ]
+        
+        do {
+            let unboxed: [Model] = try Unbox(dictionaries, allowInvalidElements: true)
+            XCTAssertEqual(unboxed.first?.string, "one")
+            XCTAssertEqual(unboxed.last?.string, "two")
+        } catch {
+            XCTFail("\(error)")
+        }
+    }
+    
+    func testUnboxingNestedArrayOfDictionariesWhileAllowingInvalidElements() {
+        struct Model: Unboxable {
+            let nestedModels: [NestedModel]
+            
+            init(unboxer: Unboxer) {
+                self.nestedModels = unboxer.unbox("nested", allowInvalidElements: true)
+            }
+        }
+        
+        struct NestedModel: Unboxable {
+            let string: String
+            
+            init(unboxer: Unboxer) {
+                self.string = unboxer.unbox("string")
+            }
+        }
+        
+        let dictionary: UnboxableDictionary = [
+            "nested" : [
+                ["string" : "one"],
+                ["invalid" : "element"],
+                ["string" : "two"]
+            ]
+        ]
+        
+        do {
+            let unboxed: Model = try Unbox(dictionary)
+            XCTAssertEqual(unboxed.nestedModels.first?.string, "one")
+            XCTAssertEqual(unboxed.nestedModels.last?.string, "two")
+        } catch {
+            XCTFail("\(error)")
+        }
+    }
+    
     func testThrowingForMissingRequiredValues() {
         let validDictionary = UnboxTestDictionaryWithAllRequiredKeysWithValidValues(false)
         
