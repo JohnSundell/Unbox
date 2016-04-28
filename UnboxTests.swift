@@ -356,6 +356,64 @@ class UnboxTests: XCTestCase {
         }
     }
     
+    func testNestedArray() {
+        struct Model: Unboxable {
+            let arrays: [[Int]]
+            
+            init(unboxer: Unboxer) {
+                self.arrays = unboxer.unbox("arrays")
+            }
+        }
+        
+        let dictionary: UnboxableDictionary = [
+            "arrays": [
+                [1, 2],
+                [3, 4]
+            ]
+        ]
+        
+        do {
+            let unboxed: Model = try Unbox(dictionary)
+            XCTAssertEqual(unboxed.arrays.count, 2)
+            XCTAssertEqual(unboxed.arrays.first!, [1, 2])
+            XCTAssertEqual(unboxed.arrays.last!, [3, 4])
+        } catch {
+            XCTFail("\(error)")
+        }
+    }
+    
+    func testNestedDictionary() {
+        struct Model: Unboxable {
+            let dictionaries: [String : [String : Int]]
+            
+            init(unboxer: Unboxer) {
+                self.dictionaries = unboxer.unbox("dictionaries")
+            }
+        }
+        
+        let dictionary: UnboxableDictionary = [
+            "dictionaries" : [
+                "one" : [
+                    "a" : 1,
+                    "b" : 2
+                ],
+                "two" : [
+                    "c" : 3,
+                    "d" : 4
+                ]
+            ]
+        ]
+        
+        do {
+            let unboxed: Model = try Unbox(dictionary)
+            XCTAssertEqual(unboxed.dictionaries.count, 2)
+            XCTAssertEqual(unboxed.dictionaries["one"]!, ["a" : 1, "b" : 2])
+            XCTAssertEqual(unboxed.dictionaries["two"]!, ["c" : 3, "d" : 4])
+        } catch {
+            XCTFail("\(error)")
+        }
+    }
+    
     func testThrowingForMissingRequiredValues() {
         let validDictionary = UnboxTestDictionaryWithAllRequiredKeysWithValidValues(false)
         
