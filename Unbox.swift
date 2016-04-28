@@ -94,9 +94,9 @@ public enum UnboxError: ErrorType, CustomStringConvertible {
         case .InvalidValue(let key, let valueDescription):
             return baseDescription + "Invalid value (\(valueDescription)) for key (\(key))"
         case .InvalidData:
-            return "Invalid data"
+            return baseDescription + "Invalid NSData"
         case .CustomUnboxingFailed:
-            return "A custom unboxing closure returned nil"
+            return baseDescription + "A custom unboxing closure returned nil"
         }
     }
     
