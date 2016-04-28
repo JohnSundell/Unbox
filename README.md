@@ -279,6 +279,15 @@ Add the line `github "johnsundell/unbox"` to your `Cartfile`
 
 Clone the repo and drag the file `Unbox.swift` into your Xcode project.
 
+### Platform support
+
+Unbox supports all current Apple platforms with the following minimum versions:
+
+- iOS 8
+- OS X 10.11
+- watchOS 2
+- tvOS 9
+
 ### Debugging tips
 
 In case your unboxing code isn’t working like you expect it to, here are some tips on how to debug it:
