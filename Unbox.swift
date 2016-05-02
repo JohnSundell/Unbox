@@ -543,8 +543,8 @@ private class UnboxValueResolver<T> {
                     dictionary = nestedDictionary
                 } else if let nestedArray = dictionary[keyPathComponent] as? [AnyObject] {
                     array = nestedArray
-                } else if let array = array, let index = Int(keyPathComponent) where index < array.count {
-                    dictionary = array[index] as! UnboxableDictionary
+                } else if let array = array, let index = Int(keyPathComponent) where index < array.count, let nestedDictionary = array[index] as? UnboxableDictionary {
+                    dictionary = nestedDictionary
                 } else {
                     return nil
                 }
