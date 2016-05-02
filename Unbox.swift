@@ -529,6 +529,7 @@ private class UnboxValueResolver<T> {
     
     func resolveOptionalValueForKey<R>(key: String, isKeyPath: Bool, transform: T -> R?) -> R? {
         var dictionary = self.unboxer.dictionary
+        var array: [AnyObject]?
         var modifiedKey = key
 
         if isKeyPath && key.containsString(".") {
@@ -540,6 +541,10 @@ private class UnboxValueResolver<T> {
                     modifiedKey = keyPathComponent
                 } else if let nestedDictionary = dictionary[keyPathComponent] as? UnboxableDictionary {
                     dictionary = nestedDictionary
+                } else if let nestedArray = dictionary[keyPathComponent] as? [AnyObject] {
+                    array = nestedArray
+                } else if let array = array, let index = Int(keyPathComponent) where index < array.count {
+                    dictionary = array[index] as! UnboxableDictionary
                 } else {
                     return nil
                 }
@@ -547,6 +552,10 @@ private class UnboxValueResolver<T> {
         }
 
         if let value = dictionary[modifiedKey] as? T {
+            if let transformed = transform(value) {
+                return transformed
+            }
+        } else if let index = Int(modifiedKey), let array = array, let value = array[index] as? T {
             if let transformed = transform(value) {
                 return transformed
             }
