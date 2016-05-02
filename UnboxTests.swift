@@ -609,6 +609,43 @@ class UnboxTests: XCTestCase {
         }
     }
     
+    func testAccessingNestedArrayWithKeyPath() {
+        struct KeyPathModel: Unboxable {
+            let requiredArray: [String]
+            let dictionary: UnboxableDictionary
+            
+            init(unboxer: Unboxer) {
+                let elementKeyPathComponentsFirst = [UnboxTestMock.requiredUnboxableArrayKey, "0", UnboxTestMock.requiredArrayKey, "0"].joinWithSeparator(".")
+                let elementKeyPathComponentsSecond = [UnboxTestMock.requiredUnboxableArrayKey, "0", UnboxTestMock.requiredArrayKey, "1"].joinWithSeparator(".")
+                let elementKeyPathComponentsThird = [UnboxTestMock.requiredUnboxableArrayKey, "0", UnboxTestMock.requiredArrayKey, "2"].joinWithSeparator(".")
+                let elementKeyPathComponentsFourth = [UnboxTestMock.requiredUnboxableArrayKey, "0", UnboxTestMock.requiredArrayKey, "3"].joinWithSeparator(".")
+                let elementKeyPathComponentsFifth = [UnboxTestMock.requiredUnboxableArrayKey, "0", UnboxTestMock.requiredArrayKey, "4"].joinWithSeparator(".")
+                
+                let firstElement: String = unboxer.unbox(elementKeyPathComponentsFirst, isKeyPath: true)
+                let secondElement: String = unboxer.unbox(elementKeyPathComponentsSecond, isKeyPath: true)
+                let thirdElement: String = unboxer.unbox(elementKeyPathComponentsThird, isKeyPath: true)
+                let fourthElement: String = unboxer.unbox(elementKeyPathComponentsFourth, isKeyPath: true)
+                let fifthElement: String = unboxer.unbox(elementKeyPathComponentsFifth, isKeyPath: true)
+                requiredArray = [firstElement, secondElement, thirdElement, fourthElement, fifthElement]
+                
+                let dictionaryKeyPath = [UnboxTestMock.requiredUnboxableDictionaryKey, "test"].joinWithSeparator(".")
+                self.dictionary = unboxer.unbox(dictionaryKeyPath, isKeyPath: true)
+            }
+        }
+        
+        let validDictionary = UnboxTestDictionaryWithAllRequiredKeysWithValidValues(false)
+        let model: KeyPathModel? = try? Unbox(validDictionary)
+        
+        XCTAssertNotNil(model)
+        
+        if let result = model?.dictionary[UnboxTestMock.requiredArrayKey] as? [String], let array = model?.requiredArray {
+            XCTAssertEqual(["unbox", "is", "pretty", "cool", "right?"], result)
+            XCTAssertEqual(result, array)
+        } else {
+            XCTFail()
+        }
+    }
+    
     func testKeysWithDotNotTreatedAsKeyPath() {
         struct Model: Unboxable {
             let int: Int
