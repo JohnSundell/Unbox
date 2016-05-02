@@ -44,6 +44,39 @@ class UnboxTests: XCTestCase {
         XCTAssertNil(unboxed, "Unbox did not return nil for a dictionary with an invalid required URL value")
     }
     
+    func testAutomaticTransformationOfStringsToRawTypes() {
+        struct Model: Unboxable {
+            let requiredInt: Int
+            let optionalInt: Int?
+            let requiredDouble: Double
+            let optionalDouble: Double?
+            
+            init(unboxer: Unboxer) {
+                self.requiredInt = unboxer.unbox("requiredInt")
+                self.optionalInt = unboxer.unbox("optionalInt")
+                self.requiredDouble = unboxer.unbox("requiredDouble")
+                self.optionalDouble = unboxer.unbox("optionalDouble")
+            }
+        }
+        
+        let dictionary: UnboxableDictionary = [
+            "requiredInt" : 7,
+            "optionalInt" : 14,
+            "requiredDouble" : 3.14,
+            "optionalDouble" : 7.12
+        ]
+        
+        do {
+            let unboxed: Model = try Unbox(dictionary)
+            XCTAssertEqual(unboxed.requiredInt, 7)
+            XCTAssertEqual(unboxed.optionalInt, 14)
+            XCTAssertEqual(unboxed.requiredDouble, 3.14)
+            XCTAssertEqual(unboxed.optionalDouble, 7.12)
+        } catch {
+            XCTFail("\(error)")
+        }
+    }
+    
     func testRequiredDateFormatting() {
         struct Model: Unboxable {
             let date: NSDate

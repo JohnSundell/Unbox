@@ -135,7 +135,10 @@ public protocol UnboxCompatibleType {
 }
 
 /// Protocol used to enable a raw type for Unboxing. See default implementations further down.
-public protocol UnboxableRawType: UnboxCompatibleType {}
+public protocol UnboxableRawType: UnboxCompatibleType {
+    /// Transform an instance of this type from an unboxed string
+    static func transformUnboxedString(unboxedString: String) -> Self?
+}
 
 /// Protocol used to enable an enum to be directly unboxable
 public protocol UnboxableEnum: RawRepresentable, UnboxCompatibleType {}
@@ -179,12 +182,20 @@ extension Bool: UnboxableRawType {
     public static func unboxFallbackValue() -> Bool {
         return false
     }
+    
+    public static func transformUnboxedString(unboxedString: String) -> Bool? {
+        return nil
+    }
 }
 
 /// Extension making Int an Unboxable raw type
 extension Int: UnboxableRawType {
     public static func unboxFallbackValue() -> Int {
         return 0
+    }
+    
+    public static func transformUnboxedString(unboxedString: String) -> Int? {
+        return Int(unboxedString)
     }
 }
 
@@ -193,12 +204,20 @@ extension Double: UnboxableRawType {
     public static func unboxFallbackValue() -> Double {
         return 0
     }
+    
+    public static func transformUnboxedString(unboxedString: String) -> Double? {
+        return Double(unboxedString)
+    }
 }
 
 /// Extension making Float an Unboxable raw type
 extension Float: UnboxableRawType {
     public static func unboxFallbackValue() -> Float {
         return 0
+    }
+    
+    public static func transformUnboxedString(unboxedString: String) -> Float? {
+        return Float(unboxedString)
     }
 }
 
@@ -207,12 +226,24 @@ extension CGFloat: UnboxableRawType {
     public static func unboxFallbackValue() -> CGFloat {
         return 0
     }
+    
+    public static func transformUnboxedString(unboxedString: String) -> CGFloat? {
+        guard let double = Double(unboxedString) else {
+            return nil
+        }
+        
+        return CGFloat(double)
+    }
 }
 
 /// Extension making String an Unboxable raw type
 extension String: UnboxableRawType {
     public static func unboxFallbackValue() -> String {
         return ""
+    }
+    
+    public static func transformUnboxedString(unboxedString: String) -> String? {
+        return unboxedString
     }
 }
 
@@ -309,12 +340,24 @@ public class Unboxer {
     
     /// Unbox a required raw type
     public func unbox<T: UnboxableRawType>(key: String, isKeyPath: Bool = false) -> T {
-        return UnboxValueResolver<T>(self).resolveRequiredValueForKey(key, isKeyPath: isKeyPath, fallbackValue: T.unboxFallbackValue())
+        if let rawValue = UnboxValueResolver<T>(self).resolveOptionalValueForKey(key, isKeyPath: isKeyPath) {
+            return rawValue
+        }
+        
+        return UnboxValueResolver<String>(self).resolveRequiredValueForKey(key, isKeyPath: isKeyPath, fallbackValue: T.unboxFallbackValue(), transform: {
+            return T.transformUnboxedString($0)
+        })
     }
     
     /// Unbox an optional raw type
     public func unbox<T: UnboxableRawType>(key: String, isKeyPath: Bool = false) -> T? {
-        return UnboxValueResolver<T>(self).resolveOptionalValueForKey(key, isKeyPath: isKeyPath)
+        if let rawValue = UnboxValueResolver<T>(self).resolveOptionalValueForKey(key, isKeyPath: isKeyPath) {
+            return rawValue
+        }
+        
+        return UnboxValueResolver<String>(self).resolveOptionalValueForKey(key, isKeyPath: isKeyPath, transform: {
+            return T.transformUnboxedString($0)
+        })
     }
     
     /// Unbox a required Array
