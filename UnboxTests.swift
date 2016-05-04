@@ -60,10 +60,10 @@ class UnboxTests: XCTestCase {
         }
         
         let dictionary: UnboxableDictionary = [
-            "requiredInt" : 7,
-            "optionalInt" : 14,
-            "requiredDouble" : 3.14,
-            "optionalDouble" : 7.12
+            "requiredInt" : "7",
+            "optionalInt" : "14",
+            "requiredDouble" : "3.14",
+            "optionalDouble" : "7.12"
         ]
         
         do {
