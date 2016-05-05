@@ -221,7 +221,7 @@ You can also **require** that a contextual object is present during the unboxing
 
 ### Key path support
 
-You can also use key paths to unbox values from nested JSON structures. Let's expand our User model:
+You can also use key paths (for both dictionary keys and array indexes) to unbox values from nested JSON structures. Let's expand our User model:
 
 ```json
 {
@@ -231,7 +231,12 @@ You can also use key paths to unbox values from nested JSON structures. Let's ex
         "running": {
             "distance": 300
         }
-    }
+    },
+    "devices": [
+        "Macbook Pro",
+        "iPhone",
+        "iPad"
+    ]
 }
 ```
 
@@ -240,11 +245,13 @@ struct User: Unboxable {
     let name: String
     let age: Int
     let runningDistance: Int
+    let primaryDeviceName: String
 
     init(unboxer: Unboxer) {
         self.name = unboxer.unbox("name")
         self.age = unboxer.unbox("age")
         self.runningDistance = unboxer.unbox("activities.running.distance", isKeyPath: true)
+        self.primaryDeviceName = unboxer.unbox("devices.0", isKeyPath: true)
     }
 }
 ```
