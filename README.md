@@ -144,6 +144,8 @@ Unbox also supports transformations that let you treat any value or object as if
 
 It ships with a default `String` -> `NSURL` transformation, which lets you unbox any `NSURL` property from a string describing an URL without writing any transformation code.
 
+The same is also true for `String` -> `Int, Double, Float, CGFloat` transformations. If you’re unboxing a number type and a string was found, that string will automatically be converted to that number type (if possible).
+
 To enable your own types to be unboxable using a transformation, all you have to do is make your type conform to `UnboxableByTransform` and implement its protocol methods.
 
 Here’s an example that makes a native Swift `UniqueIdentifier` type unboxable using a transformation:
