@@ -288,6 +288,10 @@ Add the line `github "johnsundell/unbox"` to your `Cartfile`
 
 Clone the repo and drag the file `Unbox.swift` into your Xcode project.
 
+**Swift Package Manager:**
+
+Add the line `.Package(url: "https://github.com/johnsundell/unbox.git", majorVersion: 1)` to your `Package.swift`
+
 ### Platform support
 
 Unbox supports all current Apple platforms with the following minimum versions:
