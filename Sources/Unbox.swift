@@ -85,20 +85,13 @@ public func Unbox<T: UnboxableWithContext>(data: NSData, context: T.ContextType,
 
 // MARK: - Error type
 
-/// Enum describing errors that can occur during unboxing. Use the throwing functions to receive any errors.
-public enum UnboxError: ErrorType, CustomStringConvertible {
+public enum InvalidInputError: ErrorType, CustomStringConvertible {
     public var description: String {
-        let baseDescription = "[Unbox error] "
-        
         switch self {
         case .MissingKey(let key):
-            return baseDescription + "Missing key (\(key))"
+            return "missing key (\(key))"
         case .InvalidValue(let key, let valueDescription):
-            return baseDescription + "Invalid value (\(valueDescription)) for key (\(key))"
-        case .InvalidData:
-            return baseDescription + "Invalid NSData"
-        case .CustomUnboxingFailed:
-            return baseDescription + "A custom unboxing closure returned nil"
+            return "invalid value (\(valueDescription)) for key (\(key))"
         }
     }
     
@@ -107,6 +100,24 @@ public enum UnboxError: ErrorType, CustomStringConvertible {
     /// Thrown when a required key contained an invalid value in an unboxed dictionary. Contains the invalid
     /// key and a description of the invalid data.
     case InvalidValue(String, String)
+}
+
+/// Enum describing errors that can occur during unboxing. Use the throwing functions to receive any errors.
+public enum UnboxError: ErrorType, CustomStringConvertible {
+    public var description: String {
+        let baseDescription = "[Unbox error] "
+        
+        switch self {
+        case .InvalidInput(let errors):
+            return baseDescription + errors.map{"\($0)"}.joinWithSeparator(", ")
+        case .InvalidData:
+            return baseDescription + "Invalid NSData"
+        case .CustomUnboxingFailed:
+            return baseDescription + "A custom unboxing closure returned nil"
+        }
+    }
+    
+    case InvalidInput([InvalidInputError])
     /// Thrown when a piece of data (NSData) could not be unboxed because it was considered invalid
     case InvalidData
     /// Thrown when a custom unboxing closure returned nil
@@ -303,11 +314,11 @@ public class Unboxer {
     /// The underlying JSON dictionary that is being unboxed
     public let dictionary: UnboxableDictionary
     /// Whether the Unboxer has failed, and a `nil` value will be returned from the `Unbox()` function that triggered it.
-    public var hasFailed: Bool { return self.failureInfo != nil }
+    public var hasFailed: Bool { return !self.failureInfo.isEmpty }
     /// Any contextual object that was supplied when unboxing was started
     public let context: Any?
     
-    private var failureInfo: (key: String, value: Any?)?
+    private var failureInfo = [(key: String, value: Any?)]()
     
     // MARK: - Private initializer
     
@@ -539,7 +550,7 @@ public class Unboxer {
     
     /// Make this Unboxer fail for a certain key and invalid value. This will cause the `Unbox()` function that triggered this Unboxer to return `nil`.
     public func failForInvalidValue(invalidValue: Any?, forKey key: String) {
-        self.failureInfo = (key, invalidValue)
+        self.failureInfo.append((key, invalidValue))
     }
 }
 
@@ -710,15 +721,22 @@ private extension Unboxer {
     }
     
     func throwIfFailed() throws {
-        guard let failureInfo = self.failureInfo else {
+        guard !failureInfo.isEmpty else {
             return
         }
         
-        if let failedValue: Any = failureInfo.value {
-            throw UnboxError.InvalidValue(failureInfo.key, "\(failedValue)")
+        var inputErrors = [InvalidInputError]()
+        
+        for failure in failureInfo {
+            if let failedValue: Any = failure.value {
+                inputErrors.append(.InvalidValue(failure.key, "\(failedValue)"))
+            }
+            else {
+                inputErrors.append(.MissingKey(failure.key))
+            }
         }
         
-        throw UnboxError.MissingKey(failureInfo.key)
+        throw UnboxError.InvalidInput(inputErrors)
     }
 }
 
