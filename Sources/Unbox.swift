@@ -85,10 +85,10 @@ public func Unbox<T: UnboxableWithContext>(data: NSData, context: T.ContextType,
 
 // MARK: - Error type
 
-public enum InvalidInputError: ErrorType, CustomStringConvertible {
+public enum UnboxValueError: ErrorType, CustomStringConvertible {
     public var description: String {
         switch self {
-        case .MissingKey(let key):
+        case .MissingValueForKey(let key):
             return "missing key (\(key))"
         case .InvalidValue(let key, let valueDescription):
             return "invalid value (\(valueDescription)) for key (\(key))"
@@ -96,7 +96,7 @@ public enum InvalidInputError: ErrorType, CustomStringConvertible {
     }
     
     /// Thrown when a required key was missing in an unboxed dictionary. Contains the missing key.
-    case MissingKey(String)
+    case MissingValueForKey(String)
     /// Thrown when a required key contained an invalid value in an unboxed dictionary. Contains the invalid
     /// key and a description of the invalid data.
     case InvalidValue(String, String)
@@ -117,7 +117,7 @@ public enum UnboxError: ErrorType, CustomStringConvertible {
         }
     }
     
-    case InvalidInput([InvalidInputError])
+    case InvalidInput([UnboxValueError])
     /// Thrown when a piece of data (NSData) could not be unboxed because it was considered invalid
     case InvalidData
     /// Thrown when a custom unboxing closure returned nil
@@ -725,14 +725,14 @@ private extension Unboxer {
             return
         }
         
-        var inputErrors = [InvalidInputError]()
+        var inputErrors = [UnboxValueError]()
         
         for failure in failureInfo {
             if let failedValue: Any = failure.value {
                 inputErrors.append(.InvalidValue(failure.key, "\(failedValue)"))
             }
             else {
-                inputErrors.append(.MissingKey(failure.key))
+                inputErrors.append(.MissingValueForKey(failure.key))
             }
         }
         
