@@ -85,6 +85,7 @@ public func Unbox<T: UnboxableWithContext>(data: NSData, context: T.ContextType,
 
 // MARK: - Error type
 
+/// Enum describing unboxing errors that were caused by invalid or missing values
 public enum UnboxValueError: ErrorType, CustomStringConvertible {
     public var description: String {
         switch self {
@@ -95,20 +96,20 @@ public enum UnboxValueError: ErrorType, CustomStringConvertible {
         }
     }
     
-    /// Thrown when a required key was missing in an unboxed dictionary. Contains the missing key.
+    /// Thrown when a required key/value was missing in an unboxed dictionary. Contains the missing key.
     case MissingValueForKey(String)
     /// Thrown when a required key contained an invalid value in an unboxed dictionary. Contains the invalid
     /// key and a description of the invalid data.
     case InvalidValue(String, String)
 }
 
-/// Enum describing errors that can occur during unboxing. Use the throwing functions to receive any errors.
+/// Enum describing errors that can occur during unboxing
 public enum UnboxError: ErrorType, CustomStringConvertible {
     public var description: String {
         let baseDescription = "[Unbox error] "
         
         switch self {
-        case .InvalidInput(let errors):
+        case .InvalidValueErrors(let errors):
             return baseDescription + errors.map{"\($0)"}.joinWithSeparator(", ")
         case .InvalidData:
             return baseDescription + "Invalid NSData"
@@ -117,7 +118,8 @@ public enum UnboxError: ErrorType, CustomStringConvertible {
         }
     }
     
-    case InvalidInput([UnboxValueError])
+    /// Thrown when one or many invalid value errors were encountered. See UnboxValueError for more info.
+    case InvalidValueErrors([UnboxValueError])
     /// Thrown when a piece of data (NSData) could not be unboxed because it was considered invalid
     case InvalidData
     /// Thrown when a custom unboxing closure returned nil
@@ -736,7 +738,7 @@ private extension Unboxer {
             }
         }
         
-        throw UnboxError.InvalidInput(inputErrors)
+        throw UnboxError.InvalidValueErrors(inputErrors)
     }
 }
 
