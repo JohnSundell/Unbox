@@ -488,7 +488,7 @@ class UnboxTests: XCTestCase {
         do {
             try Unbox(invalidDictionary) as UnboxTestMock
             XCTFail("Unbox should have thrown for a missing value")
-        } catch UnboxError.InvalidInput(let errors) where !errors.isEmpty {
+        } catch UnboxError.InvalidValues(let errors) where !errors.isEmpty {
             guard case .MissingValueForKey(_) = errors.first! else {
                 XCTFail("Unbox did not return the correct error type")
                 return
@@ -510,7 +510,7 @@ class UnboxTests: XCTestCase {
         do {
             try Unbox(invalidDictionary) as UnboxTestMock
             XCTFail("Unbox should have thrown for an invalid value")
-        } catch UnboxError.InvalidInput(let errors) where !errors.isEmpty {
+        } catch UnboxError.InvalidValues(let errors) where !errors.isEmpty {
             guard case .InvalidValue(_, _) = errors.first! else {
                 XCTFail("Unbox did not return the correct error type")
                 return
