@@ -109,7 +109,7 @@ public enum UnboxError: ErrorType, CustomStringConvertible {
         let baseDescription = "[Unbox error] "
         
         switch self {
-        case .InvalidValueErrors(let errors):
+        case .InvalidValues(let errors):
             return baseDescription + errors.map{"\($0)"}.joinWithSeparator(", ")
         case .InvalidData:
             return baseDescription + "Invalid NSData"
@@ -118,8 +118,8 @@ public enum UnboxError: ErrorType, CustomStringConvertible {
         }
     }
     
-    /// Thrown when one or many invalid value errors were encountered. See UnboxValueError for more info.
-    case InvalidValueErrors([UnboxValueError])
+    /// Thrown when one or many invalid values were encountered. Contains errors for each value. See UnboxValueError for more info.
+    case InvalidValues([UnboxValueError])
     /// Thrown when a piece of data (NSData) could not be unboxed because it was considered invalid
     case InvalidData
     /// Thrown when a custom unboxing closure returned nil
@@ -738,7 +738,7 @@ private extension Unboxer {
             }
         }
         
-        throw UnboxError.InvalidValueErrors(inputErrors)
+        throw UnboxError.InvalidValues(inputErrors)
     }
 }
 
