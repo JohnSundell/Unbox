@@ -822,7 +822,7 @@ private struct UnboxTestDictionaryKey: UnboxableKey {
     
     let key: String
     
-    static func transformUnboxedKey(unboxedKey: String) -> UnboxTestDictionaryKey? {
+    static func transform(unboxedKey: String) -> UnboxTestDictionaryKey? {
         if unboxedKey == "FAIL" {
             return nil
         }
