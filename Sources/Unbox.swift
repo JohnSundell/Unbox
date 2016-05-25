@@ -166,8 +166,8 @@ public protocol UnboxableKey: Hashable, UnboxCompatibleType {
 
 /// Protocol used to enable any type as being unboxable, by transforming a raw value
 public protocol UnboxableByTransform: UnboxCompatibleType {
-    /// The type of raw value that this type can be transformed from
-    associatedtype UnboxRawValueType: UnboxableRawType
+    /// The type of raw value that this type can be transformed from. Must be a valid JSON type.
+    associatedtype UnboxRawValueType
     
     /// Attempt to transform a raw unboxed value into an instance of this type
     static func transformUnboxedValue(unboxedValue: UnboxRawValueType) -> Self?
