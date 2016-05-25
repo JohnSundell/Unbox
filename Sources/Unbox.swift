@@ -90,9 +90,9 @@ public enum UnboxValueError: ErrorType, CustomStringConvertible {
     public var description: String {
         switch self {
         case .MissingValueForKey(let key):
-            return "missing key (\(key))"
+            return "Missing key (\(key))"
         case .InvalidValue(let key, let valueDescription):
-            return "invalid value (\(valueDescription)) for key (\(key))"
+            return "Invalid value (\(valueDescription)) for key (\(key))"
         }
     }
     
@@ -110,7 +110,7 @@ public enum UnboxError: ErrorType, CustomStringConvertible {
         
         switch self {
         case .InvalidValues(let errors):
-            return baseDescription + errors.map{"\($0)"}.joinWithSeparator(", ")
+            return baseDescription + "Invalid values were encountered. Errors: " + errors.map({"\($0)"}).joinWithSeparator(", ")
         case .InvalidData:
             return baseDescription + "Invalid NSData"
         case .CustomUnboxingFailed:
