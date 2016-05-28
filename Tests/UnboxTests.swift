@@ -77,6 +77,131 @@ class UnboxTests: XCTestCase {
         }
     }
     
+    func testUInt() {
+        struct Model: Unboxable {
+            let required: UInt
+            let optional1: UInt?
+            let optional2: UInt?
+            
+            init(unboxer: Unboxer) {
+                self.required = unboxer.unbox("required")
+                self.optional1 = unboxer.unbox("optional1")
+                self.optional2 = unboxer.unbox("optional2")
+            }
+        }
+        
+        let dictionary: UnboxableDictionary = [
+            "required": 27,
+            "optional1": 10
+        ]
+        
+        do {
+            let unboxed: Model = try Unbox(dictionary)
+            XCTAssertEqual(unboxed.required, 27)
+            XCTAssertEqual(unboxed.optional1, 10)
+            XCTAssertNil(unboxed.optional2)
+        } catch {
+            XCTFail("\(error)")
+        }
+    }
+    
+    func testInt32() {
+        struct Model: Unboxable {
+            let required: Int32
+            let optional1: Int32?
+            let optional2: Int32?
+            
+            init(unboxer: Unboxer) {
+                self.required = unboxer.unbox("required")
+                self.optional1 = unboxer.unbox("optional1")
+                self.optional2 = unboxer.unbox("optional2")
+            }
+        }
+        
+        let dictionary: UnboxableDictionary = [
+            "required": 27,
+            "optional1": 10
+        ]
+        
+        do {
+            let unboxed: Model = try Unbox(dictionary)
+            XCTAssertEqual(unboxed.required, 27)
+            XCTAssertEqual(unboxed.optional1, 10)
+            XCTAssertNil(unboxed.optional2)
+        } catch {
+            XCTFail("\(error)")
+        }
+    }
+    
+    func testInt64() {
+        struct Model: Unboxable {
+            let required: Int64
+            let optional1: Int64?
+            let optional2: Int64?
+            
+            init(unboxer: Unboxer) {
+                self.required = unboxer.unbox("required")
+                self.optional1 = unboxer.unbox("optional1")
+                self.optional2 = unboxer.unbox("optional2")
+            }
+        }
+        
+        let dictionary: UnboxableDictionary = [
+            "required": 27,
+            "optional1": 10
+        ]
+        
+        do {
+            let unboxed: Model = try Unbox(dictionary)
+            XCTAssertEqual(unboxed.required, 27)
+            XCTAssertEqual(unboxed.optional1, 10)
+            XCTAssertNil(unboxed.optional2)
+        } catch {
+            XCTFail("\(error)")
+        }
+    }
+    
+    func testImplicitIntegerConversion() {
+        struct Model: Unboxable {
+            let bool1: Bool
+            let bool2: Bool
+            let bool3: Bool
+            let double: Double
+            let float: Float
+            let string: String?
+            
+            init(unboxer: Unboxer) {
+                self.bool1 = unboxer.unbox("bool1")
+                self.bool2 = unboxer.unbox("bool2")
+                self.bool3 = unboxer.unbox("bool3")
+                self.double = unboxer.unbox("double")
+                self.float = unboxer.unbox("float")
+                self.string = unboxer.unbox("string")
+            }
+        }
+        
+        let dictionary: UnboxableDictionary = [
+            "bool1" : 0,
+            "bool2" : 1,
+            "bool3" : 19,
+            "double" : 27,
+            "float" : 39,
+            "string" : 7
+        ]
+        
+        do {
+            let unboxed: Model = try Unbox(dictionary)
+            XCTAssertFalse(unboxed.bool1)
+            XCTAssertTrue(unboxed.bool2)
+            XCTAssertTrue(unboxed.bool3)
+            XCTAssertEqual(unboxed.double, Double(27))
+            XCTAssertEqual(unboxed.float, Float(39))
+            XCTAssertNil(unboxed.string)
+        } catch {
+            XCTFail("\(error)")
+        }
+    }
+    
     func testRequiredDateFormatting() {
         struct Model: Unboxable {
             let date: NSDate
