@@ -775,7 +775,7 @@ class UnboxTests: XCTestCase {
             let lastName: String
             
             init(unboxer: Unboxer) {
-                self.firstName = unboxer.unbox("names.0", isKeyPath: true)
+                self.firstName = unboxer.unbox("names.0")
                 self.lastName = unboxer.unbox("names.1", isKeyPath: true)
             }
         }
@@ -799,8 +799,8 @@ class UnboxTests: XCTestCase {
             let string: String
             
             init(unboxer: Unboxer) {
-                self.int = unboxer.unbox("int.value")
-                self.string = unboxer.unbox("string.value")
+                self.int = unboxer.unbox("int.value", isKeyPath: false)
+                self.string = unboxer.unbox("string.value", isKeyPath: false)
             }
         }
         

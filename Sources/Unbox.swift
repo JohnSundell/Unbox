@@ -427,7 +427,7 @@ public class Unboxer {
     // MARK: - Value accessing API
     
     /// Unbox a required raw type
-    public func unbox<T: UnboxableRawType>(key: String, isKeyPath: Bool = false) -> T {
+    public func unbox<T: UnboxableRawType>(key: String, isKeyPath: Bool = true) -> T {
         if let rawValue = UnboxValueResolver<T>(self).resolveOptionalValueForKey(key, isKeyPath: isKeyPath) {
             return rawValue
         }
@@ -446,7 +446,7 @@ public class Unboxer {
     }
     
     /// Unbox an optional raw type
-    public func unbox<T: UnboxableRawType>(key: String, isKeyPath: Bool = false) -> T? {
+    public func unbox<T: UnboxableRawType>(key: String, isKeyPath: Bool = true) -> T? {
         if let rawValue = UnboxValueResolver<T>(self).resolveOptionalValueForKey(key, isKeyPath: isKeyPath) {
             return rawValue
         }
@@ -465,27 +465,27 @@ public class Unboxer {
     }
     
     /// Unbox a required Array containing values of a raw type
-    public func unbox<T: UnboxableRawType>(key: String, isKeyPath: Bool = false) -> [T] {
+    public func unbox<T: UnboxableRawType>(key: String, isKeyPath: Bool = true) -> [T] {
         return UnboxValueResolver<[T]>(self).resolveRequiredValueForKey(key, isKeyPath: isKeyPath, fallbackValue: [])
     }
     
     /// Unbox an optional Array containing values of a raw type
-    public func unbox<T: UnboxableRawType>(key: String, isKeyPath: Bool = false) -> [T]? {
+    public func unbox<T: UnboxableRawType>(key: String, isKeyPath: Bool = true) -> [T]? {
         return UnboxValueResolver<[T]>(self).resolveOptionalValueForKey(key, isKeyPath: isKeyPath)
     }
     
     /// Unbox a required Array of collections
-    public func unbox<T: CollectionType>(key: String, isKeyPath: Bool = false) -> [T] {
+    public func unbox<T: CollectionType>(key: String, isKeyPath: Bool = true) -> [T] {
         return UnboxValueResolver<[T]>(self).resolveRequiredValueForKey(key, isKeyPath: isKeyPath, fallbackValue: [])
     }
     
     /// Unbox an optional Array of collections
-    public func unbox<T: CollectionType>(key: String, isKeyPath: Bool = false) -> [T]? {
+    public func unbox<T: CollectionType>(key: String, isKeyPath: Bool = true) -> [T]? {
         return UnboxValueResolver<[T]>(self).resolveOptionalValueForKey(key, isKeyPath: isKeyPath)
     }
     
     /// Unbox a required raw value from a certain index in a nested Array
-    public func unbox<T: UnboxableRawType>(key: String, isKeyPath: Bool = false, index: Int) -> T {
+    public func unbox<T: UnboxableRawType>(key: String, isKeyPath: Bool = true, index: Int) -> T {
         return UnboxValueResolver<[T]>(self).resolveRequiredValueForKey(key, isKeyPath: isKeyPath, fallbackValue: T.unboxFallbackValue(), transform: {
             if index < 0 || index >= $0.count {
                 return nil
@@ -496,7 +496,7 @@ public class Unboxer {
     }
     
     /// Unbox an optional raw value from a certain index in a nested Array
-    public func unbox<T: UnboxableRawType>(key: String, isKeyPath: Bool = false, index: Int) -> T? {
+    public func unbox<T: UnboxableRawType>(key: String, isKeyPath: Bool = true, index: Int) -> T? {
         return UnboxValueResolver<[T]>(self).resolveOptionalValueForKey(key, isKeyPath: isKeyPath, transform: {
             if index < 0 || index >= $0.count {
                 return nil
@@ -507,156 +507,156 @@ public class Unboxer {
     }
     
     /// Unbox a required Dictionary with values of multiple/unknown types
-    public func unbox(key: String, isKeyPath: Bool = false) -> UnboxableDictionary {
+    public func unbox(key: String, isKeyPath: Bool = true) -> UnboxableDictionary {
         return UnboxValueResolver<UnboxableDictionary>(self).resolveRequiredValueForKey(key, isKeyPath: isKeyPath, fallbackValue: UnboxableDictionary())
     }
     
     /// Unbox an optional Dictionary with values of multiple/unknown types
-    public func unbox(key: String, isKeyPath: Bool = false) -> UnboxableDictionary? {
+    public func unbox(key: String, isKeyPath: Bool = true) -> UnboxableDictionary? {
         return UnboxValueResolver<UnboxableDictionary>(self).resolveOptionalValueForKey(key, isKeyPath: isKeyPath)
     }
     
     /// Unbox a required Dictionary with values of a single type
-    public func unbox<K: UnboxableKey, V: UnboxableRawType>(key: String, isKeyPath: Bool = false) -> [K : V] {
+    public func unbox<K: UnboxableKey, V: UnboxableRawType>(key: String, isKeyPath: Bool = true) -> [K : V] {
         return UnboxValueResolver<[String : V]>(self).resolveDictionaryValuesForKey(key, isKeyPath: isKeyPath, required: true, allowInvalidElements: false, valueTransform: { $0 }) ?? [:]
     }
     
     /// Unbox an optional Dictionary with values of a single type
-    public func unbox<K: UnboxableKey, V: UnboxableRawType>(key: String, isKeyPath: Bool = false) -> [K : V]? {
+    public func unbox<K: UnboxableKey, V: UnboxableRawType>(key: String, isKeyPath: Bool = true) -> [K : V]? {
         return UnboxValueResolver<[String : V]>(self).resolveDictionaryValuesForKey(key, isKeyPath: isKeyPath, required: false, allowInvalidElements: false, valueTransform: { $0 })
     }
     
     /// Unbox a required Dictionary containing collections
-    public func unbox<K: UnboxableKey, V: CollectionType>(key: String, isKeyPath: Bool = false) -> [K : V] {
+    public func unbox<K: UnboxableKey, V: CollectionType>(key: String, isKeyPath: Bool = true) -> [K : V] {
         return UnboxValueResolver<[String : V]>(self).resolveDictionaryValuesForKey(key, isKeyPath: isKeyPath, required: true, allowInvalidElements: false, valueTransform: { $0 }) ?? [:]
     }
     
     /// Unbox an optional Dictionary containing collections
-    public func unbox<K: UnboxableKey, V: CollectionType>(key: String, isKeyPath: Bool = false) -> [K : V]? {
+    public func unbox<K: UnboxableKey, V: CollectionType>(key: String, isKeyPath: Bool = true) -> [K : V]? {
         return UnboxValueResolver<[String : V]>(self).resolveDictionaryValuesForKey(key, isKeyPath: isKeyPath, required: false, allowInvalidElements: false, valueTransform: { $0 })
     }
     
     /// Unbox a required enum value
-    public func unbox<T: UnboxableEnum>(key: String, isKeyPath: Bool = false) -> T {
+    public func unbox<T: UnboxableEnum>(key: String, isKeyPath: Bool = true) -> T {
         return UnboxValueResolver<T.RawValue>(self).resolveRequiredValueForKey(key, isKeyPath: isKeyPath, fallbackValue: T.unboxFallbackValue(), transform: {
             return T(rawValue: $0)
         })
     }
     
     /// Unbox an optional enum value
-    public func unbox<T: UnboxableEnum>(key: String, isKeyPath: Bool = false) -> T? {
+    public func unbox<T: UnboxableEnum>(key: String, isKeyPath: Bool = true) -> T? {
         return UnboxValueResolver<T.RawValue>(self).resolveOptionalValueForKey(key, isKeyPath: isKeyPath, transform: {
             return T(rawValue: $0)
         })
     }
     
     /// Unbox a required Array of enum raw values to an Array of enums using a transform
-    public func unbox<T: UnboxableEnum>(key: String, isKeyPath: Bool = false) -> [T] {
+    public func unbox<T: UnboxableEnum>(key: String, isKeyPath: Bool = true) -> [T] {
         return UnboxValueResolver<[T.RawValue]>(self).resolveRequiredValueForKey(key, isKeyPath: isKeyPath, fallbackValue: [], transform: { (array) -> [T]? in
             return array.flatMap({ T(rawValue: $0) })
         })
     }
     
     /// Unbox an optional Array of enum raw values to an Array of enums using a transform
-    public func unbox<T: UnboxableEnum>(key: String, isKeyPath: Bool = false) -> [T]? {
+    public func unbox<T: UnboxableEnum>(key: String, isKeyPath: Bool = true) -> [T]? {
         return UnboxValueResolver<[T.RawValue]>(self).resolveOptionalValueForKey(key, isKeyPath: isKeyPath, transform: { (array) -> [T]? in
             return array.flatMap({ T(rawValue: $0) })
         })
     }
     
     /// Unbox a required nested Unboxable, by unboxing a Dictionary and then using a transform
-    public func unbox<T: Unboxable>(key: String, isKeyPath: Bool = false) -> T {
+    public func unbox<T: Unboxable>(key: String, isKeyPath: Bool = true) -> T {
         return UnboxValueResolver<UnboxableDictionary>(self).resolveRequiredValueForKey(key, isKeyPath: isKeyPath, fallbackValue: T.unboxFallbackValue(), transform: {
             return try? Unbox($0, context: self.context)
         })
     }
     
     /// Unbox an optional nested Unboxable, by unboxing a Dictionary and then using a transform
-    public func unbox<T: Unboxable>(key: String, isKeyPath: Bool = false) -> T? {
+    public func unbox<T: Unboxable>(key: String, isKeyPath: Bool = true) -> T? {
         return UnboxValueResolver<UnboxableDictionary>(self).resolveOptionalValueForKey(key, isKeyPath: isKeyPath, transform: {
             return try? Unbox($0, context: self.context)
         })
     }
     
     /// Unbox a required Array of nested Unboxables, by unboxing an Array of Dictionaries and then using a transform (optionally allowing invalid elements)
-    public func unbox<T: Unboxable>(key: String, isKeyPath: Bool = false, allowInvalidElements: Bool = false) -> [T] {
+    public func unbox<T: Unboxable>(key: String, isKeyPath: Bool = true, allowInvalidElements: Bool = false) -> [T] {
         return UnboxValueResolver<[UnboxableDictionary]>(self).resolveRequiredValueForKey(key, isKeyPath: isKeyPath, fallbackValue: [], transform: {
             return try? Unbox($0, context: self.context, allowInvalidElements: allowInvalidElements)
         })
     }
     
     /// Unbox an optional Array of nested Unboxables, by unboxing an Array of Dictionaries and then using a transform (optionally allowing invalid elements)
-    public func unbox<T: Unboxable>(key: String, isKeyPath: Bool = false, allowInvalidElements: Bool = false) -> [T]? {
+    public func unbox<T: Unboxable>(key: String, isKeyPath: Bool = true, allowInvalidElements: Bool = false) -> [T]? {
         return UnboxValueResolver<[UnboxableDictionary]>(self).resolveOptionalValueForKey(key, isKeyPath: isKeyPath, transform: {
             return try? Unbox($0, context: self.context, allowInvalidElements: allowInvalidElements)
         })
     }
     
     /// Unbox a required Dictionary of nested Unboxables, by unboxing an Dictionary of Dictionaries and then using a transform
-    public func unbox<K: UnboxableKey, V: Unboxable>(key: String, isKeyPath: Bool = false, allowInvalidElements: Bool = false) -> [K : V] {
+    public func unbox<K: UnboxableKey, V: Unboxable>(key: String, isKeyPath: Bool = true, allowInvalidElements: Bool = false) -> [K : V] {
         return UnboxValueResolver<[String : UnboxableDictionary]>(self).resolveDictionaryValuesForKey(key, isKeyPath: isKeyPath, required: true, allowInvalidElements: allowInvalidElements, valueTransform: {
             return try? Unbox($0, context: self.context)
         }) ?? [:]
     }
     
     /// Unbox an optional Dictionary of nested Unboxables, by unboxing an Dictionary of Dictionaries and then using a transform
-    public func unbox<K: UnboxableKey, V: Unboxable>(key: String, isKeyPath: Bool = false, allowInvalidElements: Bool = false) -> [K : V]? {
+    public func unbox<K: UnboxableKey, V: Unboxable>(key: String, isKeyPath: Bool = true, allowInvalidElements: Bool = false) -> [K : V]? {
         return UnboxValueResolver<[String : UnboxableDictionary]>(self).resolveDictionaryValuesForKey(key, isKeyPath: isKeyPath, required: false, allowInvalidElements: allowInvalidElements, valueTransform: {
             return try? Unbox($0, context: self.context)
         })
     }
     
     /// Unbox a required nested UnboxableWithContext type
-    public func unbox<T: UnboxableWithContext>(key: String, isKeyPath: Bool = false, context: T.ContextType) -> T {
+    public func unbox<T: UnboxableWithContext>(key: String, isKeyPath: Bool = true, context: T.ContextType) -> T {
         return UnboxValueResolver<UnboxableDictionary>(self).resolveRequiredValueForKey(key, isKeyPath: isKeyPath, fallbackValue: T.unboxFallbackValueWithContext(context), transform: {
             return try? Unbox($0, context: context)
         })
     }
     
     /// Unbox an optional nested UnboxableWithContext type
-    public func unbox<T: UnboxableWithContext>(key: String, isKeyPath: Bool = false, context: T.ContextType) -> T? {
+    public func unbox<T: UnboxableWithContext>(key: String, isKeyPath: Bool = true, context: T.ContextType) -> T? {
         return UnboxValueResolver<UnboxableDictionary>(self).resolveOptionalValueForKey(key, isKeyPath: isKeyPath, transform: {
             return try? Unbox($0, context: context)
         })
     }
     
     /// Unbox a required Array of nested UnboxableWithContext types, by unboxing an Array of Dictionaries and then using a transform (optionally allowing invalid elements)
-    public func unbox<T: UnboxableWithContext>(key: String, isKeyPath: Bool = false, context: T.ContextType, allowInvalidElements: Bool = false) -> [T] {
+    public func unbox<T: UnboxableWithContext>(key: String, isKeyPath: Bool = true, context: T.ContextType, allowInvalidElements: Bool = false) -> [T] {
         return UnboxValueResolver<[UnboxableDictionary]>(self).resolveRequiredValueForKey(key, isKeyPath: isKeyPath, fallbackValue: [], transform: {
             return try? Unbox($0, context: context, allowInvalidElements: allowInvalidElements)
         })
     }
     
     /// Unbox an optional Array of nested UnboxableWithContext types, by unboxing an Array of Dictionaries and then using a transform (optionally allowing invalid elements)
-    public func unbox<T: UnboxableWithContext>(key: String, isKeyPath: Bool = false, context: T.ContextType, allowInvalidElements: Bool = false) -> [T]? {
+    public func unbox<T: UnboxableWithContext>(key: String, isKeyPath: Bool = true, context: T.ContextType, allowInvalidElements: Bool = false) -> [T]? {
         return UnboxValueResolver<[UnboxableDictionary]>(self).resolveOptionalValueForKey(key, isKeyPath: isKeyPath, transform: {
             return try? Unbox($0, context: context, allowInvalidElements: allowInvalidElements)
         })
     }
     
     /// Unbox a required value that can be transformed into its final form
-    public func unbox<T: UnboxableByTransform>(key: String, isKeyPath: Bool = false) -> T {
+    public func unbox<T: UnboxableByTransform>(key: String, isKeyPath: Bool = true) -> T {
         return UnboxValueResolver<T.UnboxRawValueType>(self).resolveRequiredValueForKey(key, isKeyPath: isKeyPath, fallbackValue: T.unboxFallbackValue(), transform: {
             return T.transformUnboxedValue($0)
         })
     }
     
     /// Unbox an optional value that can be transformed into its final form
-    public func unbox<T: UnboxableByTransform>(key: String, isKeyPath: Bool = false) -> T? {
+    public func unbox<T: UnboxableByTransform>(key: String, isKeyPath: Bool = true) -> T? {
         return UnboxValueResolver<T.UnboxRawValueType>(self).resolveOptionalValueForKey(key, isKeyPath: isKeyPath, transform: {
             return T.transformUnboxedValue($0)
         })
     }
     
     /// Unbox a required value that can be formatted using a formatter
-    public func unbox<T: UnboxableWithFormatter, F: UnboxFormatter where F.UnboxFormattedType == T>(key: String, isKeyPath: Bool = false, formatter: F) -> T {
+    public func unbox<T: UnboxableWithFormatter, F: UnboxFormatter where F.UnboxFormattedType == T>(key: String, isKeyPath: Bool = true, formatter: F) -> T {
         return UnboxValueResolver<F.UnboxRawValueType>(self).resolveRequiredValueForKey(key, isKeyPath: isKeyPath, fallbackValue: T.unboxFallbackValue(), transform: {
             return formatter.formatUnboxedValue($0)
         })
     }
     
     /// Unbox an optional value that can be formatted using a formatter
-    public func unbox<T: UnboxableWithFormatter, F: UnboxFormatter where F.UnboxFormattedType == T>(key: String, isKeyPath: Bool = false, formatter: F) -> T? {
+    public func unbox<T: UnboxableWithFormatter, F: UnboxFormatter where F.UnboxFormattedType == T>(key: String, isKeyPath: Bool = true, formatter: F) -> T? {
         return UnboxValueResolver<F.UnboxRawValueType>(self).resolveOptionalValueForKey(key, isKeyPath: isKeyPath, transform: {
             return formatter.formatUnboxedValue($0)
         })
