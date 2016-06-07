@@ -928,28 +928,24 @@ class UnboxTests: XCTestCase {
             ]
         ]
         
-        do {
-            let unboxed: [Any] = try Unboxer.performFlattenedCustomUnboxingWithArray(array, closure: {
-                let unboxer = $0
-                let type = unboxer.unbox("type") as String
-                
-                switch type {
-                case "A":
-                    return ModelA(int: unboxer.unbox("int"))
-                case "B":
-                    return ModelB(string: unboxer.unbox("string"))
-                default:
-                    XCTFail()
-                }
-                
-                return nil
-            })
+        let unboxed: [Any] = Unboxer.performFlattenedCustomUnboxingWithArray(array, closure: {
+            let unboxer = $0
+            let type = unboxer.unbox("type") as String
             
-            XCTAssertEqual((unboxed.first as! ModelA).int, 22)
-            XCTAssertTrue(unboxed.count == 1)
-        } catch {
-            XCTFail("Unexpected error thrown: \(error)")
-        }
+            switch type {
+            case "A":
+                return ModelA(int: unboxer.unbox("int"))
+            case "B":
+                return ModelB(string: unboxer.unbox("string"))
+            default:
+                XCTFail()
+            }
+            
+            return nil
+        })
+        
+        XCTAssertEqual((unboxed.first as! ModelA).int, 22)
+        XCTAssertTrue(unboxed.count == 1)
     }
 }
 
