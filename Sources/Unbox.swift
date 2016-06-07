@@ -407,6 +407,13 @@ public class Unboxer {
         return try Unboxer(dictionary: dictionary, context: context).performCustomUnboxingWithClosure(closure)
     }
     
+    /// Perform custom unboxing on an array of dictionaries, executing a closure with a new Unboxer for each one, discarding elements producing errors
+    public static func performFlattenedCustomUnboxingWithArray<T>(array: [UnboxableDictionary], context: Any? = nil, closure: Unboxer throws -> T?) throws -> [T] {
+        return array.flatMap { (dictionary) -> T? in
+            return try? self.performCustomUnboxingWithDictionary(dictionary, context: context, closure: closure)
+        }
+    }
+    
     /// Perform custom unboxing on an array of dictionaries, executing a closure with a new Unboxer for each one, or throw an UnboxError
     public static func performCustomUnboxingWithArray<T>(array: [UnboxableDictionary], context: Any? = nil, closure: Unboxer throws -> T?) throws -> [T] {
         var unboxedArray = [T]()
