@@ -526,14 +526,42 @@ public class Unboxer {
         return UnboxValueResolver<[String : V]>(self).resolveDictionaryValuesForKey(key, isKeyPath: isKeyPath, required: false, allowInvalidElements: false, valueTransform: { $0 })
     }
     
-    /// Unbox a required Dictionary containing collections
-    public func unbox<K: UnboxableKey, V: CollectionType>(key: String, isKeyPath: Bool = true) -> [K : V] {
+    /// Unbox a required Dictionary containing dictionaries
+    public func unbox<K: UnboxableKey, V where V: CollectionType, V: DictionaryLiteralConvertible, V.Key: Hashable, V.Generator == DictionaryGenerator<V.Key, V.Value>>(key: String, isKeyPath: Bool = true) -> [K : V] {
         return UnboxValueResolver<[String : V]>(self).resolveDictionaryValuesForKey(key, isKeyPath: isKeyPath, required: true, allowInvalidElements: false, valueTransform: { $0 }) ?? [:]
     }
-    
-    /// Unbox an optional Dictionary containing collections
-    public func unbox<K: UnboxableKey, V: CollectionType>(key: String, isKeyPath: Bool = true) -> [K : V]? {
+
+    /// Unbox an optional Dictionary containing dictionaries
+    public func unbox<K: UnboxableKey, V where V: CollectionType, V: DictionaryLiteralConvertible, V.Key: Hashable, V.Generator == DictionaryGenerator<V.Key, V.Value>>(key: String, isKeyPath: Bool = true) -> [K : V]? {
         return UnboxValueResolver<[String : V]>(self).resolveDictionaryValuesForKey(key, isKeyPath: isKeyPath, required: false, allowInvalidElements: false, valueTransform: { $0 })
+    }
+    
+    /// Unbox a required Dictionary containing array of simple values
+    public func unbox<K: UnboxableKey, V: UnboxableRawType>(key: String, isKeyPath: Bool = true, allowInvalidElements: Bool = false) -> [K : [V]] {
+        return UnboxValueResolver<[String: [V]]>(self).resolveDictionaryValuesForKey(key, isKeyPath: isKeyPath, required: true, allowInvalidElements: allowInvalidElements) {
+            return $0
+        } ?? [K: [V]]()
+    }
+    
+    /// Unbox an optional Dictionary containing array of simple values
+    public func unbox<K: UnboxableKey, V: UnboxableRawType>(key: String, isKeyPath: Bool = true, allowInvalidElements: Bool = false) -> [K : [V]]? {
+        return UnboxValueResolver<[String: [V]]>(self).resolveDictionaryValuesForKey(key, isKeyPath: isKeyPath, required: false, allowInvalidElements: allowInvalidElements) {
+            return $0
+        }
+    }
+    
+    /// Unbox a required Dictionary containing array of Unboxables
+    public func unbox<K: UnboxableKey, V: Unboxable>(key: String, isKeyPath: Bool = true, allowInvalidElements: Bool = false) -> [K : [V]] {
+        return UnboxValueResolver<[String: [UnboxableDictionary]]>(self).resolveDictionaryValuesForKey(key, isKeyPath: isKeyPath, required: true, allowInvalidElements: allowInvalidElements) {
+            return try? Unbox($0, context: self.context, allowInvalidElements: allowInvalidElements)
+        } ?? [K: [V]]()
+    }
+
+    /// Unbox an optional Dictionary containing array of Unboxables
+    public func unbox<K: UnboxableKey, V: Unboxable>(key: String, isKeyPath: Bool = true, allowInvalidElements: Bool = false) -> [K : [V]]? {
+        return UnboxValueResolver<[String: [UnboxableDictionary]]>(self).resolveDictionaryValuesForKey(key, isKeyPath: isKeyPath, required: false, allowInvalidElements: allowInvalidElements) {
+                        return try? Unbox($0, context: self.context, allowInvalidElements: allowInvalidElements)
+        }
     }
     
     /// Unbox a required enum value
@@ -772,7 +800,7 @@ extension UnboxValueResolver where T: CollectionType, T: DictionaryLiteralConver
             self.unboxer.failForInvalidValue(self.unboxer.dictionary[key], forKey: key)
         }
         
-        return [:]
+        return nil
     }
 }
 
