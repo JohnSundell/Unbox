@@ -191,7 +191,7 @@ enum Profession: Int, UnboxableEnum {
     case Developer
     case Astronaut
 
-    static func unboxFallbackValue() {
+    static func unboxFallbackValue() -> Profession {
         return .Developer
     }
 }
