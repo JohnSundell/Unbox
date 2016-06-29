@@ -205,16 +205,19 @@ class UnboxTests: XCTestCase {
     func testRequiredDateFormatting() {
         struct Model: Unboxable {
             let date: NSDate
+            let dateArray: [NSDate]
             
             init(unboxer: Unboxer) {
                 let formatter = NSDateFormatter()
                 formatter.dateFormat = "YYYY-MM-dd"
                 self.date = unboxer.unbox("date", formatter: formatter)
+                self.dateArray = unboxer.unbox("dateArray", formatter: formatter)
             }
         }
         
         let dictionary: UnboxableDictionary = [
-            "date" : "2015-12-15"
+            "date" : "2015-12-15",
+            "dateArray" : ["2015-12-15"]
         ]
         
         do {
@@ -224,16 +227,38 @@ class UnboxTests: XCTestCase {
             XCTAssertEqual(calendar.component(.Year, fromDate: unboxed.date), 2015)
             XCTAssertEqual(calendar.component(.Month, fromDate: unboxed.date), 12)
             XCTAssertEqual(calendar.component(.Day, fromDate: unboxed.date), 15)
+            
+            if let firstDate = unboxed.dateArray.first {
+                XCTAssertEqual(calendar.component(.Year, fromDate: firstDate), 2015)
+                XCTAssertEqual(calendar.component(.Month, fromDate: firstDate), 12)
+                XCTAssertEqual(calendar.component(.Day, fromDate: firstDate), 15)
+            } else {
+                XCTFail("Array empty")
+            }
+            
         } catch {
             XCTFail("\(error)")
         }
         
         do {
-            let invalidDictionary: UnboxableDictionary = [
-                "date" : "2015-12-tuesday"
+            let invalidDateDictionary: UnboxableDictionary = [
+                "date" : "2015-12-tuesday",
+                "dateArray" : ["2015-12-15"]
             ]
             
-            try Unbox(invalidDictionary) as Model
+            try Unbox(invalidDateDictionary) as Model
+            XCTFail("Should have thrown")
+        } catch {
+            // Test passed
+        }
+        
+        do {
+            let invalidDateArrayDictionary: UnboxableDictionary = [
+                "date" : "2015-12-15",
+                "dateArray" : ["2015-12-tuesday"]
+            ]
+            
+            try Unbox(invalidDateArrayDictionary) as Model
             XCTFail("Should have thrown")
         } catch {
             // Test passed
@@ -243,21 +268,25 @@ class UnboxTests: XCTestCase {
     func testOptionalDateFormattingFailureNotThrowing() {
         struct Model: Unboxable {
             let date: NSDate?
+            let dateArray: [NSDate]?
             
             init(unboxer: Unboxer) {
                 let formatter = NSDateFormatter()
                 formatter.dateFormat = "YYYY-MM-dd"
                 self.date = unboxer.unbox("date", formatter: formatter)
+                self.dateArray = unboxer.unbox("dateArray", formatter: formatter)
             }
         }
         
         do {
             let invalidDictionary: UnboxableDictionary = [
-                "date" : "2015-12-tuesday"
+                "date" : "2015-12-tuesday",
+                "dateArray" : ["2015-12-tuesday"]
             ]
             
             let unboxed: Model = try Unbox(invalidDictionary)
             XCTAssertNil(unboxed.date)
+            XCTAssertNil(unboxed.dateArray)
         } catch {
             XCTFail("\(error)")
         }
