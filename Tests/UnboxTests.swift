@@ -262,6 +262,8 @@ class UnboxTests: XCTestCase {
             
             let unboxed: AllowInvalidElementsModel = try Unbox(invalidValueDateArrayDictionary)
             
+            XCTAssertEqual(unboxed.dateArray.count, 1)
+            
             if let firstDate = unboxed.dateArray.first {
                 let calendar = NSCalendar.currentCalendar()
                 XCTAssertEqual(calendar.component(.Year, fromDate: firstDate), 2015)
@@ -347,6 +349,7 @@ class UnboxTests: XCTestCase {
             
             let unboxed: AllowInvalidElementsModel = try Unbox(invalidDictionary)
             XCTAssertNil(unboxed.date)
+            XCTAssertEqual(unboxed.dateArray?.count, 1)
             
             let calendar = NSCalendar.currentCalendar()
             if let firstDate = unboxed.dateArray?.first {
