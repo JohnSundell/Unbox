@@ -205,17 +205,34 @@ class UnboxTests: XCTestCase {
     func testRequiredDateFormatting() {
         struct Model: Unboxable {
             let date: NSDate
+            let dateArray: [NSDate]
             
             init(unboxer: Unboxer) {
                 let formatter = NSDateFormatter()
                 formatter.dateFormat = "YYYY-MM-dd"
                 self.date = unboxer.unbox("date", formatter: formatter)
+                self.dateArray = unboxer.unbox("dateArray", formatter: formatter)
+            }
+        }
+        
+        struct AllowInvalidElementsModel: Unboxable {
+            let date: NSDate
+            let dateArray: [NSDate]
+            
+            init(unboxer: Unboxer) {
+                let formatter = NSDateFormatter()
+                formatter.dateFormat = "YYYY-MM-dd"
+                self.date = unboxer.unbox("date", formatter: formatter)
+                self.dateArray = unboxer.unbox("dateArray", formatter: formatter, allowInvalidElements: true)
             }
         }
         
         let dictionary: UnboxableDictionary = [
-            "date" : "2015-12-15"
+            "date" : "2015-12-15",
+            "dateArray" : ["2015-12-15"]
         ]
+        
+        // Valid tests:
         
         do {
             let unboxed: Model = try Unbox(dictionary)
@@ -224,16 +241,62 @@ class UnboxTests: XCTestCase {
             XCTAssertEqual(calendar.component(.Year, fromDate: unboxed.date), 2015)
             XCTAssertEqual(calendar.component(.Month, fromDate: unboxed.date), 12)
             XCTAssertEqual(calendar.component(.Day, fromDate: unboxed.date), 15)
+            
+            if let firstDate = unboxed.dateArray.first {
+                XCTAssertEqual(calendar.component(.Year, fromDate: firstDate), 2015)
+                XCTAssertEqual(calendar.component(.Month, fromDate: firstDate), 12)
+                XCTAssertEqual(calendar.component(.Day, fromDate: firstDate), 15)
+            } else {
+                XCTFail("Array empty")
+            }
+            
         } catch {
             XCTFail("\(error)")
         }
         
         do {
-            let invalidDictionary: UnboxableDictionary = [
-                "date" : "2015-12-tuesday"
+            let invalidValueDateArrayDictionary: UnboxableDictionary = [
+                "date" : "2015-12-15",
+                "dateArray" : ["2015-12-tuesday", "2015-12-15"]
             ]
             
-            try Unbox(invalidDictionary) as Model
+            let unboxed: AllowInvalidElementsModel = try Unbox(invalidValueDateArrayDictionary)
+            
+            XCTAssertEqual(unboxed.dateArray.count, 1)
+            
+            if let firstDate = unboxed.dateArray.first {
+                let calendar = NSCalendar.currentCalendar()
+                XCTAssertEqual(calendar.component(.Year, fromDate: firstDate), 2015)
+                XCTAssertEqual(calendar.component(.Month, fromDate: firstDate), 12)
+                XCTAssertEqual(calendar.component(.Day, fromDate: firstDate), 15)
+            } else {
+                XCTFail("Array empty")
+            }
+        } catch {
+            XCTFail("\(error)")
+        }
+        
+        // Invalid tests:
+        
+        do {
+            let invalidDateDictionary: UnboxableDictionary = [
+                "date" : "2015-12-tuesday",
+                "dateArray" : ["2015-12-15"]
+            ]
+            
+            try Unbox(invalidDateDictionary) as Model
+            XCTFail("Should have thrown")
+        } catch {
+            // Test passed
+        }
+        
+        do {
+            let invalidDateArrayDictionary: UnboxableDictionary = [
+                "date" : "2015-12-15",
+                "dateArray" : ["2015-12-tuesday"]
+            ]
+            
+            try Unbox(invalidDateArrayDictionary) as Model
             XCTFail("Should have thrown")
         } catch {
             // Test passed
@@ -243,21 +306,60 @@ class UnboxTests: XCTestCase {
     func testOptionalDateFormattingFailureNotThrowing() {
         struct Model: Unboxable {
             let date: NSDate?
+            let dateArray: [NSDate]?
             
             init(unboxer: Unboxer) {
                 let formatter = NSDateFormatter()
                 formatter.dateFormat = "YYYY-MM-dd"
                 self.date = unboxer.unbox("date", formatter: formatter)
+                self.dateArray = unboxer.unbox("dateArray", formatter: formatter)
+            }
+        }
+        
+        struct AllowInvalidElementsModel: Unboxable {
+            let date: NSDate?
+            let dateArray: [NSDate]?
+            
+            init(unboxer: Unboxer) {
+                let formatter = NSDateFormatter()
+                formatter.dateFormat = "YYYY-MM-dd"
+                self.date = unboxer.unbox("date", formatter: formatter)
+                self.dateArray = unboxer.unbox("dateArray", formatter: formatter, allowInvalidElements: true)
             }
         }
         
         do {
             let invalidDictionary: UnboxableDictionary = [
-                "date" : "2015-12-tuesday"
+                "date" : "2015-12-tuesday",
+                "dateArray" : ["2015-12-tuesday"]
             ]
             
             let unboxed: Model = try Unbox(invalidDictionary)
             XCTAssertNil(unboxed.date)
+            XCTAssertNil(unboxed.dateArray)
+        } catch {
+            XCTFail("\(error)")
+        }
+        
+        do {
+            let invalidDictionary: UnboxableDictionary = [
+                "date" : "2015-12-tuesday",
+                "dateArray" : ["2015-12-15", "2015-12-tuesday"]
+            ]
+            
+            let unboxed: AllowInvalidElementsModel = try Unbox(invalidDictionary)
+            XCTAssertNil(unboxed.date)
+            XCTAssertEqual(unboxed.dateArray?.count, 1)
+            
+            let calendar = NSCalendar.currentCalendar()
+            if let firstDate = unboxed.dateArray?.first {
+                XCTAssertEqual(calendar.component(.Year, fromDate: firstDate), 2015)
+                XCTAssertEqual(calendar.component(.Month, fromDate: firstDate), 12)
+                XCTAssertEqual(calendar.component(.Day, fromDate: firstDate), 15)
+            } else {
+                XCTFail("Array empty")
+            }
+            
         } catch {
             XCTFail("\(error)")
         }

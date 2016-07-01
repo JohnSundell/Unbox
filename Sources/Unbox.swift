@@ -692,6 +692,45 @@ public class Unboxer {
         })
     }
     
+    /// Unbox a required Array containing values that can be formatted using a formatter (optionally allowing invalid elements)
+    public func unbox<T: UnboxableWithFormatter, F: UnboxFormatter where F.UnboxFormattedType == T>(key: String, isKeyPath: Bool = true, formatter: F, allowInvalidElements: Bool = false) -> [T] {
+        return UnboxValueResolver<[F.UnboxRawValueType]>(self).resolveRequiredValueForKey(key, isKeyPath: isKeyPath, fallbackValue: [], transform: { (array) -> [T]? in
+            if allowInvalidElements {
+                return array.flatMap({ formatter.formatUnboxedValue($0) })
+            } else {
+                return array.map({ (value) -> T in
+                    if let formattedValue = formatter.formatUnboxedValue(value) {
+                        return formattedValue
+                    }
+                    
+                    self.failForInvalidValue(value, forKey: key)
+                    return T.unboxFallbackValue()
+                })
+            }
+        })
+    }
+    
+    /// Unbox an optional Array containing values that can be formatted using a formatter (optionally allowing invalid elements)
+    public func unbox<T: UnboxableWithFormatter, F: UnboxFormatter where F.UnboxFormattedType == T>(key: String, isKeyPath: Bool = true, formatter: F, allowInvalidElements: Bool = false) -> [T]? {
+        return UnboxValueResolver<[F.UnboxRawValueType]>(self).resolveOptionalValueForKey(key, isKeyPath: isKeyPath, transform: { (array) -> [T]? in
+            if allowInvalidElements {
+                return array.flatMap({ formatter.formatUnboxedValue($0) })
+            } else {
+                var formattedArray = [T]()
+                
+                for value in array {
+                    guard let formattedValue = formatter.formatUnboxedValue(value) else {
+                        return nil
+                    }
+                    
+                    formattedArray.append(formattedValue)
+                }
+                
+                return formattedArray
+            }
+        })
+    }
+    
     /// Make this Unboxer fail for a certain key. This will cause the `Unbox()` function that triggered this Unboxer to return `nil`.
     public func failForKey(key: String) {
         self.failForInvalidValue(nil, forKey: key)
