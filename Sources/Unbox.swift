@@ -716,18 +716,17 @@ public class Unboxer {
             if allowInvalidElements {
                 return array.flatMap({ formatter.formatUnboxedValue($0) })
             } else {
-                var invalidElement = false
+                var formattedArray = [T]()
                 
-                let mapping = array.flatMap({ (value) -> T? in
-                    if let formattedValue = formatter.formatUnboxedValue(value) {
-                        return formattedValue
+                for value in array {
+                    guard let formattedValue = formatter.formatUnboxedValue(value) else {
+                        return nil
                     }
                     
-                    invalidElement = true
-                    return nil
-                })
+                    formattedArray.append(formattedValue)
+                }
                 
-                return invalidElement ? nil : mapping
+                return formattedArray
             }
         })
     }
