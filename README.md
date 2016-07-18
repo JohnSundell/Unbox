@@ -31,10 +31,12 @@ That can be initialized with the following JSON:
 To decode this JSON into a `User` instance, all you have to do is make `User` conform to `Unboxable` and unbox its properties:
 
 ```swift
-struct User: Unboxable {
+struct User {
     let name: String
     let age: Int
+}
 
+extension User: Unboxable {
     init(unboxer: Unboxer) {
         self.name = unboxer.unbox("name")
         self.age = unboxer.unbox("age")
@@ -57,7 +59,7 @@ let user: User = try Unbox(data)
 The first was a pretty simple example, but Unbox can decode even the most complicated JSON structures for you, with both required and optional values, all without any extra code on your part:
 
 ```swift
-struct SpaceShip: Unboxable {
+struct SpaceShip {
     let type: SpaceShipType
     let weight: Double
     let engine: Engine
@@ -65,7 +67,9 @@ struct SpaceShip: Unboxable {
     let launchLiveStreamURL: NSURL?
     let lastPilot: Astronaut?
     let lastLaunchDate: NSDate?
+}
 
+extension SpaceShip: Unboxable {
     init(unboxer: Unboxer) {
         self.type = unboxer.unbox("type")
         self.weight = unboxer.unbox("weight")
@@ -80,34 +84,38 @@ struct SpaceShip: Unboxable {
     }
 }
 
-enum SpaceShipType: Int, UnboxableEnum {
+enum SpaceShipType: Int {
     case Apollo
     case Sputnik
+}
 
+extension SpaceShipType: UnboxableEnum {
     static func unboxFallbackValue() -> SpaceShipType {
         return .Apollo
     }
 }
 
-struct Engine: Unboxable {
+struct Engine {
     let manufacturer: String
     let fuelConsumption: Float
+}
 
+extension Engine: Unboxable {
     init(unboxer: Unboxer) {
         self.manufacturer = unboxer.unbox("manufacturer")
         self.fuelConsumption = unboxer.unbox("fuelConsumption")
     }
 }
 
-struct Astronaut: Unboxable {
+struct Astronaut {
     let name: String
+}
 
+extension Astronaut: Unboxable {
     init(unboxer: Unboxer) {
         self.name = unboxer.unbox("name")
     }
 }
-
-
 ```
 
 ### Error handling
