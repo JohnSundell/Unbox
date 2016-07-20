@@ -41,12 +41,12 @@ public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, context: Any? =
 }
 
 /// Unbox a JSON dictionary into a model `T` beginning at a provided key, optionally using a contextual object. Throws `UnboxError`.
-public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, at key: String, isKeyPath: Bool = false, context: Any? = nil) throws -> T {
+public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, at key: String, isKeyPath: Bool = true, context: Any? = nil) throws -> T {
     return try Unboxer.unboxer(at: key, in: dictionary, isKeyPath: isKeyPath, context: context).performUnboxing()
 }
 
 /// Unbox an array JSON dictionary into a model `T` beginning at a provided key, optionally using a contextual object and/or invalid elements. Throws `UnboxError`.
-public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, at key: String, isKeyPath: Bool = false, context: Any? = nil, allowInvalidElements: Bool = false) throws -> [T] {
+public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, at key: String, isKeyPath: Bool = true, context: Any? = nil, allowInvalidElements: Bool = false) throws -> [T] {
     return try Unboxer.unboxers(at: key, in: dictionary, isKeyPath: isKeyPath, context: context).mapAllowingInvalidElements(allowInvalidElements, transform: {
         return try $0.performUnboxing()
     })
