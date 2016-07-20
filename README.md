@@ -233,18 +233,18 @@ You can also use key paths (for both dictionary keys and array indexes) to unbox
 
 ```json
 {
-		"name": "John",
-    "age": 27,
-    "activities": {
-        "running": {
-            "distance": 300
-        }
-    },
-    "devices": [
-        "Macbook Pro",
-        "iPhone",
-        "iPad"
-    ]
+	"name": "John",
+	"age": 27,
+	"activities": {
+		"running": {
+			"distance": 300
+		}
+	},
+	"devices": [
+		"Macbook Pro",
+		"iPhone",
+		"iPad"
+	]
 }
 ```
 
@@ -270,8 +270,8 @@ You can also use key paths to directly unbox nested JSON structures. This is use
 
 ```json
 {
-	"company": {
-		"name": "Spotify",
+    "company": {
+        "name": "Spotify",
 	},
 	"jobOpenings": [
 		{
@@ -310,7 +310,7 @@ extension Company: Unboxable {
 }
 ```
 
-```
+```swift
 let company: Company = try Unbox(json, at: "company")
 let jobOpenings: [JobOpening] = try Unbox(json, at: "jobOpenings")
 let featuredOpening: JobOpening = try Unbox(json, at: "jobOpenings.0")
