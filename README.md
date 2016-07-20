@@ -233,7 +233,7 @@ You can also use key paths (for both dictionary keys and array indexes) to unbox
 
 ```json
 {
-    "name": "John",
+		"name": "John",
     "age": 27,
     "activities": {
         "running": {
@@ -249,12 +249,14 @@ You can also use key paths (for both dictionary keys and array indexes) to unbox
 ```
 
 ```swift
-struct User: Unboxable {
+struct User {
     let name: String
     let age: Int
     let runningDistance: Int
     let primaryDeviceName: String
+}
 
+extension User: Unboxable {
     init(unboxer: Unboxer) {
         self.name = unboxer.unbox("name")
         self.age = unboxer.unbox("age")
@@ -262,6 +264,56 @@ struct User: Unboxable {
         self.primaryDeviceName = unboxer.unbox("devices.0", isKeyPath: true)
     }
 }
+```
+
+You can also use key paths to directly unbox nested JSON structures. This is useful when you only need to extract a specific object (or objects) out of the JSON body.
+
+```json
+{
+	"company": {
+		"name": "Spotify",
+	},
+	"jobOpenings": [
+		{
+			"title": "Swift Developer",
+			"salary": 120000
+		},
+		{
+			"title": "UI Designer",
+			"salary": 100000
+		},
+	]
+}
+```
+
+```swift
+struct JobOpening {
+	let title: String
+	let salary: Int
+}
+
+extension JobOpening: Unboxable {
+	init(unboxer: Unboxer) {
+		self.title = unboxer.unbox("title")
+		self.salary = unboxer.unbox("salary")
+	}
+}
+
+struct Company {
+	let name: String
+}
+
+extension Company: Unboxable {
+	init(unboxer: Unboxer) {
+		self.name = unboxer.unbox("name")
+	}
+}
+```
+
+```
+let company: Company = try Unbox(json, at: "company")
+let jobOpenings: [JobOpening] = try Unbox(json, at: "jobOpenings")
+let featuredOpening: JobOpening = try Unbox(json, at: "jobOpenings.0")
 ```
 
 ### Custom unboxing
