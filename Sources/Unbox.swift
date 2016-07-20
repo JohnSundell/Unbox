@@ -41,8 +41,8 @@ public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, context: Any? =
 }
 
 /// Unbox a JSON dictionary into a model `T` beginning at a provided key, optionally using a contextual object. Throws `UnboxError`.
-public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, at key: String, context: Any? = nil) throws -> T {
-    return try Unboxer.unboxer(at: key, in: dictionary, context: context).performUnboxing()
+public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, at key: String, isKeyPath: Bool = false, context: Any? = nil) throws -> T {
+    return try Unboxer.unboxer(at: key, in: dictionary, isKeyPath: isKeyPath, context: context).performUnboxing()
 }
 
 /// Unbox an array of JSON dictionaries into an array of `T`, optionally using a contextual object and/or invalid elements. Throws `UnboxError`.
@@ -891,9 +891,25 @@ private extension Unboxer {
         }
     }
     
-    static func unboxer(at key: String, in dictionary: UnboxableDictionary, context: Any?) throws -> Unboxer {
-        guard let nestedDictionary = dictionary[key] as? UnboxableDictionary else {
-            throw UnboxValueError.MissingValueForKey(key)
+    static func unboxer(at key: String, in dictionary: UnboxableDictionary, isKeyPath: Bool, context: Any?) throws -> Unboxer {
+        var dictionary = dictionary
+        var modifiedKey = key
+        
+        if isKeyPath && key.containsString(".") {
+            let components = key.componentsSeparatedByString(".")
+            for i in 0 ..< components.count {
+                let keyPathComponent = components[i]
+                
+                if i == components.count - 1 {
+                    modifiedKey = keyPathComponent
+                } else if let nestedDictionary = dictionary[keyPathComponent] as? UnboxableDictionary {
+                    dictionary = nestedDictionary
+                }
+            }
+        }
+        
+        guard let nestedDictionary = dictionary[modifiedKey] as? UnboxableDictionary else {
+            throw UnboxValueError.MissingValueForKey(modifiedKey)
         }
         
         return Unboxer(dictionary: nestedDictionary, context: context)
