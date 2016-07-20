@@ -485,6 +485,16 @@ public class Unboxer {
     public func unbox<T: CollectionType>(key: String, isKeyPath: Bool = true) -> [T]? {
         return UnboxValueResolver<[T]>(self).resolveOptionalValueForKey(key, isKeyPath: isKeyPath)
     }
+
+    /// Unbox a required Array of values that can be transformed into its final form
+    public func unbox<T: UnboxableByTransform>(key: String, isKeyPath: Bool = true) -> [T] {
+        return UnboxValueResolver<[T]>(self).resolveRequiredValueForKey(key, isKeyPath: isKeyPath, fallbackValue: [])
+    }
+
+    /// Unbox an optional Array of values that can be transformed into its final form
+    public func unbox<T: UnboxableByTransform>(key: String, isKeyPath: Bool = true) -> [T]? {
+        return UnboxValueResolver<[T]>(self).resolveOptionalValueForKey(key, isKeyPath: isKeyPath)
+    }
     
     /// Unbox a required raw value from a certain index in a nested Array
     public func unbox<T: UnboxableRawType>(key: String, isKeyPath: Bool = true, index: Int) -> T {
