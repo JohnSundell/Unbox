@@ -40,6 +40,11 @@ public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, context: Any? =
     return try Unboxer(dictionary: dictionary, context: context).performUnboxing()
 }
 
+/// Unbox a JSON dictionary into a model `T` beginning at a provided key, optionally using a contextual object. Throws `UnboxError`.
+public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, at key: String, context: Any? = nil) throws -> T {
+    return try Unboxer.unboxer(at: key, in: dictionary, context: context).performUnboxing()
+}
+
 /// Unbox an array of JSON dictionaries into an array of `T`, optionally using a contextual object and/or invalid elements. Throws `UnboxError`.
 public func Unbox<T: Unboxable>(dictionaries: [UnboxableDictionary], context: Any? = nil, allowInvalidElements: Bool = false) throws -> [T] {
     return try dictionaries.mapAllowingInvalidElements(allowInvalidElements, transform: {
@@ -49,12 +54,12 @@ public func Unbox<T: Unboxable>(dictionaries: [UnboxableDictionary], context: An
 
 /// Unbox binary data into a model `T`, optionally using a contextual object. Throws `UnboxError`.
 public func Unbox<T: Unboxable>(data: NSData, context: Any? = nil) throws -> T {
-    return try Unboxer.unboxerFromData(data, context: context).performUnboxing()
+    return try Unboxer.unboxer(from: data, context: context).performUnboxing()
 }
 
 /// Unbox binary data into an array of `T`, optionally using a contextual object and/or invalid elements. Throws `UnboxError`.
 public func Unbox<T: Unboxable>(data: NSData, context: Any? = nil, allowInvalidElements: Bool = false) throws -> [T] {
-    return try Unboxer.unboxersFromData(data, context: context).mapAllowingInvalidElements(allowInvalidElements, transform: {
+    return try Unboxer.unboxers(from: data, context: context).mapAllowingInvalidElements(allowInvalidElements, transform: {
         return try $0.performUnboxing()
     })
 }
@@ -73,12 +78,12 @@ public func Unbox<T: UnboxableWithContext>(dictionaries: [UnboxableDictionary], 
 
 /// Unbox binary data into a model `T` using a required contextual object. Throws `UnboxError`.
 public func Unbox<T: UnboxableWithContext>(data: NSData, context: T.ContextType) throws -> T {
-    return try Unboxer.unboxerFromData(data, context: context).performUnboxingWithContext(context)
+    return try Unboxer.unboxer(from: data, context: context).performUnboxingWithContext(context)
 }
 
 /// Unbox binary data into an array of `T` using a required contextual object and/or invalid elements. Throws `UnboxError`.
 public func Unbox<T: UnboxableWithContext>(data: NSData, context: T.ContextType, allowInvalidElements: Bool = false) throws -> [T] {
-    return try Unboxer.unboxersFromData(data, context: context).mapAllowingInvalidElements(allowInvalidElements, transform: {
+    return try Unboxer.unboxers(from: data, context: context).mapAllowingInvalidElements(allowInvalidElements, transform: {
         return try $0.performUnboxingWithContext(context)
     })
 }
@@ -423,7 +428,7 @@ public class Unboxer {
     
     /// Perform custom unboxing using an Unboxer (created from NSData) passed to a closure, or throw an UnboxError
     public static func performCustomUnboxingWithData<T>(data: NSData, context: Any? = nil, closure: Unboxer throws -> T?) throws -> T {
-        return try Unboxer.unboxerFromData(data, context: context).performCustomUnboxingWithClosure(closure)
+        return try Unboxer.unboxer(from: data, context: context).performCustomUnboxingWithClosure(closure)
     }
     
     // MARK: - Value accessing API
@@ -860,7 +865,7 @@ private extension UnboxableWithContext {
 }
 
 private extension Unboxer {
-    static func unboxerFromData(data: NSData, context: Any?) throws -> Unboxer {
+    static func unboxer(from data: NSData, context: Any?) throws -> Unboxer {
         do {
             guard let dictionary = try NSJSONSerialization.JSONObjectWithData(data, options: []) as? UnboxableDictionary else {
                 throw UnboxError.InvalidData
@@ -872,7 +877,7 @@ private extension Unboxer {
         }
     }
     
-    static func unboxersFromData(data: NSData, context: Any?) throws -> [Unboxer] {
+    static func unboxers(from data: NSData, context: Any?) throws -> [Unboxer] {
         do {
             guard let array = try NSJSONSerialization.JSONObjectWithData(data, options: [.AllowFragments]) as? [UnboxableDictionary] else {
                 throw UnboxError.InvalidData
@@ -884,6 +889,14 @@ private extension Unboxer {
         } catch {
             throw UnboxError.InvalidData
         }
+    }
+    
+    static func unboxer(at key: String, in dictionary: UnboxableDictionary, context: Any?) throws -> Unboxer {
+        guard let nestedDictionary = dictionary[key] as? UnboxableDictionary else {
+            throw UnboxValueError.MissingValueForKey(key)
+        }
+        
+        return Unboxer(dictionary: nestedDictionary, context: context)
     }
     
     func performUnboxing<T: Unboxable>() throws -> T {
