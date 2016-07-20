@@ -1210,7 +1210,42 @@ class UnboxTests: XCTestCase {
             XCTFail("Unexpected error thrown: \(error)")
         }
     }
+    
+    func testUnboxingStartingAtCustomKey() {
+        let dictionary: UnboxableDictionary = [
+            "A": [
+                "int": 14
+            ]
+        ]
         
+        do {
+            let unboxed: UnboxTestSimpleMock = try Unbox(dictionary, at: "A")
+            XCTAssertEqual(unboxed.int, 14)
+        } catch {
+            XCTFail("Unexpected error thrown: \(error)")
+        }
+    }
+    
+    func testUnboxingStartingAtMissingCustomKey() {
+        let dictionary: UnboxableDictionary = [
+            "A": [
+                "int": 3
+            ]
+        ]
+        
+        do {
+            let unboxed: UnboxTestSimpleMock = try Unbox(dictionary, at: "B")
+            XCTAssertEqual(unboxed.int, 3)
+        } catch {
+            switch error {
+            case UnboxValueError.MissingValueForKey(let missingKey):
+                XCTAssertEqual(missingKey, "B")
+            default:
+                XCTFail("Unexpected error thrown: \(error)")
+            }
+        }
+    }
+    
 }
 
 private func UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: Bool) -> UnboxableDictionary {
