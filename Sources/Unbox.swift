@@ -391,6 +391,12 @@ public class Unboxer {
     /// Any contextual object that was supplied when unboxing was started
     public let context: Any?
     
+	/// Reference to the parent Unboxer
+	private weak var parent: Unboxer?
+
+	/// The key path used to derive this Unboxer from its parent
+	private var keyPath: String?
+
     private var failureInfo = [(key: String, value: Any?)]()
     
     // MARK: - Private initializer
@@ -741,6 +747,33 @@ public class Unboxer {
         })
     }
     
+	/// Unbox a dictionary to a sub-unboxer. Failures are propagated to this unboxer.
+	public func unbox(key: String, isKeyPath: Bool = true) -> Unboxer {
+		let dictionary: UnboxableDictionary = unbox(key, isKeyPath: isKeyPath)
+		guard !hasFailed else {
+			return Unboxer(dictionary: [:], context: nil) // dummy
+		}
+
+		let child = Unboxer(dictionary: dictionary, context: context)
+		child.parent = self
+		child.keyPath = key
+
+		return child
+	}
+
+	/// Unbox an optional dictionary to a sub-unboxer. Failures are propagated to this unboxer.
+	public func unbox(key: String, isKeyPath: Bool = true) -> Unboxer? {
+		guard let dictionary: UnboxableDictionary = unbox(key, isKeyPath: isKeyPath) else {
+			return nil
+		}
+
+		let child = Unboxer(dictionary: dictionary, context: context)
+		child.parent = self
+		child.keyPath = key
+
+		return child
+	}
+
     /// Make this Unboxer fail for a certain key. This will cause the `Unbox()` function that triggered this Unboxer to return `nil`.
     public func failForKey(key: String) {
         self.failForInvalidValue(nil, forKey: key)
@@ -748,6 +781,11 @@ public class Unboxer {
     
     /// Make this Unboxer fail for a certain key and invalid value. This will cause the `Unbox()` function that triggered this Unboxer to return `nil`.
     public func failForInvalidValue(invalidValue: Any?, forKey key: String) {
+		// propagate failure info to parent
+		if let parent = parent {
+			parent.failForInvalidValue(invalidValue, forKey: [keyPath, key].flatMap({ $0 }).joinWithSeparator("."))
+		}
+
         self.failureInfo.append((key, invalidValue))
     }
 }
