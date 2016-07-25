@@ -41,9 +41,9 @@ public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, context: Any? =
 }
 
 /// Unbox a JSON dictionary into a model `T` beginning at a provided key, optionally using a contextual object. Throws `UnboxError`.
-public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, at key: String, isKeyPath: Bool = true) throws -> T {
-    let context = UnboxContainerContext(key: key, isKeyPath: isKeyPath)
-    let container: UnboxContainer<T> = try Unbox(dictionary, context: context)
+public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, at key: String, isKeyPath: Bool = true, context: Any? = nil) throws -> T {
+    let containerContext = UnboxContainerContext(key: key, isKeyPath: isKeyPath, context: context)
+    let container: UnboxContainer<T> = try Unbox(dictionary, context: containerContext)
     return container.model
 }
 
@@ -55,9 +55,9 @@ public func Unbox<T: Unboxable>(dictionaries: [UnboxableDictionary], context: An
 }
 
 /// Unbox an array JSON dictionary into an array of model `T` beginning at a provided key, optionally using a contextual object and/or invalid elements. Throws `UnboxError`.
-public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, at key: String, isKeyPath: Bool = true) throws -> [T] {
-    let context = UnboxContainerContext(key: key, isKeyPath: isKeyPath)
-    let container: UnboxArrayContainer<T> = try Unbox(dictionary, context: context)
+public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, at key: String, isKeyPath: Bool = true, context: Any? = nil) throws -> [T] {
+    let containerContext = UnboxContainerContext(key: key, isKeyPath: isKeyPath, context: context)
+    let container: UnboxArrayContainer<T> = try Unbox(dictionary, context: containerContext)
     return container.models
 }
 
@@ -874,13 +874,14 @@ extension UnboxValueResolver where T: CollectionType, T: DictionaryLiteralConver
 private struct UnboxContainerContext {
     let key: String
     let isKeyPath: Bool
+    let context: Any?
 }
 
 private struct UnboxContainer<T: Unboxable>: UnboxableWithContext {
     let model: T
     
     init(unboxer: Unboxer, context: UnboxContainerContext) {
-        self.model = unboxer.unbox(context.key, isKeyPath: context.isKeyPath)
+        self.model = unboxer.unbox(context.key, isKeyPath: context.isKeyPath, context: context.context)
     }
 }
 
