@@ -1234,8 +1234,8 @@ class UnboxTests: XCTestCase {
         ]
         
         do {
-            let unboxed: UnboxTestSimpleMock = try Unbox(dictionary, at: "B")
-            XCTAssertEqual(unboxed.int, 14)
+            let _ : UnboxTestSimpleMock = try Unbox(dictionary, at: "B")
+            XCTFail()
         } catch {
             // Test Passed
         }
@@ -1266,8 +1266,8 @@ class UnboxTests: XCTestCase {
         ]
         
         do {
-            let unboxed: UnboxTestSimpleMock = try Unbox(dictionary, at: "A.B", isKeyPath: true)
-            XCTAssertEqual(unboxed.int, 14)
+            let _: UnboxTestSimpleMock = try Unbox(dictionary, at: "A.B", isKeyPath: true)
+            XCTFail()
         } catch {
             // Test Passed
         }
