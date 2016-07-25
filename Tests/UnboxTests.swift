@@ -1237,12 +1237,7 @@ class UnboxTests: XCTestCase {
             let unboxed: UnboxTestSimpleMock = try Unbox(dictionary, at: "B")
             XCTAssertEqual(unboxed.int, 14)
         } catch {
-            switch error {
-            case UnboxValueError.MissingValueForKey(let missingKey):
-                XCTAssertEqual(missingKey, "B")
-            default:
-                XCTFail("Unexpected error thrown: \(error)")
-            }
+            // Test Passed
         }
     }
     
@@ -1274,12 +1269,7 @@ class UnboxTests: XCTestCase {
             let unboxed: UnboxTestSimpleMock = try Unbox(dictionary, at: "A.B", isKeyPath: true)
             XCTAssertEqual(unboxed.int, 14)
         } catch {
-            switch error {
-            case UnboxValueError.MissingValueForKey(let missingKey):
-                XCTAssertEqual(missingKey, "B")
-            default:
-                XCTFail("Unexpected error thrown: \(error)")
-            }
+            // Test Passed
         }
     }
     
@@ -1287,13 +1277,13 @@ class UnboxTests: XCTestCase {
         let dictionary: UnboxableDictionary = [
             "A": [
                 "B": [
-                    "C": [
+                    [
                         "int": 14
                     ],
-                    "D": [
+                    [
                         "int": 14
                     ],
-                    "E": [
+                    [
                         "int": 14
                     ]
                 ]
@@ -1307,38 +1297,6 @@ class UnboxTests: XCTestCase {
             }
         } catch {
             XCTFail("Unexpected error thrown: \(error)")
-        }
-    }
-    
-    func testUnboxingArrayStartingAtMissingCustomKeyPath() {
-        let dictionary: UnboxableDictionary = [
-            "A": [
-                "B": [
-                    "C": [
-                        "int": 14
-                    ],
-                    "D": [
-                        "int": 14
-                    ],
-                    "E": [
-                        "int": 14
-                    ]
-                ]
-            ]
-        ]
-        
-        do {
-            let unboxedArray: [UnboxTestSimpleMock] = try Unbox(dictionary, at: "A.C", isKeyPath: true)
-            unboxedArray.forEach {
-                XCTAssertEqual($0.int, 14)
-            }
-        } catch {
-            switch error {
-            case UnboxValueError.MissingValueForKey(let missingKey):
-                XCTAssertEqual(missingKey, "C")
-            default:
-                XCTFail("Unexpected error thrown: \(error)")
-            }
         }
     }
     
@@ -1362,12 +1320,7 @@ class UnboxTests: XCTestCase {
         do {
             try Unbox(dictionary, at: "A.B.3", isKeyPath: true) as UnboxTestSimpleMock
         } catch {
-            switch error {
-            case UnboxValueError.MissingValueForKey(let missingKey):
-                XCTAssertEqual(missingKey, "3")
-            default:
-                XCTFail("Unexpected error thrown: \(error)")
-            }
+            // Test Passed
         }
     }
     

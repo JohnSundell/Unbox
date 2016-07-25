@@ -41,15 +41,17 @@ public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, context: Any? =
 }
 
 /// Unbox a JSON dictionary into a model `T` beginning at a provided key, optionally using a contextual object. Throws `UnboxError`.
-public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, at key: String, isKeyPath: Bool = true, context: Any? = nil) throws -> T {
-    return try Unboxer.unboxer(at: key, in: dictionary, isKeyPath: isKeyPath, context: context).performUnboxing()
+public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, at key: String, isKeyPath: Bool = true) throws -> T {
+    let context = UnboxContainerContext(key: key, isKeyPath: isKeyPath)
+    let container: UnboxContainer<T> = try Unbox(dictionary, context: context)
+    return container.model
 }
 
-/// Unbox an array JSON dictionary into a model `T` beginning at a provided key, optionally using a contextual object and/or invalid elements. Throws `UnboxError`.
-public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, at key: String, isKeyPath: Bool = true, context: Any? = nil, allowInvalidElements: Bool = false) throws -> [T] {
-    return try Unboxer.unboxers(at: key, in: dictionary, isKeyPath: isKeyPath, context: context).mapAllowingInvalidElements(allowInvalidElements, transform: {
-        return try $0.performUnboxing()
-    })
+/// Unbox an array JSON dictionary into an array of model `T` beginning at a provided key, optionally using a contextual object and/or invalid elements. Throws `UnboxError`.
+public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, at key: String, isKeyPath: Bool = true) throws -> [T] {
+    let context = UnboxContainerContext(key: key, isKeyPath: isKeyPath)
+    let container: UnboxArrayContainer<T> = try Unbox(dictionary, context: context)
+    return container.models
 }
 
 /// Unbox an array of JSON dictionaries into an array of `T`, optionally using a contextual object and/or invalid elements. Throws `UnboxError`.
@@ -786,26 +788,40 @@ private class UnboxValueResolver<T> {
     }
     
     func resolveOptionalValueForKey<R>(key: String, isKeyPath: Bool, transform: T -> R?) -> R? {
-        do {
-            let values = try Unboxer.retrieveValues(from: self.unboxer.dictionary, at: key, isKeyPath: isKeyPath)
-            let dictionary = values.dictionary
-            let array = values.array
-            let modifiedKey = values.modifiedKey
-            
-            if let value = dictionary[modifiedKey] as? T {
-                if let transformed = transform(value) {
-                    return transformed
-                }
-            } else if let index = Int(modifiedKey), let array = array, let value = array[index] as? T {
-                if let transformed = transform(value) {
-                    return transformed
+        var dictionary = self.unboxer.dictionary
+        var array: [AnyObject]?
+        var modifiedKey = key
+        
+        if isKeyPath && key.containsString(".") {
+            let components = key.componentsSeparatedByString(".")
+            for i in 0 ..< components.count {
+                let keyPathComponent = components[i]
+                
+                if i == components.count - 1 {
+                    modifiedKey = keyPathComponent
+                } else if let nestedDictionary = dictionary[keyPathComponent] as? UnboxableDictionary {
+                    dictionary = nestedDictionary
+                } else if let nestedArray = dictionary[keyPathComponent] as? [AnyObject] {
+                    array = nestedArray
+                } else if let array = array, let index = Int(keyPathComponent) where index < array.count, let nestedDictionary = array[index] as? UnboxableDictionary {
+                    dictionary = nestedDictionary
+                } else {
+                    return nil
                 }
             }
-            
-            return nil
-        } catch {
-            return nil
         }
+        
+        if let value = dictionary[modifiedKey] as? T {
+            if let transformed = transform(value) {
+                return transformed
+            }
+        } else if let index = Int(modifiedKey), let array = array where index < array.count, let value = array[index] as? T {
+            if let transformed = transform(value) {
+                return transformed
+            }
+        }
+        
+        return nil
     }
 }
 
@@ -840,6 +856,29 @@ extension UnboxValueResolver where T: CollectionType, T: DictionaryLiteralConver
         }
         
         return nil
+    }
+}
+
+// MARK: - UnboxContainerContext
+
+private struct UnboxContainerContext {
+    let key: String
+    let isKeyPath: Bool
+}
+
+private struct UnboxContainer<T: Unboxable>: UnboxableWithContext {
+    let model: T
+    
+    init(unboxer: Unboxer, context: UnboxContainerContext) {
+        self.model = unboxer.unbox(context.key, isKeyPath: context.isKeyPath)
+    }
+}
+
+private struct UnboxArrayContainer<T: Unboxable>: UnboxableWithContext {
+    let models: [T]
+    
+    init(unboxer: Unboxer, context: UnboxContainerContext) {
+        self.models = unboxer.unbox(context.key, isKeyPath: context.isKeyPath)
     }
 }
 
@@ -882,68 +921,6 @@ private extension Unboxer {
         } catch {
             throw UnboxError.InvalidData
         }
-    }
-    
-    static func unboxer(at key: String, in dictionary: UnboxableDictionary, isKeyPath: Bool, context: Any?) throws -> Unboxer {
-        let values = try retrieveValues(from: dictionary, at: key, isKeyPath: isKeyPath)
-        let dictionary = values.dictionary
-        let array = values.array
-        let modifiedKey = values.modifiedKey
-        
-        if let dictionary = dictionary[modifiedKey] as? UnboxableDictionary {
-            return Unboxer(dictionary: dictionary, context: context)
-        } else if let array = array, let index = Int(modifiedKey) where index < array.count , let dictionary = array[index] as? UnboxableDictionary {
-            print(dictionary)
-            return Unboxer(dictionary: dictionary, context: context)
-        } else {
-            throw UnboxValueError.MissingValueForKey(modifiedKey)
-        }
-    }
-    
-    static func unboxers(at key: String, in dictionary: UnboxableDictionary, isKeyPath: Bool, context: Any?) throws -> [Unboxer] {
-        let values = try retrieveValues(from: dictionary, at: key, isKeyPath: isKeyPath)
-        let dictionary = values.dictionary
-        let array = values.array
-        let modifiedKey = values.modifiedKey
-        
-        if let dictionaries = dictionary[modifiedKey]?.allValues as? [UnboxableDictionary] {
-            return dictionaries.map {
-                return Unboxer(dictionary: $0, context: context)
-            }
-        } else if let array = array as? [UnboxableDictionary] {
-            return array.map {
-                return Unboxer(dictionary: $0, context: context)
-            }
-        } else {
-            throw UnboxValueError.MissingValueForKey(modifiedKey)
-        }
-    }
-    
-    static func retrieveValues(from dictionary: UnboxableDictionary, at key: String, isKeyPath: Bool) throws -> (dictionary: UnboxableDictionary, array: [AnyObject]?, modifiedKey: String) {
-        var dictionary = dictionary
-        var array: [AnyObject]?
-        var modifiedKey = key
-        
-        if isKeyPath && key.containsString(".") {
-            let components = key.componentsSeparatedByString(".")
-            for i in 0 ..< components.count {
-                let keyPathComponent = components[i]
-                
-                if i == components.count - 1 {
-                    modifiedKey = keyPathComponent
-                } else if let nestedDictionary = dictionary[keyPathComponent] as? UnboxableDictionary {
-                    dictionary = nestedDictionary
-                } else if let nestedArray = dictionary[keyPathComponent] as? [AnyObject] {
-                    array = nestedArray
-                } else if let array = array, let index = Int(keyPathComponent) where index < array.count, let nestedDictionary = array[index] as? UnboxableDictionary {
-                    dictionary = nestedDictionary
-                } else {
-                    throw UnboxValueError.MissingValueForKey(key)
-                }
-            }
-        }
-        
-        return (dictionary, array, modifiedKey)
     }
     
     func performUnboxing<T: Unboxable>() throws -> T {

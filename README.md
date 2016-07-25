@@ -233,18 +233,18 @@ You can also use key paths (for both dictionary keys and array indexes) to unbox
 
 ```json
 {
-	"name": "John",
-	"age": 27,
-	"activities": {
-		"running": {
-			"distance": 300
-		}
-	},
-	"devices": [
-		"Macbook Pro",
-		"iPhone",
-		"iPad"
-	]
+    "name": "John",
+    "age": 27,
+    "activities": {
+        "running": {
+            "distance": 300
+        }
+    },
+    "devices": [
+        "Macbook Pro",
+        "iPhone",
+        "iPad"
+    ]
 }
 ```
 
@@ -272,41 +272,41 @@ You can also use key paths to directly unbox nested JSON structures. This is use
 {
     "company": {
         "name": "Spotify",
-	},
-	"jobOpenings": [
-		{
-			"title": "Swift Developer",
-			"salary": 120000
-		},
-		{
-			"title": "UI Designer",
-			"salary": 100000
-		},
-	]
+    },
+    "jobOpenings": [
+        {
+            "title": "Swift Developer",
+            "salary": 120000
+        },
+        {
+            "title": "UI Designer",
+            "salary": 100000
+        },
+    ]
 }
 ```
 
 ```swift
 struct JobOpening {
-	let title: String
-	let salary: Int
+    let title: String
+    let salary: Int
 }
 
 extension JobOpening: Unboxable {
-	init(unboxer: Unboxer) {
-		self.title = unboxer.unbox("title")
-		self.salary = unboxer.unbox("salary")
-	}
+    init(unboxer: Unboxer) {
+        self.title = unboxer.unbox("title")
+        self.salary = unboxer.unbox("salary")
+    }
 }
 
 struct Company {
-	let name: String
+    let name: String
 }
 
 extension Company: Unboxable {
-	init(unboxer: Unboxer) {
-		self.name = unboxer.unbox("name")
-	}
+    init(unboxer: Unboxer) {
+        self.name = unboxer.unbox("name")
+    }
 }
 ```
 
