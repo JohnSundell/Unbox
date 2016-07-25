@@ -1210,7 +1210,120 @@ class UnboxTests: XCTestCase {
             XCTFail("Unexpected error thrown: \(error)")
         }
     }
+    
+    func testUnboxingStartingAtCustomKey() {
+        let dictionary: UnboxableDictionary = [
+            "A": [
+                "int": 14
+            ]
+        ]
         
+        do {
+            let unboxed: UnboxTestSimpleMock = try Unbox(dictionary, at: "A")
+            XCTAssertEqual(unboxed.int, 14)
+        } catch {
+            XCTFail("Unexpected error thrown: \(error)")
+        }
+    }
+    
+    func testUnboxingStartingAtMissingCustomKey() {
+        let dictionary: UnboxableDictionary = [
+            "A": [
+                "int": 14
+            ]
+        ]
+        
+        do {
+            let _ : UnboxTestSimpleMock = try Unbox(dictionary, at: "B")
+            XCTFail()
+        } catch {
+            // Test Passed
+        }
+    }
+    
+    func testUnboxingStartingAtCustomKeyPath() {
+        let dictionary: UnboxableDictionary = [
+            "A": [
+                "B": [
+                    "int": 14
+                ]
+            ]
+        ]
+        
+        do {
+            let unboxed: UnboxTestSimpleMock = try Unbox(dictionary, at: "A.B", isKeyPath: true)
+            XCTAssertEqual(unboxed.int, 14)
+        } catch {
+            XCTFail("Unexpected error thrown: \(error)")
+        }
+    }
+    
+    func testUnboxingStartingAtMissingCustomKeyPath() {
+        let dictionary: UnboxableDictionary = [
+            "A": [
+                "int": 14
+            ]
+        ]
+        
+        do {
+            let _: UnboxTestSimpleMock = try Unbox(dictionary, at: "A.B", isKeyPath: true)
+            XCTFail()
+        } catch {
+            // Test Passed
+        }
+    }
+    
+    func testUnboxingArrayStartingAtCustomKeyPath() {
+        let dictionary: UnboxableDictionary = [
+            "A": [
+                "B": [
+                    [
+                        "int": 14
+                    ],
+                    [
+                        "int": 14
+                    ],
+                    [
+                        "int": 14
+                    ]
+                ]
+            ]
+        ]
+        
+        do {
+            let unboxedArray: [UnboxTestSimpleMock] = try Unbox(dictionary, at: "A.B", isKeyPath: true)
+            unboxedArray.forEach {
+                XCTAssertEqual($0.int, 14)
+            }
+        } catch {
+            XCTFail("Unexpected error thrown: \(error)")
+        }
+    }
+    
+    func testUnboxingArrayIndexStartingAtCustomKeyPath() {
+        let dictionary: UnboxableDictionary =
+            ["A": ["B": [["int": 14], ["int": 14], ["int": 20]]]]
+        
+        do {
+            let unboxed: UnboxTestSimpleMock = try Unbox(dictionary, at: "A.B.2", isKeyPath: true)
+            XCTAssertEqual(unboxed.int, 20)
+            
+        } catch {
+            XCTFail("Unexpected error thrown: \(error)")
+        }
+    }
+    
+    func testUnboxingArrayInvalidIndexStartingAtCustomKeyPath() {
+        let dictionary: UnboxableDictionary =
+            ["A": ["B": [["int": 14], ["int": 14], ["int": 20]]]]
+        
+        do {
+            try Unbox(dictionary, at: "A.B.3", isKeyPath: true) as UnboxTestSimpleMock
+        } catch {
+            // Test Passed
+        }
+    }
+    
 }
 
 private func UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: Bool) -> UnboxableDictionary {
