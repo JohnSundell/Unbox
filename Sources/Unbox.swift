@@ -633,16 +633,16 @@ public class Unboxer {
     }
     
     /// Unbox a required Array of nested Unboxables, by unboxing an Array of Dictionaries and then using a transform (optionally allowing invalid elements)
-    public func unbox<T: Unboxable>(key: String, isKeyPath: Bool = true, allowInvalidElements: Bool = false) -> [T] {
+    public func unbox<T: Unboxable>(key: String, isKeyPath: Bool = true, context: Any? = nil, allowInvalidElements: Bool = false) -> [T] {
         return UnboxValueResolver<[UnboxableDictionary]>(self).resolveRequiredValueForKey(key, isKeyPath: isKeyPath, fallbackValue: [], transform: {
-            return try? Unbox($0, context: self.context, allowInvalidElements: allowInvalidElements)
+            return try? Unbox($0, context: context ?? self.context, allowInvalidElements: allowInvalidElements)
         })
     }
     
     /// Unbox an optional Array of nested Unboxables, by unboxing an Array of Dictionaries and then using a transform (optionally allowing invalid elements)
-    public func unbox<T: Unboxable>(key: String, isKeyPath: Bool = true, allowInvalidElements: Bool = false) -> [T]? {
+    public func unbox<T: Unboxable>(key: String, isKeyPath: Bool = true, context: Any? = nil, allowInvalidElements: Bool = false) -> [T]? {
         return UnboxValueResolver<[UnboxableDictionary]>(self).resolveOptionalValueForKey(key, isKeyPath: isKeyPath, transform: {
-            return try? Unbox($0, context: self.context, allowInvalidElements: allowInvalidElements)
+            return try? Unbox($0, context: context ?? self.context, allowInvalidElements: allowInvalidElements)
         })
     }
     
