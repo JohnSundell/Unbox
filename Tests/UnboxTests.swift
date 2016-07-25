@@ -1001,6 +1001,40 @@ class UnboxTests: XCTestCase {
             XCTFail("Failed to unbox")
         }
     }
+    
+    func testNestedUnboxableContext() {
+        struct Model: Unboxable {
+            let nested: NestedModel
+            
+            init(unboxer: Unboxer) {
+                self.nested = unboxer.unbox("nested", context: "Context")
+            }
+        }
+        
+        struct NestedModel: Unboxable {
+            let context: Any?
+            
+            init(unboxer: Unboxer) {
+                self.context = unboxer.context
+            }
+        }
+        
+        let dictionary: UnboxableDictionary = [
+            "nested": [:]
+        ]
+        
+        do {
+            let model: Model = try Unbox(dictionary)
+            
+            if let stringContext = model.nested.context as? String {
+                XCTAssertEqual(stringContext, "Context")
+            } else {
+                XCTFail("Unexpected context: \(model.nested.context)")
+            }
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
 
     func testAccessingNestedDictionaryWithKeyPath() {
         struct KeyPathModel: Unboxable {
