@@ -1358,6 +1358,44 @@ class UnboxTests: XCTestCase {
         }
     }
     
+    func testUnboxingArrayOfStringsTransformedToInt() {
+        let dictionary: UnboxableDictionary = ["intArray": ["123", "456", "789"]]
+        
+        struct ModelA: Unboxable {
+            let intArray: [Int]
+            init(unboxer: Unboxer) {
+                self.intArray = unboxer.unbox("intArray")
+            }
+        }
+        
+        do {
+            let modelA: ModelA = try Unbox(dictionary)
+            XCTAssertEqual(modelA.intArray[0], 123)
+            XCTAssertEqual(modelA.intArray[1], 456)
+            XCTAssertEqual(modelA.intArray[2], 789)
+        } catch {
+            XCTFail()
+        }
+    }
+    
+    func testUnboxingArrayOfBadStringsTransformedToInt() {
+        let dictionary: UnboxableDictionary = ["intArray": ["123", "abc", "789"]]
+        
+        struct ModelA: Unboxable {
+            let intArray: [Int]
+            init(unboxer: Unboxer) {
+                self.intArray = unboxer.unbox("intArray")
+            }
+        }
+        
+        do {
+            try Unbox(dictionary) as ModelA
+            XCTFail()
+        } catch {
+            // Test Passed
+        }
+    }
+    
 }
 
 private func UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: Bool) -> UnboxableDictionary {

@@ -482,6 +482,23 @@ public class Unboxer {
     
     /// Unbox a required Array containing values of a raw type
     public func unbox<T: UnboxableRawType>(key: String, isKeyPath: Bool = true) -> [T] {
+        if let rawValueArray = UnboxValueResolver<[T]>(self).resolveOptionalValueForKey(key, isKeyPath: isKeyPath) {
+            return rawValueArray
+        }
+        
+        let transformedStringArray = UnboxValueResolver<[String]>(self).resolveOptionalValueForKey(key, isKeyPath: isKeyPath, transform: { stringArray -> [T]? in
+            var transformedStringArray = [T]()
+            for string in stringArray {
+                guard let transformedUnboxedString = T.transformUnboxedString(string) else { return nil }
+                transformedStringArray.append(transformedUnboxedString)
+            }
+            return transformedStringArray
+        })
+        
+        if let transformedStringArray = transformedStringArray {
+            return transformedStringArray
+        }
+        
         return UnboxValueResolver<[T]>(self).resolveRequiredValueForKey(key, isKeyPath: isKeyPath, fallbackValue: [])
     }
     
