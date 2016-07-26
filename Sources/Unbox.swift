@@ -487,8 +487,13 @@ public class Unboxer {
         }
         
         let transformedStringArray = UnboxValueResolver<[String]>(self).resolveOptionalValueForKey(key, isKeyPath: isKeyPath, transform: { stringArray -> [T]? in
-            return stringArray.flatMap {
-                return T.transformUnboxedString($0)
+            do {
+                return try stringArray.flatMap {
+                    guard let transformedUnboxedString = T.transformUnboxedString($0) else { throw UnboxValueError.InvalidValue($0, key) }
+                    return transformedUnboxedString
+                }
+            } catch {
+                return nil
             }
         })
         
