@@ -220,7 +220,7 @@ class UnboxTests: XCTestCase {
         do {
             let unboxed: Model = try Unbox(dictionary: dictionary)
             
-            let calendar = Calendar.current()
+            let calendar = Calendar.current
             XCTAssertEqual(calendar.component(.year, from: unboxed.date), 2015)
             XCTAssertEqual(calendar.component(.month, from: unboxed.date), 12)
             XCTAssertEqual(calendar.component(.day, from: unboxed.date), 15)
