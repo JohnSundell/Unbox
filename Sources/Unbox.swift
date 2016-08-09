@@ -86,7 +86,7 @@ public func Unbox<T: UnboxableWithContext>(data: Data, context: T.ContextType, a
 // MARK: - Error type
 
 /// Enum describing unboxing errors that were caused by invalid or missing values
-public enum UnboxValueError: ErrorProtocol, CustomStringConvertible {
+public enum UnboxValueError: Error, CustomStringConvertible {
     public var description: String {
         switch self {
         case .MissingValueForKey(let key):
@@ -104,7 +104,7 @@ public enum UnboxValueError: ErrorProtocol, CustomStringConvertible {
 }
 
 /// Enum describing errors that can occur during unboxing
-public enum UnboxError: ErrorProtocol, CustomStringConvertible {
+public enum UnboxError: Error, CustomStringConvertible {
     public var description: String {
         let baseDescription = "[Unbox error] "
         
@@ -742,7 +742,7 @@ private class UnboxValueResolver<T> {
     }
 }
 
-extension UnboxValueResolver where T: Collection, T: DictionaryLiteralConvertible, T.Key == String, T.Iterator == DictionaryIterator<T.Key, T.Value> {
+extension UnboxValueResolver where T: Collection, T: ExpressibleByDictionaryLiteral, T.Key == String, T.Iterator == DictionaryIterator<T.Key, T.Value> {
     func resolveDictionaryValuesForKey<K: UnboxableKey, V>(key: String, isKeyPath: Bool, required: Bool, allowInvalidElements: Bool, valueTransform: (T.Value) -> V?) -> [K : V]? {
         if let unboxedDictionary = self.resolveOptionalValueForKey(key: key, isKeyPath: isKeyPath) {
             var transformedDictionary = [K : V]()
