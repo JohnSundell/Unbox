@@ -375,6 +375,10 @@ Either set a breakpoint in `Unboxer.failForInvalidValue(forKey:)` to see what ke
 
 If you need any help in resolving any problems that you might encounter while using Unbox, feel free to open an Issue.
 
+### Community Extensions
+
+- [UnboxedAlamofire](https://github.com/serejahh/UnboxedAlamofire) - the easiest way to use Unbox with Alamofire
+
 ### Hope you enjoy unboxing your JSON!
 
 For more updates on Unbox, and my other open source projects, follow me on Twitter: [@johnsundell](http://www.twitter.com/johnsundell)
