@@ -206,6 +206,14 @@ public protocol UnboxFormatter {
     func formatUnboxedValue(unboxedValue: UnboxRawValueType) -> UnboxFormattedType?
 }
 
+/// Protocol which allows for Unbox ErrorTypes to easily convert to NSError
+public protocol CustomErrorConvertible {
+    var domain: String { get }
+    var code: Int { get }
+    var userInfo: [String: String]? { get }
+    var error: NSError { get }
+}
+
 // MARK: - Extensions
 
 /// Extension making Bool an Unboxable raw type
@@ -310,6 +318,39 @@ extension Float: UnboxableRawType {
     
     public static func transformUnboxedString(unboxedString: String) -> Float? {
         return Float(unboxedString)
+    }
+}
+
+/// Extension implementing default behavior for CustomErrorConvertible
+public extension CustomErrorConvertible where Self: CustomStringConvertible {
+    public var userInfo: [String: String]? {
+        return [NSLocalizedDescriptionKey: self.description]
+    }
+    
+    public var error: NSError {
+        return NSError(domain: self.domain, code: self.code, userInfo: self.userInfo)
+    }
+}
+
+/// Extension making UnboxError conform to CustomeErrorConvertible
+extension UnboxError: CustomErrorConvertible {
+    public var domain: String {
+        return "UnboxError"
+    }
+    
+    public var code: Int {
+        return 1
+    }
+}
+
+/// Extension making UnboxValueError conform to CustomeErrorConvertible
+extension UnboxValueError: CustomErrorConvertible {
+    public var domain: String {
+        return "UnboxValueError"
+    }
+    
+    public var code: Int {
+        return 0
     }
 }
 
