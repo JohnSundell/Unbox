@@ -321,17 +321,24 @@ extension Float: UnboxableRawType {
     }
 }
 
-/// Extension implementing default user for CustomErrorConvertible which are also CustomStringConvertible
+/// Extension implementing default error for CustomErrorConvertible
+extension CustomErrorConvertible {
+    public var error: NSError {
+        return NSError(domain: self.domain, code: self.code, userInfo: self.userInfo)
+    }
+}
+
+/// Extension implementing default user for CustomErrorConvertible which is also CustomStringConvertible
 extension CustomErrorConvertible where Self: CustomStringConvertible {
     public var userInfo: [String: String]? {
         return [NSLocalizedDescriptionKey: self.description]
     }
 }
 
-/// Extension implementing default error for CustomErrorConvertible
-extension CustomErrorConvertible {
-    public var error: NSError {
-        return NSError(domain: self.domain, code: self.code, userInfo: self.userInfo)
+/// Extension implementing default code for CustomErrorConvertible which is also an ErrorType
+extension CustomErrorConvertible where Self: ErrorType {
+    public var code: Int {
+        return self._code
     }
 }
 
@@ -340,20 +347,12 @@ extension UnboxError: CustomErrorConvertible {
     public var domain: String {
         return "UnboxError"
     }
-    
-    public var code: Int {
-        return 1
-    }
 }
 
 /// Extension making UnboxValueError conform to CustomeErrorConvertible
 extension UnboxValueError: CustomErrorConvertible {
     public var domain: String {
         return "UnboxValueError"
-    }
-    
-    public var code: Int {
-        return 0
     }
 }
 
