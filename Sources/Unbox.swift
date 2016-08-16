@@ -341,7 +341,7 @@ extension String: UnboxableRawType {
     }
     
     public static func transformUnboxedInt(unboxedInt: Int) -> String? {
-        return nil
+        return String(unboxedInt)
     }
     
     public static func transformUnboxedString(unboxedString: String) -> String? {
