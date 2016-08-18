@@ -201,7 +201,7 @@ extension Bool: UnboxableRawType {
     }
     
     public static func transform(unboxedInt: Int) -> Bool? {
-        return Bool(unboxedInt)
+        return unboxedInt != 0
     }
     
     public static func transform(unboxedString: String) -> Bool? {
