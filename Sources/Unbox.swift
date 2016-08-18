@@ -31,7 +31,7 @@ import CoreGraphics
 #endif
     
 /// Type alias defining what type of Dictionary that is Unboxable (valid JSON)
-public typealias UnboxableDictionary = [String : AnyObject]
+public typealias UnboxableDictionary = [String : Any]
 
 // MARK: - Unbox functions
 
