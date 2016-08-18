@@ -301,21 +301,15 @@ extension Float: UnboxableRawType {
 
 #if !os(Linux)
 /// Extension making CGFloat an Unboxable raw type
-extension CGFloat: UnboxableRawType {
+extension CGFloat: UnboxableByTransform {
+    public typealias UnboxRawValueType = Double
+    
     public static func unboxFallbackValue() -> CGFloat {
         return 0
     }
     
-    public static func transform(unboxedInt: Int) -> CGFloat? {
-        return CGFloat(unboxedInt)
-    }
-    
-    public static func transform(unboxedString: String) -> CGFloat? {
-        guard let double = Double(unboxedString) else {
-            return nil
-        }
-        
-        return CGFloat(double)
+    public static func transform(unboxedValue: Double) -> CGFloat? {
+        return CGFloat(unboxedValue)
     }
 }
 #endif
