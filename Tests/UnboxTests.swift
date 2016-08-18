@@ -939,7 +939,7 @@ private enum UnboxTestEnum: Int, UnboxableEnum {
     case First
     case Second
     
-    private static func unboxFallbackValue() -> UnboxTestEnum {
+    fileprivate static func unboxFallbackValue() -> UnboxTestEnum {
         return .First
     }
 }

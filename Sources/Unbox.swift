@@ -391,11 +391,11 @@ public class Unboxer {
     /// Any contextual object that was supplied when unboxing was started
     public let context: Any?
     
-    private var failureInfo = [(key: String, value: Any?)]()
+    fileprivate var failureInfo = [(key: String, value: Any?)]()
     
     // MARK: - Private initializer
     
-    private init(dictionary: UnboxableDictionary, context: Any?) {
+    fileprivate init(dictionary: UnboxableDictionary, context: Any?) {
         self.dictionary = dictionary
         self.context = context
     }
@@ -840,13 +840,13 @@ private extension Unboxer {
     }
     
     func throwIfFailed() throws {
-        guard !failureInfo.isEmpty else {
+        guard !self.failureInfo.isEmpty else {
             return
         }
         
         var inputErrors = [UnboxValueError]()
         
-        for failure in failureInfo {
+        for failure in self.failureInfo {
             if let failedValue: Any = failure.value {
                 inputErrors.append(.InvalidValue(failure.key, "\(failedValue)"))
             }
