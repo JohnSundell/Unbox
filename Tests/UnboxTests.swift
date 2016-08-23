@@ -196,7 +196,33 @@ class UnboxTests: XCTestCase {
             XCTAssertTrue(unboxed.bool3)
             XCTAssertEqual(unboxed.double, Double(27))
             XCTAssertEqual(unboxed.float, Float(39))
-            XCTAssertNil(unboxed.string)
+            XCTAssertEqual(unboxed.string, "7")
+        } catch {
+            XCTFail("\(error)")
+        }
+    }
+    
+    func testArrayOfURLs() {
+        struct Model: Unboxable {
+            let optional: [NSURL]?
+            let required: [NSURL]
+            
+            init(unboxer: Unboxer) {
+                self.optional = unboxer.unbox("optional")
+                self.required = unboxer.unbox("required")
+            }
+        }
+        
+        let dictionary: UnboxableDictionary = [
+            "optional" : ["https://www.google.com"],
+            "required" : ["https://github.com/johnsundell/unbox"]
+        ]
+        
+        do {
+            let unboxed: Model = try Unbox(dictionary)
+            XCTAssertEqual(unboxed.optional?.count, 1)
+            XCTAssertEqual(unboxed.optional?.first, NSURL(string: "https://www.google.com"))
+            XCTAssertEqual(unboxed.required, [NSURL(string: "https://github.com/johnsundell/unbox")!])
         } catch {
             XCTFail("\(error)")
         }
