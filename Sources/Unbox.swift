@@ -219,13 +219,11 @@ extension Bool: UnboxableRawType {
     }
     
     public static func transformUnboxedString(unboxedString: String) -> Bool? {
-        for element in [ "true", "t" , "y", "yes" ] where element == unboxedString.lowercased() {
-            return true
+        switch unboxedString.lowercased() {
+            case "true", "t", "y", "yes": return true
+            case "false", "f" , "n", "no": return false
+            default: return nil
         }
-        for element in [ "false", "f" , "n", "no" ] where element == unboxedString.lowercased() {
-            return false
-        }
-        return nil
     }
 }
 
