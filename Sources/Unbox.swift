@@ -219,7 +219,11 @@ extension Bool: UnboxableRawType {
     }
     
     public static func transformUnboxedString(unboxedString: String) -> Bool? {
-        return nil
+        switch unboxedString.lowercaseString {
+            case "true", "t", "y", "yes": return true
+            case "false", "f" , "n", "no": return false
+            default: return nil
+        }
     }
 }
 

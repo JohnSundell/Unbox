@@ -1271,6 +1271,67 @@ class UnboxTests: XCTestCase {
         }
     }
     
+    func testBorderlineBooleansUnboxing() {
+        struct Model {
+            let bool1: Bool
+            let bool2: Bool
+            let bool3: Bool
+            let bool4: Bool
+            let bool5: Bool
+            let bool6: Bool
+            let bool7: Bool
+            let bool8: Bool
+        }
+        
+        do {
+            let dictionary: UnboxableDictionary = [
+                "bool1": "True",
+                "bool2": "false",
+                "bool3": "t",
+                "bool4": "F",
+                "bool5": "YES",
+                "bool6": "No",
+                "bool5": "Y",
+                "bool6": "n",
+                "bool7": true,
+                "bool8": false
+            ]
+            
+            let data = try NSJSONSerialization.dataWithJSONObject(dictionary, options: [])
+            let context = "Context"
+            
+            let unboxingClosure: Unboxer -> Model? = {
+                XCTAssertEqual($0.context as? String, context)
+                return Model(bool1: $0.unbox("bool1"), bool2: $0.unbox("bool2"), bool3: $0.unbox("bool3"), bool4: $0.unbox("bool4"), bool5: $0.unbox("bool5"), bool6: $0.unbox("bool6"), bool7: $0.unbox("bool7"), bool8: $0.unbox("bool8"))
+            }
+            
+            let unboxedFromDictionary: Model = try Unboxer.performCustomUnboxingWithDictionary(dictionary, context: context, closure: unboxingClosure)
+            
+            XCTAssertEqual(unboxedFromDictionary.bool1, true)
+            XCTAssertEqual(unboxedFromDictionary.bool2, false)
+            XCTAssertEqual(unboxedFromDictionary.bool3, true)
+            XCTAssertEqual(unboxedFromDictionary.bool4, false)
+            XCTAssertEqual(unboxedFromDictionary.bool5, true)
+            XCTAssertEqual(unboxedFromDictionary.bool6, false)
+            XCTAssertEqual(unboxedFromDictionary.bool7, true)
+            XCTAssertEqual(unboxedFromDictionary.bool8, false)
+            
+            
+            let unboxedFromData: Model = try Unboxer.performCustomUnboxingWithData(data, context: context, closure: unboxingClosure)
+            XCTAssertEqual(unboxedFromData.bool1, true)
+            XCTAssertEqual(unboxedFromData.bool2, false)
+            XCTAssertEqual(unboxedFromData.bool3, true)
+            XCTAssertEqual(unboxedFromData.bool4, false)
+            XCTAssertEqual(unboxedFromData.bool5, true)
+            XCTAssertEqual(unboxedFromData.bool6, false)
+            XCTAssertEqual(unboxedFromData.bool7, true)
+            XCTAssertEqual(unboxedFromData.bool8, false)
+            
+        } catch {
+            XCTFail("Unexpected error thrown: \(error)")
+        }
+    }
+    
     func testUnboxingStartingAtCustomKey() {
         let dictionary: UnboxableDictionary = [
             "A": [
