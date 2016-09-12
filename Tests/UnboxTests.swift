@@ -1291,8 +1291,6 @@ class UnboxTests: XCTestCase {
                 "bool4": "F",
                 "bool5": "YES",
                 "bool6": "No",
-                "bool5": "Y",
-                "bool6": "n",
                 "bool7": true,
                 "bool8": false
             ]
