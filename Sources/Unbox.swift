@@ -40,6 +40,13 @@ public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, context: Any? =
     return try Unboxer(dictionary: dictionary, context: context).performUnboxing()
 }
 
+/// Unbox a JSON dictionary into a model `T` beginning at a provided key, optionally using a contextual object. Throws `UnboxError`.
+public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, at key: String, isKeyPath: Bool = true, context: Any? = nil) throws -> T {
+    let containerContext = UnboxContainerContext(key: key, isKeyPath: isKeyPath, context: context)
+    let container: UnboxContainer<T> = try Unbox(dictionary: dictionary, context: containerContext)
+    return container.model
+}
+
 /// Unbox an array of JSON dictionaries into an array of `T`, optionally using a contextual object and/or invalid elements. Throws `UnboxError`.
 public func Unbox<T: Unboxable>(dictionaries: [UnboxableDictionary], context: Any? = nil, allowInvalidElements: Bool = false) throws -> [T] {
     return try dictionaries.map(allowInvalidElements: allowInvalidElements, transform: {
@@ -47,9 +54,16 @@ public func Unbox<T: Unboxable>(dictionaries: [UnboxableDictionary], context: An
     })
 }
 
+/// Unbox an array JSON dictionary into an array of model `T` beginning at a provided key, optionally using a contextual object and/or invalid elements. Throws `UnboxError`.
+public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, at key: String, isKeyPath: Bool = true, context: Any? = nil) throws -> [T] {
+    let containerContext = UnboxContainerContext(key: key, isKeyPath: isKeyPath, context: context)
+    let container: UnboxArrayContainer<T> = try Unbox(dictionary: dictionary, context: containerContext)
+    return container.models
+}
+
 /// Unbox binary data into a model `T`, optionally using a contextual object. Throws `UnboxError`.
 public func Unbox<T: Unboxable>(data: Data, context: Any? = nil) throws -> T {
-    return try Unboxer.unboxerFromData(data: data, context: context).performUnboxing()
+    return try Unboxer.unboxer(from: data, context: context).performUnboxing()
 }
 
 /// Unbox binary data into an array of `T`, optionally using a contextual object and/or invalid elements. Throws `UnboxError`.
@@ -73,7 +87,7 @@ public func Unbox<T: UnboxableWithContext>(dictionaries: [UnboxableDictionary], 
 
 /// Unbox binary data into a model `T` using a required contextual object. Throws `UnboxError`.
 public func Unbox<T: UnboxableWithContext>(data: Data, context: T.ContextType) throws -> T {
-    return try Unboxer.unboxerFromData(data: data, context: context).performUnboxing(context: context)
+    return try Unboxer.unboxer(from: data, context: context).performUnboxing(context: context)
 }
 
 /// Unbox binary data into an array of `T` using a required contextual object and/or invalid elements. Throws `UnboxError`.
@@ -205,7 +219,11 @@ extension Bool: UnboxableRawType {
     }
     
     public static func transform(unboxedString: String) -> Bool? {
-        return nil
+        switch unboxedString.lowercased() {
+            case "true", "t", "y", "yes": return true
+            case "false", "f" , "n", "no": return false
+            default: return nil
+        }
     }
 }
 
@@ -321,7 +339,7 @@ extension String: UnboxableRawType {
     }
     
     public static func transform(unboxedInt: Int) -> String? {
-        return nil
+        return String(unboxedInt)
     }
     
     public static func transform(unboxedString: String) -> String? {
@@ -402,20 +420,22 @@ public class Unboxer {
     }
     
     /// Perform custom unboxing on an array of dictionaries, executing a closure with a new Unboxer for each one, or throw an UnboxError
-    public static func performCustomUnboxing<T>(array: [UnboxableDictionary], context: Any? = nil, closure: (Unboxer) throws -> T?) throws -> [T] {
-        var unboxedArray = [T]()
+    public static func performCustomUnboxing<T>(array: [UnboxableDictionary], context: Any? = nil, allowInvalidElements: Bool = false, closure: (Unboxer) throws -> T?) throws -> [T] {
         
-        for dictionary in array {
-            let unboxed = try self.performCustomUnboxing(dictionary: dictionary, context: context, closure: closure)
-            unboxedArray.append(unboxed)
+        if allowInvalidElements {
+            return array.flatMap { (dictionary) -> T? in
+                return try? self.performCustomUnboxing(dictionary: dictionary, context: context, closure: closure)
+            }
+        } else {
+            return try array.map { (dictionary) -> T in
+                return try self.performCustomUnboxing(dictionary: dictionary, context: context, closure: closure)
+            }
         }
-        
-        return unboxedArray
     }
     
-    /// Perform custom unboxing using an Unboxer (created from Data) passed to a closure, or throw an UnboxError
+    /// Perform custom unboxing using an Unboxer (created from NSData) passed to a closure, or throw an UnboxError
     public static func performCustomUnboxing<T>(data: Data, context: Any? = nil, closure: (Unboxer) throws -> T?) throws -> T {
-        return try Unboxer.unboxerFromData(data: data, context: context).performCustomUnboxing(closure: closure)
+        return try Unboxer.unboxer(from: data, context: context).performCustomUnboxing(closure: closure)
     }
     
     // MARK: - Value accessing API
@@ -460,6 +480,23 @@ public class Unboxer {
     
     /// Unbox a required Array containing values of a raw type
     public func unbox<T: UnboxableRawType>(key: String, isKeyPath: Bool = true) -> [T] {
+        if let rawValueArray = UnboxValueResolver<[T]>(self).resolveOptionalValueForKey(key: key, isKeyPath: isKeyPath) {
+            return rawValueArray
+        }
+        
+        let transformedStringArray = UnboxValueResolver<[String]>(self).resolveOptionalValueForKey(key: key, isKeyPath: isKeyPath, transform: { stringArray -> [T]? in
+            var transformedStringArray = [T]()
+            for string in stringArray {
+                guard let transformedUnboxedString = T.transform(unboxedString: string) else { return nil }
+                transformedStringArray.append(transformedUnboxedString)
+            }
+            return transformedStringArray
+        })
+        
+        if let transformedStringArray = transformedStringArray {
+            return transformedStringArray
+        }
+        
         return UnboxValueResolver<[T]>(self).resolveRequiredValueForKey(key: key, isKeyPath: isKeyPath, fallbackValue: [])
     }
     
@@ -476,6 +513,18 @@ public class Unboxer {
     /// Unbox an optional Array of collections
     public func unbox<T: Collection>(key: String, isKeyPath: Bool = true) -> [T]? {
         return UnboxValueResolver<[T]>(self).resolveOptionalValueForKey(key: key, isKeyPath: isKeyPath)
+    }
+
+    /// Unbox a required Array of values that can be transformed into its final form
+    public func unbox<T: UnboxableByTransform>(key: String, isKeyPath: Bool = true, allowInvalidElements: Bool = false) -> [T] {
+        let transform = T.makeArrayTransformClosure(allowInvalidElements: allowInvalidElements)
+        return UnboxValueResolver<[T.UnboxRawValueType]>(self).resolveRequiredValueForKey(key: key, isKeyPath: isKeyPath, fallbackValue: [], transform: transform)
+    }
+
+    /// Unbox an optional Array of values that can be transformed into its final form
+    public func unbox<T: UnboxableByTransform>(key: String, isKeyPath: Bool = true, allowInvalidElements: Bool = false) -> [T]? {
+        let transform = T.makeArrayTransformClosure(allowInvalidElements: allowInvalidElements)
+        return UnboxValueResolver<[T.UnboxRawValueType]>(self).resolveOptionalValueForKey(key: key, isKeyPath: isKeyPath, transform: transform)
     }
     
     /// Unbox a required raw value from a certain index in a nested Array
@@ -520,14 +569,42 @@ public class Unboxer {
         return UnboxValueResolver<[String : V]>(self).resolveDictionaryValuesForKey(key: key, isKeyPath: isKeyPath, required: false, allowInvalidElements: false, valueTransform: { $0 })
     }
     
-    /// Unbox a required Dictionary containing collections
-    public func unbox<K: UnboxableKey, V: Collection>(key: String, isKeyPath: Bool = true) -> [K : V] {
+    /// Unbox a required Dictionary containing dictionaries
+    public func unbox<K: UnboxableKey, V>(key: String, isKeyPath: Bool = true) -> [K : V] where V: Collection, V: ExpressibleByDictionaryLiteral, V.Key: Hashable, V.Iterator == DictionaryIterator<V.Key, V.Value> {
         return UnboxValueResolver<[String : V]>(self).resolveDictionaryValuesForKey(key: key, isKeyPath: isKeyPath, required: true, allowInvalidElements: false, valueTransform: { $0 }) ?? [:]
     }
-    
-    /// Unbox an optional Dictionary containing collections
-    public func unbox<K: UnboxableKey, V: Collection>(key: String, isKeyPath: Bool = true) -> [K : V]? {
+
+    /// Unbox an optional Dictionary containing dictionaries
+    public func unbox<K: UnboxableKey, V>(key: String, isKeyPath: Bool = true) -> [K : V]? where V: Collection, V: ExpressibleByDictionaryLiteral, V.Key: Hashable, V.Iterator == DictionaryIterator<V.Key, V.Value> {
         return UnboxValueResolver<[String : V]>(self).resolveDictionaryValuesForKey(key: key, isKeyPath: isKeyPath, required: false, allowInvalidElements: false, valueTransform: { $0 })
+    }
+    
+    /// Unbox a required Dictionary containing array of simple values
+    public func unbox<K: UnboxableKey, V: UnboxableRawType>(key: String, isKeyPath: Bool = true, allowInvalidElements: Bool = false) -> [K : [V]] {
+        return UnboxValueResolver<[String: [V]]>(self).resolveDictionaryValuesForKey(key: key, isKeyPath: isKeyPath, required: true, allowInvalidElements: allowInvalidElements) {
+            return $0
+        } ?? [K: [V]]()
+    }
+    
+    /// Unbox an optional Dictionary containing array of simple values
+    public func unbox<K: UnboxableKey, V: UnboxableRawType>(key: String, isKeyPath: Bool = true, allowInvalidElements: Bool = false) -> [K : [V]]? {
+        return UnboxValueResolver<[String: [V]]>(self).resolveDictionaryValuesForKey(key: key, isKeyPath: isKeyPath, required: false, allowInvalidElements: allowInvalidElements) {
+            return $0
+        }
+    }
+    
+    /// Unbox a required Dictionary containing array of Unboxables
+    public func unbox<K: UnboxableKey, V: Unboxable>(key: String, isKeyPath: Bool = true, allowInvalidElements: Bool = false) -> [K : [V]] {
+        return UnboxValueResolver<[String: [UnboxableDictionary]]>(self).resolveDictionaryValuesForKey(key: key, isKeyPath: isKeyPath, required: true, allowInvalidElements: allowInvalidElements) {
+            return try? Unbox(dictionaries: $0, context: self.context, allowInvalidElements: allowInvalidElements)
+        } ?? [K: [V]]()
+    }
+
+    /// Unbox an optional Dictionary containing array of Unboxables
+    public func unbox<K: UnboxableKey, V: Unboxable>(key: String, isKeyPath: Bool = true, allowInvalidElements: Bool = false) -> [K : [V]]? {
+        return UnboxValueResolver<[String: [UnboxableDictionary]]>(self).resolveDictionaryValuesForKey(key: key, isKeyPath: isKeyPath, required: false, allowInvalidElements: allowInvalidElements) {
+            return try? Unbox(dictionaries: $0, context: self.context, allowInvalidElements: allowInvalidElements)
+        }
     }
     
     /// Unbox a required enum value
@@ -559,30 +636,30 @@ public class Unboxer {
     }
     
     /// Unbox a required nested Unboxable, by unboxing a Dictionary and then using a transform
-    public func unbox<T: Unboxable>(key: String, isKeyPath: Bool = true) -> T {
+    public func unbox<T: Unboxable>(key: String, isKeyPath: Bool = true, context: Any? = nil) -> T {
         return UnboxValueResolver<UnboxableDictionary>(self).resolveRequiredValueForKey(key: key, isKeyPath: isKeyPath, fallbackValue: T.unboxFallbackValue(), transform: {
-            return try? Unbox(dictionary: $0, context: self.context)
+            return try? Unbox(dictionary: $0, context: context ?? self.context)
         })
     }
     
     /// Unbox an optional nested Unboxable, by unboxing a Dictionary and then using a transform
-    public func unbox<T: Unboxable>(key: String, isKeyPath: Bool = true) -> T? {
+    public func unbox<T: Unboxable>(key: String, isKeyPath: Bool = true, context: Any? = nil) -> T? {
         return UnboxValueResolver<UnboxableDictionary>(self).resolveOptionalValueForKey(key: key, isKeyPath: isKeyPath, transform: {
-            return try? Unbox(dictionary: $0, context: self.context)
+            return try? Unbox(dictionary: $0, context: context ?? self.context)
         })
     }
     
     /// Unbox a required Array of nested Unboxables, by unboxing an Array of Dictionaries and then using a transform (optionally allowing invalid elements)
-    public func unbox<T: Unboxable>(key: String, isKeyPath: Bool = true, allowInvalidElements: Bool = false) -> [T] {
+    public func unbox<T: Unboxable>(key: String, isKeyPath: Bool = true, context: Any? = nil, allowInvalidElements: Bool = false) -> [T] {
         return UnboxValueResolver<[UnboxableDictionary]>(self).resolveRequiredValueForKey(key: key, isKeyPath: isKeyPath, fallbackValue: [], transform: {
-            return try? Unbox(dictionaries: $0, context: self.context, allowInvalidElements: allowInvalidElements)
+            return try? Unbox(dictionaries: $0, context: context ?? self.context, allowInvalidElements: allowInvalidElements)
         })
     }
     
     /// Unbox an optional Array of nested Unboxables, by unboxing an Array of Dictionaries and then using a transform (optionally allowing invalid elements)
-    public func unbox<T: Unboxable>(key: String, isKeyPath: Bool = true, allowInvalidElements: Bool = false) -> [T]? {
+    public func unbox<T: Unboxable>(key: String, isKeyPath: Bool = true, context: Any? = nil, allowInvalidElements: Bool = false) -> [T]? {
         return UnboxValueResolver<[UnboxableDictionary]>(self).resolveOptionalValueForKey(key: key, isKeyPath: isKeyPath, transform: {
-            return try? Unbox(dictionaries: $0, context: self.context, allowInvalidElements: allowInvalidElements)
+            return try? Unbox(dictionaries: $0, context: context ?? self.context, allowInvalidElements: allowInvalidElements)
         })
     }
     
@@ -656,6 +733,45 @@ public class Unboxer {
         })
     }
     
+    /// Unbox a required Array containing values that can be formatted using a formatter (optionally allowing invalid elements)
+    public func unbox<T: UnboxableWithFormatter, F: UnboxFormatter>(key: String, isKeyPath: Bool = true, formatter: F, allowInvalidElements: Bool = false) -> [T] where F.UnboxFormattedType == T {
+        return UnboxValueResolver<[F.UnboxRawValueType]>(self).resolveRequiredValueForKey(key: key, isKeyPath: isKeyPath, fallbackValue: [], transform: { (array) -> [T]? in
+            if allowInvalidElements {
+                return array.flatMap({ formatter.format(unboxedValue: $0) })
+            } else {
+                return array.map({ (value) -> T in
+                    if let formattedValue = formatter.format(unboxedValue: value) {
+                        return formattedValue
+                    }
+                    
+                    self.failForInvalidValue(invalidValue: value, forKey: key)
+                    return T.unboxFallbackValue()
+                })
+            }
+        })
+    }
+    
+    /// Unbox an optional Array containing values that can be formatted using a formatter (optionally allowing invalid elements)
+    public func unbox<T: UnboxableWithFormatter, F: UnboxFormatter>(key: String, isKeyPath: Bool = true, formatter: F, allowInvalidElements: Bool = false) -> [T]? where F.UnboxFormattedType == T {
+        return UnboxValueResolver<[F.UnboxRawValueType]>(self).resolveOptionalValueForKey(key: key, isKeyPath: isKeyPath, transform: { (array) -> [T]? in
+            if allowInvalidElements {
+                return array.flatMap({ formatter.format(unboxedValue: $0) })
+            } else {
+                var formattedArray = [T]()
+                
+                for value in array {
+                    guard let formattedValue = formatter.format(unboxedValue: value) else {
+                        return nil
+                    }
+                    
+                    formattedArray.append(formattedValue)
+                }
+                
+                return formattedArray
+            }
+        })
+    }
+    
     /// Make this Unboxer fail for a certain key. This will cause the `Unbox()` function that triggered this Unboxer to return `nil`.
     public func failForKey(key: String) {
         self.failForInvalidValue(invalidValue: nil, forKey: key)
@@ -702,7 +818,7 @@ private class UnboxValueResolver<T> {
         var dictionary = self.unboxer.dictionary
         var array: [AnyObject]?
         var modifiedKey = key
-
+        
         if isKeyPath && key.contains(".") {
             let components = key.components(separatedBy: ".")
             for i in 0 ..< components.count {
@@ -721,12 +837,12 @@ private class UnboxValueResolver<T> {
                 }
             }
         }
-
+        
         if let value = dictionary[modifiedKey] as? T {
             if let transformed = transform(value) {
                 return transformed
             }
-        } else if let index = Int(modifiedKey), let array = array, let value = array[index] as? T {
+        } else if let index = Int(modifiedKey), let array = array, index < array.count, let value = array[index] as? T {
             if let transformed = transform(value) {
                 return transformed
             }
@@ -766,7 +882,31 @@ extension UnboxValueResolver where T: Collection, T: ExpressibleByDictionaryLite
             self.unboxer.failForInvalidValue(invalidValue: self.unboxer.dictionary[key], forKey: key)
         }
         
-        return [:]
+        return nil
+    }
+}
+
+// MARK: - UnboxContainerContext
+
+private struct UnboxContainerContext {
+    let key: String
+    let isKeyPath: Bool
+    let context: Any?
+}
+
+private struct UnboxContainer<T: Unboxable>: UnboxableWithContext {
+    let model: T
+    
+    init(unboxer: Unboxer, context: UnboxContainerContext) {
+        self.model = unboxer.unbox(key: context.key, isKeyPath: context.isKeyPath, context: context.context)
+    }
+}
+
+private struct UnboxArrayContainer<T: Unboxable>: UnboxableWithContext {
+    let models: [T]
+    
+    init(unboxer: Unboxer, context: UnboxContainerContext) {
+        self.models = unboxer.unbox(key: context.key, isKeyPath: context.isKeyPath)
     }
 }
 
@@ -784,8 +924,30 @@ private extension UnboxableWithContext {
     }
 }
 
+private extension UnboxableByTransform {
+    static func makeArrayTransformClosure(allowInvalidElements: Bool) -> ([UnboxRawValueType]) -> [Self]? {
+        return {
+            if allowInvalidElements {
+                return $0.flatMap { Self.transform(unboxedValue: $0) }
+            }
+            
+            var transformedValues = [Self]()
+            
+            for rawValue in $0 {
+                guard let transformedvalue = Self.transform(unboxedValue: rawValue) else {
+                    return nil
+                }
+                
+                transformedValues.append(transformedvalue)
+            }
+            
+            return transformedValues
+        }
+    }
+}
+
 private extension Unboxer {
-    static func unboxerFromData(data: Data, context: Any?) throws -> Unboxer {
+    static func unboxer(from data: Data, context: Any?) throws -> Unboxer {
         do {
             guard let dictionary = try JSONSerialization.jsonObject(with: data, options: []) as? UnboxableDictionary else {
                 throw UnboxError.InvalidData
@@ -803,9 +965,9 @@ private extension Unboxer {
                 throw UnboxError.InvalidData
             }
             
-            return array.map({
+            return array.map {
                 return Unboxer(dictionary: $0, context: context)
-            })
+            }
         } catch {
             throw UnboxError.InvalidData
         }

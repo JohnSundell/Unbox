@@ -196,7 +196,33 @@ class UnboxTests: XCTestCase {
             XCTAssertTrue(unboxed.bool3)
             XCTAssertEqual(unboxed.double, Double(27))
             XCTAssertEqual(unboxed.float, Float(39))
-            XCTAssertNil(unboxed.string)
+            XCTAssertEqual(unboxed.string, "7")
+        } catch {
+            XCTFail("\(error)")
+        }
+    }
+    
+    func testArrayOfURLs() {
+        struct Model: Unboxable {
+            let optional: [NSURL]?
+            let required: [NSURL]
+            
+            init(unboxer: Unboxer) {
+                self.optional = unboxer.unbox(key: "optional")
+                self.required = unboxer.unbox(key: "required")
+            }
+        }
+        
+        let dictionary: UnboxableDictionary = [
+            "optional" : ["https://www.google.com"],
+            "required" : ["https://github.com/johnsundell/unbox"]
+        ]
+        
+        do {
+            let unboxed: Model = try Unbox(dictionary: dictionary)
+            XCTAssertEqual(unboxed.optional?.count, 1)
+            XCTAssertEqual(unboxed.optional?.first, NSURL(string: "https://www.google.com"))
+            XCTAssertEqual(unboxed.required, [NSURL(string: "https://github.com/johnsundell/unbox")!])
         } catch {
             XCTFail("\(error)")
         }
@@ -205,17 +231,34 @@ class UnboxTests: XCTestCase {
     func testRequiredDateFormatting() {
         struct Model: Unboxable {
             let date: Date
+            let dateArray: [Date]
             
             init(unboxer: Unboxer) {
                 let formatter = DateFormatter()
                 formatter.dateFormat = "YYYY-MM-dd"
                 self.date = unboxer.unbox(key: "date", formatter: formatter)
+                self.dateArray = unboxer.unbox(key: "dateArray", formatter: formatter)
+            }
+        }
+        
+        struct AllowInvalidElementsModel: Unboxable {
+            let date: Date
+            let dateArray: [Date]
+            
+            init(unboxer: Unboxer) {
+                let formatter = DateFormatter()
+                formatter.dateFormat = "YYYY-MM-dd"
+                self.date = unboxer.unbox(key: "date", formatter: formatter)
+                self.dateArray = unboxer.unbox(key: "dateArray", formatter: formatter, allowInvalidElements: true)
             }
         }
         
         let dictionary: UnboxableDictionary = [
-            "date" : "2015-12-15"
+            "date" : "2015-12-15",
+            "dateArray" : ["2015-12-15"]
         ]
+        
+        // Valid tests:
         
         do {
             let unboxed: Model = try Unbox(dictionary: dictionary)
@@ -224,16 +267,62 @@ class UnboxTests: XCTestCase {
             XCTAssertEqual(calendar.component(.year, from: unboxed.date), 2015)
             XCTAssertEqual(calendar.component(.month, from: unboxed.date), 12)
             XCTAssertEqual(calendar.component(.day, from: unboxed.date), 15)
+            
+            if let firstDate = unboxed.dateArray.first {
+                XCTAssertEqual(calendar.component(.year, from: firstDate), 2015)
+                XCTAssertEqual(calendar.component(.month, from: firstDate), 12)
+                XCTAssertEqual(calendar.component(.day, from: firstDate), 15)
+            } else {
+                XCTFail("Array empty")
+            }
+            
         } catch {
             XCTFail("\(error)")
         }
         
         do {
-            let invalidDictionary: UnboxableDictionary = [
-                "date" : "2015-12-tuesday"
+            let invalidValueDateArrayDictionary: UnboxableDictionary = [
+                "date" : "2015-12-15",
+                "dateArray" : ["2015-12-tuesday", "2015-12-15"]
             ]
             
-            _ = try Unbox(dictionary: invalidDictionary) as Model
+            let unboxed: AllowInvalidElementsModel = try Unbox(dictionary: invalidValueDateArrayDictionary)
+            
+            XCTAssertEqual(unboxed.dateArray.count, 1)
+            
+            if let firstDate = unboxed.dateArray.first {
+                let calendar = Calendar.current
+                XCTAssertEqual(calendar.component(.year, from: firstDate), 2015)
+                XCTAssertEqual(calendar.component(.month, from: firstDate), 12)
+                XCTAssertEqual(calendar.component(.day, from: firstDate), 15)
+            } else {
+                XCTFail("Array empty")
+            }
+        } catch {
+            XCTFail("\(error)")
+        }
+        
+        // Invalid tests:
+        
+        do {
+            let invalidDateDictionary: UnboxableDictionary = [
+                "date" : "2015-12-tuesday",
+                "dateArray" : ["2015-12-15"]
+            ]
+            
+            _ = try Unbox(dictionary: invalidDateDictionary) as Model
+            XCTFail("Should have thrown")
+        } catch {
+            // Test passed
+        }
+        
+        do {
+            let invalidDateArrayDictionary: UnboxableDictionary = [
+                "date" : "2015-12-15",
+                "dateArray" : ["2015-12-tuesday"]
+            ]
+            
+            _ = try Unbox(dictionary: invalidDateArrayDictionary) as Model
             XCTFail("Should have thrown")
         } catch {
             // Test passed
@@ -243,21 +332,60 @@ class UnboxTests: XCTestCase {
     func testOptionalDateFormattingFailureNotThrowing() {
         struct Model: Unboxable {
             let date: Date?
+            let dateArray: [Date]?
             
             init(unboxer: Unboxer) {
                 let formatter = DateFormatter()
                 formatter.dateFormat = "YYYY-MM-dd"
                 self.date = unboxer.unbox(key: "date", formatter: formatter)
+                self.dateArray = unboxer.unbox(key: "dateArray", formatter: formatter)
+            }
+        }
+        
+        struct AllowInvalidElementsModel: Unboxable {
+            let date: Date?
+            let dateArray: [Date]?
+            
+            init(unboxer: Unboxer) {
+                let formatter = DateFormatter()
+                formatter.dateFormat = "YYYY-MM-dd"
+                self.date = unboxer.unbox(key: "date", formatter: formatter)
+                self.dateArray = unboxer.unbox(key: "dateArray", formatter: formatter, allowInvalidElements: true)
             }
         }
         
         do {
             let invalidDictionary: UnboxableDictionary = [
-                "date" : "2015-12-tuesday"
+                "date" : "2015-12-tuesday",
+                "dateArray" : ["2015-12-tuesday"]
             ]
             
             let unboxed: Model = try Unbox(dictionary: invalidDictionary)
             XCTAssertNil(unboxed.date)
+            XCTAssertNil(unboxed.dateArray)
+        } catch {
+            XCTFail("\(error)")
+        }
+        
+        do {
+            let invalidDictionary: UnboxableDictionary = [
+                "date" : "2015-12-tuesday",
+                "dateArray" : ["2015-12-15", "2015-12-tuesday"]
+            ]
+            
+            let unboxed: AllowInvalidElementsModel = try Unbox(dictionary: invalidDictionary)
+            XCTAssertNil(unboxed.date)
+            XCTAssertEqual(unboxed.dateArray?.count, 1)
+            
+            let calendar = Calendar.current
+            if let firstDate = unboxed.dateArray?.first {
+                XCTAssertEqual(calendar.component(.year, from: firstDate), 2015)
+                XCTAssertEqual(calendar.component(.month, from: firstDate), 12)
+                XCTAssertEqual(calendar.component(.day, from: firstDate), 15)
+            } else {
+                XCTFail("Array empty")
+            }
+            
         } catch {
             XCTFail("\(error)")
         }
@@ -356,6 +484,138 @@ class UnboxTests: XCTestCase {
             XCTFail("Should have thrown")
         } catch {
             // Test passed
+        }
+    }
+    
+    func testCustomDictionaryKeyTypeWithArrayOfUnboxables() {
+        struct Model: Unboxable {
+            let requiredModelDictionary: [UnboxTestDictionaryKey : [UnboxTestSimpleMock]]
+            let optionalModelDictionary: [UnboxTestDictionaryKey : [UnboxTestSimpleMock]]?
+            
+            init(unboxer: Unboxer) {
+                self.requiredModelDictionary = unboxer.unbox(key: "requiredModelDictionary")
+                self.optionalModelDictionary = unboxer.unbox(key: "optionalModelDictionary")
+            }
+        }
+        
+        do {
+            let unboxed: Model = try Unbox(dictionary: [
+                "requiredModelDictionary" : [
+                    "key" : [
+                        ["int" : 31]
+                    ]
+                ],
+                "optionalModelDictionary" : [
+                    "optionalKey" : [
+                        ["int" : 19]
+                    ]
+                ]
+            ])
+            
+            if let values = unboxed.requiredModelDictionary[UnboxTestDictionaryKey(key: "key")] {
+                XCTAssertEqual(values, [UnboxTestSimpleMock(int: 31)])
+            } else {
+                XCTFail("Key was missing from unboxed dictionary")
+            }
+            
+            if let values = unboxed.optionalModelDictionary?[UnboxTestDictionaryKey(key: "optionalKey")] {
+                XCTAssertEqual(values, [UnboxTestSimpleMock(int: 19)])
+            } else {
+                XCTFail("Key was missing from unboxed dictionary")
+            }
+            
+            let unboxedWithoutOptionals: Model = try Unbox(dictionary: [
+                "requiredModelDictionary" : [
+                    "key" : [
+                        ["int" : 31]
+                    ]
+                ]
+            ])
+            
+            if let values = unboxedWithoutOptionals.requiredModelDictionary[UnboxTestDictionaryKey(key: "key")] {
+                XCTAssertEqual(values, [UnboxTestSimpleMock(int: 31)])
+            } else {
+                XCTFail("Key was missing from unboxed dictionary")
+            }
+            XCTAssertNil(unboxedWithoutOptionals.optionalModelDictionary)
+        } catch {
+            XCTFail("\(error)")
+        }
+    }
+    
+    func testCustomDictionaryKeyTypeWithArrayOfUnboxablesThrowsOnInvalidData() {
+        struct Model: Unboxable {
+            let requiredModelDictionary: [UnboxTestDictionaryKey : [UnboxTestSimpleMock]]
+            
+            init(unboxer: Unboxer) {
+                self.requiredModelDictionary = unboxer.unbox(key: "requiredModelDictionary")
+            }
+        }
+        
+        do {
+            let _ : Model = try Unbox(dictionary: [
+                "requiredModelDictionary" : [
+                    "key" : [
+                        ["int" : "asdf"]
+                    ]
+                ],
+            ])
+            
+            XCTFail("Should throw error when unboxing on invalid data")
+        } catch {
+            // Test passed
+        }
+    }
+    
+    func testCustomDictionaryKeyTypeWithArrayOfUnboxablesCanAllowInvalidData() {
+        struct Model: Unboxable {
+            let requiredModelDictionary: [UnboxTestDictionaryKey : [UnboxTestSimpleMock]]
+            
+            init(unboxer: Unboxer) {
+                self.requiredModelDictionary = unboxer.unbox(key: "requiredModelDictionary", allowInvalidElements:true)
+            }
+        }
+        
+        do {
+            let unboxed : Model = try Unbox(dictionary: [
+                "requiredModelDictionary" : [
+                    "key" : [
+                        ["int" : "asdf"]
+                    ]
+                ],
+            ])
+            
+            if let values = unboxed.requiredModelDictionary[UnboxTestDictionaryKey(key: "key")] {
+                XCTAssertEqual(values, [])
+            } else {
+                XCTFail("Key was missing from unboxed dictionary")
+            }
+        } catch {
+           XCTFail("Should not throw error when unboxing on invalid data")
+        }
+    }
+    
+    func testOptionalCustomDictionaryKeyTypeWithArrayOfUnboxablesDoesNotFail() {
+        struct Model: Unboxable {
+            let optionalModelDictionary: [UnboxTestDictionaryKey : [UnboxTestSimpleMock]]?
+            
+            init(unboxer: Unboxer) {
+                self.optionalModelDictionary = unboxer.unbox(key: "optionalModelDictionary")
+            }
+        }
+        
+        do {
+            let unboxed : Model = try Unbox(dictionary: [
+                "requiredModelDictionary" : [
+                    "key" : [
+                        ["int" : "asdf"]
+                    ]
+                ],
+            ])
+            
+            XCTAssertNil(unboxed.optionalModelDictionary)
+        } catch {
+            XCTFail("Should not throw error when unboxing on invalid data")
         }
     }
     
@@ -607,6 +867,32 @@ class UnboxTests: XCTestCase {
         }
     }
     
+    func testNestedArrayAsValueOfDictionary() {
+        struct Model: Unboxable {
+            let dictionaries: [String : [Int]]
+            
+            init(unboxer: Unboxer) {
+                self.dictionaries = unboxer.unbox(key: "dictionaries")
+            }
+        }
+        
+        let dictionary: UnboxableDictionary = [
+            "dictionaries" : [
+                "one" : [1, 2],
+                "two" : [3, 4]
+            ]
+        ]
+        
+        do {
+            let unboxed: Model = try Unbox(dictionary: dictionary)
+            XCTAssertEqual(unboxed.dictionaries.count, 2)
+            XCTAssertEqual(unboxed.dictionaries["one"]!, [1, 2])
+            XCTAssertEqual(unboxed.dictionaries["two"]!, [3, 4])
+        } catch {
+            XCTFail("\(error)")
+        }
+    }
+    
     func testThrowingForMissingRequiredValues() {
         let invalidDictionary: UnboxableDictionary = [:]
         
@@ -740,6 +1026,40 @@ class UnboxTests: XCTestCase {
             }
         } else {
             XCTFail("Failed to unbox")
+        }
+    }
+    
+    func testNestedUnboxableContext() {
+        struct Model: Unboxable {
+            let nested: NestedModel
+            
+            init(unboxer: Unboxer) {
+                self.nested = unboxer.unbox(key: "nested", context: "Context")
+            }
+        }
+        
+        struct NestedModel: Unboxable {
+            let context: Any?
+            
+            init(unboxer: Unboxer) {
+                self.context = unboxer.context
+            }
+        }
+        
+        let dictionary: UnboxableDictionary = [
+            "nested": [:]
+        ]
+        
+        do {
+            let model: Model = try Unbox(dictionary: dictionary)
+            
+            if let stringContext = model.nested.context as? String {
+                XCTAssertEqual(stringContext, "Context")
+            } else {
+                XCTFail("Unexpected context: \(model.nested.context)")
+            }
+        } catch {
+            XCTFail("Unexpected error: \(error)")
         }
     }
 
@@ -908,6 +1228,261 @@ class UnboxTests: XCTestCase {
             XCTFail("Unexpected error thrown: \(error)")
         }
     }
+    
+    func testCustomUnboxingFromArrayWithMultipleClassesAndAllowedInvalid() {
+        struct ModelA {
+            let int: Int
+        }
+        
+        struct ModelB {
+            let string: String
+        }
+        
+        let array: [UnboxableDictionary] = [
+            [
+                "type" : "A",
+                "int" : 22
+            ],
+            [
+                "type" : "B",
+                "WrongKey" : "hello"
+            ]
+        ]
+        do {
+            let unboxed: [Any] = try Unboxer.performCustomUnboxing(array: array, allowInvalidElements: true, closure: {
+                let unboxer = $0
+                let type = unboxer.unbox(key: "type") as String
+                
+                switch type {
+                case "A":
+                    return ModelA(int: unboxer.unbox(key: "int"))
+                case "B":
+                    return ModelB(string: unboxer.unbox(key: "string"))
+                default:
+                    XCTFail()
+                }
+                
+                return nil
+            })
+            
+            XCTAssertEqual((unboxed.first as! ModelA).int, 22)
+            XCTAssertTrue(unboxed.count == 1)
+        } catch {
+            XCTFail("Unexpected error thrown: \(error)")
+        }
+    }
+    
+    func testBorderlineBooleansUnboxing() {
+        struct Model {
+            let bool1: Bool
+            let bool2: Bool
+            let bool3: Bool
+            let bool4: Bool
+            let bool5: Bool
+            let bool6: Bool
+            let bool7: Bool
+            let bool8: Bool
+        }
+        
+        do {
+            let dictionary: UnboxableDictionary = [
+                "bool1": "True",
+                "bool2": "false",
+                "bool3": "t",
+                "bool4": "F",
+                "bool5": "YES",
+                "bool6": "n",
+                "bool7": true,
+                "bool8": false
+            ]
+            
+            let data = try JSONSerialization.data(withJSONObject: dictionary, options: [])
+            let context = "Context"
+            
+            let unboxingClosure: (Unboxer) -> Model? = {
+                XCTAssertEqual($0.context as? String, context)
+                return Model(bool1: $0.unbox(key: "bool1"), bool2: $0.unbox(key: "bool2"), bool3: $0.unbox(key: "bool3"), bool4: $0.unbox(key: "bool4"), bool5: $0.unbox(key: "bool5"), bool6: $0.unbox(key: "bool6"), bool7: $0.unbox(key: "bool7"), bool8: $0.unbox(key: "bool8"))
+            }
+            
+            let unboxedFromDictionary: Model = try Unboxer.performCustomUnboxing(dictionary: dictionary, context: context, closure: unboxingClosure)
+            
+            XCTAssertEqual(unboxedFromDictionary.bool1, true)
+            XCTAssertEqual(unboxedFromDictionary.bool2, false)
+            XCTAssertEqual(unboxedFromDictionary.bool3, true)
+            XCTAssertEqual(unboxedFromDictionary.bool4, false)
+            XCTAssertEqual(unboxedFromDictionary.bool5, true)
+            XCTAssertEqual(unboxedFromDictionary.bool6, false)
+            XCTAssertEqual(unboxedFromDictionary.bool7, true)
+            XCTAssertEqual(unboxedFromDictionary.bool8, false)
+            
+            
+            let unboxedFromData: Model = try Unboxer.performCustomUnboxing(data: data, context: context, closure: unboxingClosure)
+            XCTAssertEqual(unboxedFromData.bool1, true)
+            XCTAssertEqual(unboxedFromData.bool2, false)
+            XCTAssertEqual(unboxedFromData.bool3, true)
+            XCTAssertEqual(unboxedFromData.bool4, false)
+            XCTAssertEqual(unboxedFromData.bool5, true)
+            XCTAssertEqual(unboxedFromData.bool6, false)
+            XCTAssertEqual(unboxedFromData.bool7, true)
+            XCTAssertEqual(unboxedFromData.bool8, false)
+            
+        } catch {
+            XCTFail("Unexpected error thrown: \(error)")
+        }
+    }
+    
+    func testUnboxingStartingAtCustomKey() {
+        let dictionary: UnboxableDictionary = [
+            "A": [
+                "int": 14
+            ]
+        ]
+        
+        do {
+            let unboxed: UnboxTestSimpleMock = try Unbox(dictionary: dictionary, at: "A")
+            XCTAssertEqual(unboxed.int, 14)
+        } catch {
+            XCTFail("Unexpected error thrown: \(error)")
+        }
+    }
+    
+    func testUnboxingStartingAtMissingCustomKey() {
+        let dictionary: UnboxableDictionary = [
+            "A": [
+                "int": 14
+            ]
+        ]
+        
+        do {
+            let _ : UnboxTestSimpleMock = try Unbox(dictionary: dictionary, at: "B")
+            XCTFail()
+        } catch {
+            // Test Passed
+        }
+    }
+    
+    func testUnboxingStartingAtCustomKeyPath() {
+        let dictionary: UnboxableDictionary = [
+            "A": [
+                "B": [
+                    "int": 14
+                ]
+            ]
+        ]
+        
+        do {
+            let unboxed: UnboxTestSimpleMock = try Unbox(dictionary: dictionary, at: "A.B", isKeyPath: true)
+            XCTAssertEqual(unboxed.int, 14)
+        } catch {
+            XCTFail("Unexpected error thrown: \(error)")
+        }
+    }
+    
+    func testUnboxingStartingAtMissingCustomKeyPath() {
+        let dictionary: UnboxableDictionary = [
+            "A": [
+                "int": 14
+            ]
+        ]
+        
+        do {
+            let _: UnboxTestSimpleMock = try Unbox(dictionary: dictionary, at: "A.B", isKeyPath: true)
+            XCTFail()
+        } catch {
+            // Test Passed
+        }
+    }
+    
+    func testUnboxingArrayStartingAtCustomKeyPath() {
+        let dictionary: UnboxableDictionary = [
+            "A": [
+                "B": [
+                    [
+                        "int": 14
+                    ],
+                    [
+                        "int": 14
+                    ],
+                    [
+                        "int": 14
+                    ]
+                ]
+            ]
+        ]
+        
+        do {
+            let unboxedArray: [UnboxTestSimpleMock] = try Unbox(dictionary: dictionary, at: "A.B", isKeyPath: true)
+            unboxedArray.forEach {
+                XCTAssertEqual($0.int, 14)
+            }
+        } catch {
+            XCTFail("Unexpected error thrown: \(error)")
+        }
+    }
+    
+    func testUnboxingArrayIndexStartingAtCustomKeyPath() {
+        let dictionary: UnboxableDictionary =
+            ["A": ["B": [["int": 14], ["int": 14], ["int": 20]]]]
+        
+        do {
+            let unboxed: UnboxTestSimpleMock = try Unbox(dictionary: dictionary, at: "A.B.2", isKeyPath: true)
+            XCTAssertEqual(unboxed.int, 20)
+            
+        } catch {
+            XCTFail("Unexpected error thrown: \(error)")
+        }
+    }
+    
+    func testUnboxingArrayInvalidIndexStartingAtCustomKeyPath() {
+        let dictionary: UnboxableDictionary =
+            ["A": ["B": [["int": 14], ["int": 14], ["int": 20]]]]
+        
+        do {
+            _ = try Unbox(dictionary: dictionary, at: "A.B.3", isKeyPath: true) as UnboxTestSimpleMock
+            XCTFail("Should have thrown")
+        } catch {
+            // Test Passed
+        }
+    }
+    
+    func testUnboxingArrayOfStringsTransformedToInt() {
+        let dictionary: UnboxableDictionary = ["intArray": ["123", "456", "789"]]
+        
+        struct ModelA: Unboxable {
+            let intArray: [Int]
+            init(unboxer: Unboxer) {
+                self.intArray = unboxer.unbox(key: "intArray")
+            }
+        }
+        
+        do {
+            let modelA: ModelA = try Unbox(dictionary: dictionary)
+            XCTAssertEqual(modelA.intArray[0], 123)
+            XCTAssertEqual(modelA.intArray[1], 456)
+            XCTAssertEqual(modelA.intArray[2], 789)
+        } catch {
+            XCTFail()
+        }
+    }
+    
+    func testUnboxingArrayOfBadStringsTransformedToInt() {
+        let dictionary: UnboxableDictionary = ["intArray": ["123", "abc", "789"]]
+        
+        struct ModelA: Unboxable {
+            let intArray: [Int]
+            init(unboxer: Unboxer) {
+                self.intArray = unboxer.unbox(key: "intArray")
+            }
+        }
+        
+        do {
+            _ = try Unbox(dictionary: dictionary) as ModelA
+            XCTFail()
+        } catch {
+            // Test Passed
+        }
+    }
+    
 }
 
 private func UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: Bool) -> UnboxableDictionary {

@@ -31,10 +31,12 @@ That can be initialized with the following JSON:
 To decode this JSON into a `User` instance, all you have to do is make `User` conform to `Unboxable` and unbox its properties:
 
 ```swift
-struct User: Unboxable {
+struct User {
     let name: String
     let age: Int
+}
 
+extension User: Unboxable {
     init(unboxer: Unboxer) {
         self.name = unboxer.unbox("name")
         self.age = unboxer.unbox("age")
@@ -57,7 +59,7 @@ let user: User = try Unbox(data)
 The first was a pretty simple example, but Unbox can decode even the most complicated JSON structures for you, with both required and optional values, all without any extra code on your part:
 
 ```swift
-struct SpaceShip: Unboxable {
+struct SpaceShip {
     let type: SpaceShipType
     let weight: Double
     let engine: Engine
@@ -65,7 +67,9 @@ struct SpaceShip: Unboxable {
     let launchLiveStreamURL: NSURL?
     let lastPilot: Astronaut?
     let lastLaunchDate: NSDate?
+}
 
+extension SpaceShip: Unboxable {
     init(unboxer: Unboxer) {
         self.type = unboxer.unbox("type")
         self.weight = unboxer.unbox("weight")
@@ -80,34 +84,38 @@ struct SpaceShip: Unboxable {
     }
 }
 
-enum SpaceShipType: Int, UnboxableEnum {
+enum SpaceShipType: Int {
     case Apollo
     case Sputnik
+}
 
+extension SpaceShipType: UnboxableEnum {
     static func unboxFallbackValue() -> SpaceShipType {
         return .Apollo
     }
 }
 
-struct Engine: Unboxable {
+struct Engine {
     let manufacturer: String
     let fuelConsumption: Float
+}
 
+extension Engine: Unboxable {
     init(unboxer: Unboxer) {
         self.manufacturer = unboxer.unbox("manufacturer")
         self.fuelConsumption = unboxer.unbox("fuelConsumption")
     }
 }
 
-struct Astronaut: Unboxable {
+struct Astronaut {
     let name: String
+}
 
+extension Astronaut: Unboxable {
     init(unboxer: Unboxer) {
         self.name = unboxer.unbox("name")
     }
 }
-
-
 ```
 
 ### Error handling
@@ -191,7 +199,7 @@ enum Profession: Int, UnboxableEnum {
     case Developer
     case Astronaut
 
-    static func unboxFallbackValue() {
+    static func unboxFallbackValue() -> Profession {
         return .Developer
     }
 }
@@ -241,12 +249,14 @@ You can also use key paths (for both dictionary keys and array indexes) to unbox
 ```
 
 ```swift
-struct User: Unboxable {
+struct User {
     let name: String
     let age: Int
     let runningDistance: Int
     let primaryDeviceName: String
+}
 
+extension User: Unboxable {
     init(unboxer: Unboxer) {
         self.name = unboxer.unbox("name")
         self.age = unboxer.unbox("age")
@@ -254,6 +264,56 @@ struct User: Unboxable {
         self.primaryDeviceName = unboxer.unbox("devices.0", isKeyPath: true)
     }
 }
+```
+
+You can also use key paths to directly unbox nested JSON structures. This is useful when you only need to extract a specific object (or objects) out of the JSON body.
+
+```json
+{
+    "company": {
+        "name": "Spotify",
+    },
+    "jobOpenings": [
+        {
+            "title": "Swift Developer",
+            "salary": 120000
+        },
+        {
+            "title": "UI Designer",
+            "salary": 100000
+        },
+    ]
+}
+```
+
+```swift
+struct JobOpening {
+    let title: String
+    let salary: Int
+}
+
+extension JobOpening: Unboxable {
+    init(unboxer: Unboxer) {
+        self.title = unboxer.unbox("title")
+        self.salary = unboxer.unbox("salary")
+    }
+}
+
+struct Company {
+    let name: String
+}
+
+extension Company: Unboxable {
+    init(unboxer: Unboxer) {
+        self.name = unboxer.unbox("name")
+    }
+}
+```
+
+```swift
+let company: Company = try Unbox(json, at: "company")
+let jobOpenings: [JobOpening] = try Unbox(json, at: "jobOpenings")
+let featuredOpening: JobOpening = try Unbox(json, at: "jobOpenings.0")
 ```
 
 ### Custom unboxing
@@ -314,6 +374,10 @@ Swift cannot find the appropriate overload of the `unbox` method to call. Make s
 Either set a breakpoint in `Unboxer.failForInvalidValue(forKey:)` to see what key/value combination that caused the unboxing process to fail, or catch an `UnboxError` in the `catch` block when calling `try Unbox()`.
 
 If you need any help in resolving any problems that you might encounter while using Unbox, feel free to open an Issue.
+
+### Community Extensions
+
+- [UnboxedAlamofire](https://github.com/serejahh/UnboxedAlamofire) - the easiest way to use Unbox with Alamofire
 
 ### Hope you enjoy unboxing your JSON!
 
