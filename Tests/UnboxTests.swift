@@ -204,8 +204,8 @@ class UnboxTests: XCTestCase {
     
     func testArrayOfURLs() {
         struct Model: Unboxable {
-            let optional: [NSURL]?
-            let required: [NSURL]
+            let optional: [URL]?
+            let required: [URL]
             
             init(unboxer: Unboxer) {
                 self.optional = unboxer.unbox(key: "optional")
@@ -221,8 +221,8 @@ class UnboxTests: XCTestCase {
         do {
             let unboxed: Model = try Unbox(dictionary: dictionary)
             XCTAssertEqual(unboxed.optional?.count, 1)
-            XCTAssertEqual(unboxed.optional?.first, NSURL(string: "https://www.google.com"))
-            XCTAssertEqual(unboxed.required, [NSURL(string: "https://github.com/johnsundell/unbox")!])
+            XCTAssertEqual(unboxed.optional?.first, URL(string: "https://www.google.com"))
+            XCTAssertEqual(unboxed.required, [URL(string: "https://github.com/johnsundell/unbox")!])
         } catch {
             XCTFail("\(error)")
         }
@@ -1577,8 +1577,8 @@ private class UnboxTestBaseMock: Unboxable {
     let optionalEnum: UnboxTestEnum?
     let requiredString: String
     let optionalString: String?
-    let requiredURL: NSURL
-    let optionalURL: NSURL?
+    let requiredURL: URL
+    let optionalURL: URL?
     let requiredArray: [String]
     let optionalArray: [String]?
     let requiredEnumArray: [UnboxTestEnum]

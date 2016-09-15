@@ -347,16 +347,16 @@ extension String: UnboxableRawType {
     }
 }
 
-/// Extension making NSURL Unboxable by transform
-extension NSURL: UnboxableByTransform {
+/// Extension making URL Unboxable by transform
+extension URL: UnboxableByTransform {
     public typealias UnboxRawValueType = String
     
-    public static func transform(unboxedValue: String) -> Self? {
-        return self.init(string: unboxedValue)
+    public static func transform(unboxedValue: String) -> URL? {
+        return URL(string: unboxedValue)
     }
     
-    public static func unboxFallbackValue() -> Self {
-        return self.init()
+    public static func unboxFallbackValue() -> URL {
+        return URL(string: "unbox.fallback")!
     }
 }
 
