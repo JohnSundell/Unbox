@@ -1601,6 +1601,7 @@ private func UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: Bool)
         UnboxTestMock.requiredEnumKey : 1,
         UnboxTestMock.requiredStringKey :  "hello",
         UnboxTestMock.requiredURLKey : "http://www.google.com",
+        UnboxTestMock.requiredDecimalKey: "13.95",
         UnboxTestMock.requiredArrayKey : ["unbox", "is", "pretty", "cool", "right?"],
         UnboxTestMock.requiredEnumArrayKey : [0, 1],
     ]
@@ -1656,6 +1657,8 @@ private class UnboxTestBaseMock: Unboxable {
     static let optionalStringKey = "optionalString"
     static let requiredURLKey = "requiredURL"
     static let optionalURLKey = "optionalURL"
+    static let requiredDecimalKey = "requiredDecimal"
+    static let optionalDecimalKey = "optionalDecimal"
     static let requiredArrayKey = "requiredArray"
     static let optionalArrayKey = "optionalArray"
     static let requiredEnumArrayKey = "requiredEnumArray"
@@ -1677,6 +1680,8 @@ private class UnboxTestBaseMock: Unboxable {
     let optionalString: String?
     let requiredURL: URL
     let optionalURL: URL?
+    let requiredDecimal: Decimal
+    let optionalDecimal: Decimal?
     let requiredArray: [String]
     let optionalArray: [String]?
     let requiredEnumArray: [UnboxTestEnum]
@@ -1699,6 +1704,8 @@ private class UnboxTestBaseMock: Unboxable {
         self.optionalString = unboxer.unbox(key: UnboxTestBaseMock.optionalStringKey)
         self.requiredURL = try unboxer.unbox(key: UnboxTestBaseMock.requiredURLKey)
         self.optionalURL = unboxer.unbox(key: UnboxTestBaseMock.optionalURLKey)
+        self.requiredDecimal = try unboxer.unbox(key: UnboxTestBaseMock.requiredDecimalKey)
+        self.optionalDecimal = unboxer.unbox(key: UnboxTestBaseMock.optionalDecimalKey)
         self.requiredArray = try unboxer.unbox(key: UnboxTestBaseMock.requiredArrayKey)
         self.optionalArray = unboxer.unbox(key: UnboxTestBaseMock.optionalArrayKey)
         self.requiredEnumArray = try unboxer.unbox(key: UnboxTestBaseMock.requiredEnumArrayKey)
@@ -1742,6 +1749,10 @@ private class UnboxTestBaseMock: Unboxable {
                 verificationOutcome = self.verifyTransformableValue(value: self.requiredURL, againstDictionaryValue: value)
             case UnboxTestBaseMock.optionalURLKey:
                 verificationOutcome = self.verifyTransformableValue(value: self.optionalURL, againstDictionaryValue: value)
+            case UnboxTestBaseMock.requiredDecimalKey:
+                verificationOutcome = self.verifyTransformableValue(value: self.requiredDecimal, againstDictionaryValue: value)
+            case UnboxTestBaseMock.optionalDecimalKey:
+                verificationOutcome = self.verifyTransformableValue(value: self.optionalDecimal, againstDictionaryValue: value)
             case UnboxTestBaseMock.requiredArrayKey:
                 verificationOutcome = self.verifyArrayPropertyValue(value: self.requiredArray, againstDictionaryValue: value)
             case UnboxTestBaseMock.optionalArrayKey:
