@@ -103,6 +103,8 @@ public enum UnboxError: Error {
     case invalidValue(Any, String)
     /// Thrown when a required value was missing. Contains the key.
     case missingValue(String)
+    /// Thrown when an empty key path was supplied
+    case emptyKeyPath
     /// Thrown when a piece of data (Data) could not be unboxed because it was considered invalid
     case invalidData
     /// Thrown when a custom unboxing closure returned nil
@@ -118,6 +120,8 @@ extension UnboxError: CustomStringConvertible {
             return baseDescription + "Invalid value found (\(value)) for key \"\(key)\""
         case .missingValue(let key):
             return baseDescription + "Missing value for key \"\(key)\""
+        case .emptyKeyPath:
+            return baseDescription + "Empty key path"
         case .invalidData:
             return baseDescription + "Invalid Data"
         case .customUnboxingFailed:
@@ -412,26 +416,46 @@ public class Unboxer {
     
     // MARK: - Value accessing API
     
-    /// Unbox a required value
-    public func unbox<T: UnboxCompatibleType>(key: String, isKeyPath: Bool = true) throws -> T {
-        return try UnboxValueResolver<Any>(self).resolveRequiredValueForKey(key: key, isKeyPath: isKeyPath, transform: T.unbox)
+    /// Unbox a required value by key
+    public func unbox<T: UnboxCompatibleType>(key: String) throws -> T {
+        return try UnboxValueResolver<Any>(self).resolveValue(forPath: .key(key), transform: T.unbox)
     }
     
-    /// Unbox an optional value
-    public func unbox<T: UnboxCompatibleType>(key: String, isKeyPath: Bool = true) -> T? {
-        return UnboxValueResolver<Any>(self).resolveOptionalValueForKey(key: key, isKeyPath: isKeyPath, transform: T.unbox)
+    /// Unbox a required value by key path
+    public func unbox<T: UnboxCompatibleType>(keyPath: String) throws -> T {
+        return try UnboxValueResolver<Any>(self).resolveValue(forPath: .keyPath(keyPath), transform: T.unbox)
     }
     
-    /// Unbox a required array
-    public func unbox<T: UnboxCompatibleType>(key: String, isKeyPath: Bool = true, allowInvalidElements: Bool = false) throws -> [T] {
+    /// Unbox an optional value by key
+    public func unbox<T: UnboxCompatibleType>(key: String) -> T? {
+        return try? self.unbox(key: key)
+    }
+    
+    /// Unbox an optional value by key path
+    public func unbox<T: UnboxCompatibleType>(keyPath: String) -> T? {
+        return try? self.unbox(keyPath: keyPath)
+    }
+    
+    /// Unbox a required array by key
+    public func unbox<T: UnboxCompatibleType>(key: String, allowInvalidElements: Bool = false) throws -> [T] {
         let transform = T.makeArrayTransformClosure(allowInvalidElements: allowInvalidElements)
-        return try UnboxValueResolver<[Any]>(self).resolveRequiredValueForKey(key: key, isKeyPath: isKeyPath, transform: transform)
+        return try UnboxValueResolver<[Any]>(self).resolveValue(forPath: .key(key), transform: transform)
     }
     
-    /// Unbox an optional array
-    public func unbox<T: UnboxCompatibleType>(key: String, isKeyPath: Bool = true, allowInvalidElements: Bool = false) -> [T]? {
+    /// Unbox a required array by key path
+    public func unbox<T: UnboxCompatibleType>(keyPath: String, allowInvalidElements: Bool = false) throws -> [T] {
         let transform = T.makeArrayTransformClosure(allowInvalidElements: allowInvalidElements)
-        return UnboxValueResolver<[Any]>(self).resolveOptionalValueForKey(key: key, isKeyPath: isKeyPath, transform: transform)
+        return try UnboxValueResolver<[Any]>(self).resolveValue(forPath: .keyPath(keyPath), transform: transform)
+    }
+    
+    /// Unbox an optional array by key
+    public func unbox<T: UnboxCompatibleType>(key: String, allowInvalidElements: Bool = false) -> [T]? {
+        return try? self.unbox(key: key, allowInvalidElements: allowInvalidElements)
+    }
+    
+    /// Unbox an optional array by key path
+    public func unbox<T: UnboxCompatibleType>(keyPath: String, allowInvalidElements: Bool = false) -> [T]? {
+        return try? self.unbox(keyPath: keyPath, allowInvalidElements: allowInvalidElements)
     }
     
     /// Unbox a required Array of collections
@@ -653,6 +677,55 @@ public class Unboxer {
     }
 }
 
+// MARK: - UnboxPath
+
+private enum UnboxPath {
+    case key(String)
+    case keyPath(String)
+}
+
+extension UnboxPath {
+    var components: [String] {
+        switch self {
+        case .key(let key):
+            return [key]
+        case .keyPath(let keyPath):
+            return keyPath.components(separatedBy: ".")
+        }
+    }
+}
+
+// MARK: - UnboxingMode
+
+private enum UnboxingMode {
+    case dictionary(UnboxableDictionary)
+    case array([Any])
+    case value(Any)
+}
+
+extension UnboxingMode {
+    var value: Any {
+        switch self {
+        case .dictionary(let dictionary):
+            return dictionary
+        case .array(let array):
+            return array
+        case .value(let value):
+            return value
+        }
+    }
+    
+    init(value: Any) {
+        if let dictionary = value as? UnboxableDictionary {
+            self = .dictionary(dictionary)
+        } else if let array = value as? [Any] {
+            self = .array(array)
+        } else {
+            self = .value(value)
+        }
+    }
+}
+
 // MARK: - UnboxValueResolver
 
 private class UnboxValueResolver<T> {
@@ -660,6 +733,44 @@ private class UnboxValueResolver<T> {
     
     init(_ unboxer: Unboxer) {
         self.unboxer = unboxer
+    }
+    
+    func resolveValue<R>(forPath path: UnboxPath, transform: (T) throws -> R?) throws -> R {
+        var currentMode = UnboxingMode.dictionary(self.unboxer.dictionary)
+        let components = path.components
+        
+        guard let lastKey = components.last else {
+            throw UnboxError.emptyKeyPath
+        }
+        
+        for key in components {
+            switch currentMode {
+            case .dictionary(let dictionary):
+                guard let value = dictionary[key] else {
+                    throw UnboxError.missingValue(key)
+                }
+                
+                currentMode = UnboxingMode(value: value)
+            case .array(let array):
+                guard let index = Int(key), index < array.count else {
+                    throw UnboxError.missingValue(key)
+                }
+                
+                currentMode = UnboxingMode(value: array[index])
+            case .value(let value):
+                throw UnboxError.invalidValue(value, key)
+            }
+        }
+        
+        guard let rawValue = currentMode.value as? T else {
+            throw UnboxError.invalidValue(currentMode.value, lastKey)
+        }
+        
+        guard let value = try transform(rawValue) else {
+            throw UnboxError.invalidValue(rawValue, lastKey)
+        }
+        
+        return value
     }
     
     func resolveRequiredValueForKey(key: String, isKeyPath: Bool) throws -> T {

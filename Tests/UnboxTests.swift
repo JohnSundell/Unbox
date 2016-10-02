@@ -1038,7 +1038,7 @@ class UnboxTests: XCTestCase {
             init(unboxer: Unboxer) throws {
                 let intKeyPathComponents = [UnboxTestMock.requiredUnboxableDictionaryKey, "test", UnboxTestMock.requiredIntKey]
                 let keyPath = intKeyPathComponents.joined(separator: ".")
-                self.intValue = try unboxer.unbox(key: keyPath, isKeyPath: true)
+                self.intValue = try unboxer.unbox(keyPath: keyPath)
 
                 let dictionaryKeyPath = [UnboxTestMock.requiredUnboxableDictionaryKey, "test"].joined(separator: ".")
                 self.dictionary = try unboxer.unbox(key: dictionaryKeyPath, isKeyPath: true)
@@ -1063,8 +1063,8 @@ class UnboxTests: XCTestCase {
             let lastName: String
             
             init(unboxer: Unboxer) throws {
-                self.firstName = try unboxer.unbox(key: "names.0")
-                self.lastName = try unboxer.unbox(key: "names.1", isKeyPath: true)
+                self.firstName = try unboxer.unbox(keyPath: "names.0")
+                self.lastName = try unboxer.unbox(keyPath: "names.1")
             }
         }
         
@@ -1087,8 +1087,8 @@ class UnboxTests: XCTestCase {
             let string: String
             
             init(unboxer: Unboxer) throws {
-                self.int = try unboxer.unbox(key: "int.value", isKeyPath: false)
-                self.string = try unboxer.unbox(key: "string.value", isKeyPath: false)
+                self.int = try unboxer.unbox(key: "int.value")
+                self.string = try unboxer.unbox(key: "string.value")
             }
         }
         
