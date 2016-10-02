@@ -1,53 +1,10 @@
 language: objective-c
 osx_image: xcode8
-
-sudo: false
-branches:
-  only:
-    - master
-    - /^swift.*$/
-    - /^release-.*$/
-
-before_install: ./ci/before_install.sh
-bundler_args: --without documentation --without development --deployment --jobs=3 --retry=3
-
-
 script:
-  - ./ci/script.sh
-  # This is a workaround for a Travis-CI bug where the log might get cut-off.
-  # See the [Travis-CI issue #4716](https://github.com/travis-ci/travis-ci/issues/4716).
-  - sleep 3
-
-after_success: ./ci/after_success.sh
-
-deploy:
-  provider: releases
-  api_key:
-    secure: generate_using_travis_gem_and_insert_here_see_the_docs
-  file:
-    Unbox.framework.zip
-  on:
-    repo: JohnSundell/Unbox
-    tags: true
-  script: ./ci/deploy.sh
-
-env:
-  global:
-    - LC_CTYPE=en_US.UTF-8
-    - LANG=en_US.UTF-8
-    - PROJECT_NAME="Unbox"
-    - SCHEME_IOS="Unbox-iOS"
-    - SCHEME_OSX="Unbox-OSX"
-    - SCHEME_TV="Unbox-tvOS"
-    - SCHEME_WATCH="Unbox-watchOS"
-    - BUILD="clean build"
-    - BUILD_TEST="clean build test"
-    - ENABLE_CODE_COVERAGE="-enableCodeCoverage YES"
-    - PROJECT_FRAMEWORK="Unbox.xcodeproj"
-    - PODSPEC="Unbox"
-  matrix:
-    - TEST_SDK=iphonesimulator  TEST_DEST="platform=iOS Simulator,OS=8.1,name=iPhone 6"   SCHEME="$SCHEME_IOS"    BUILD_ACTIONS="$BUILD_TEST" EXTRA_ARGUMENTS="$ENABLE_CODE_COVERAGE" PROJECT="$PROJECT_FRAMEWORK"
-    - TEST_SDK=iphonesimulator  TEST_DEST="platform=iOS Simulator,OS=9.2,name=iPhone 6s"  SCHEME="$SCHEME_IOS"    BUILD_ACTIONS="$BUILD_TEST" EXTRA_ARGUMENTS="$ENABLE_CODE_COVERAGE" PROJECT="$PROJECT_FRAMEWORK"
-    - TEST_SDK=macosx           TEST_DEST="platform=OS X,arch=x86_64"                     SCHEME="$SCHEME_OSX"    BUILD_ACTIONS="$BUILD_TEST" EXTRA_ARGUMENTS="$ENABLE_CODE_COVERAGE" PROJECT="$PROJECT_FRAMEWORK"
-    - TEST_SDK=appletvsimulator TEST_DEST="OS=9.0,name=Apple TV 1080p"                    SCHEME="$SCHEME_TV"     BUILD_ACTIONS="$BUILD_TEST" EXTRA_ARGUMENTS="$ENABLE_CODE_COVERAGE" PROJECT="$PROJECT_FRAMEWORK"
-    - TEST_SDK=watchsimulator   TEST_DEST="OS=2.0,name=Apple Watch - 38mm"                SCHEME="$SCHEME_WATCH"  BUILD_ACTIONS="$BUILD"      EXTRA_ARGUMENTS=""                      PROJECT="$PROJECT_FRAMEWORK"
+    - xcodebuild clean build -project Unbox.xcodeproj -scheme Unbox-iOS CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=NO
+    - xcodebuild clean build -project Unbox.xcodeproj -scheme Unbox-OSX CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=NO
+    - xcodebuild clean build -project Unbox.xcodeproj -scheme Unbox-watchOS CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=NO
+    - xcodebuild clean build -project Unbox.xcodeproj -scheme Unbox-tvOS CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=NO
+    - xcodebuild clean test -project Unbox.xcodeproj -scheme Unbox-iOS -destination "platform=iOS Simulator,name=iPhone 6" CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=NO
+    - xcodebuild clean test -project Unbox.xcodeproj -scheme Unbox-OSX -destination "platform=OS X" CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=NO
+    - xcodebuild clean test -project Unbox.xcodeproj -scheme Unbox-tvOS -destination "platform=tvOS Simulator,name=Apple TV 1080p" CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=NO
