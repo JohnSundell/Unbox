@@ -337,12 +337,8 @@ extension DateFormatter: UnboxFormatter {
 public class Unboxer {
     /// The underlying JSON dictionary that is being unboxed
     public let dictionary: UnboxableDictionary
-    /// Whether the Unboxer has failed, and a `nil` value will be returned from the `Unbox()` function that triggered it.
-    public var hasFailed: Bool { return !self.failureInfo.isEmpty }
     /// Any contextual object that was supplied when unboxing was started
     public let context: Any?
-    
-    fileprivate var failureInfo = [(key: String, value: Any?)]()
     
     // MARK: - Private initializer
     
