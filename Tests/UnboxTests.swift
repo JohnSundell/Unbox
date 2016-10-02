@@ -228,6 +228,34 @@ class UnboxTests: XCTestCase {
         }
     }
     
+    func testArrayOfEnums() {
+        struct Model: Unboxable {
+            let optionalA: [UnboxTestEnum]?
+            let optionalB: [UnboxTestEnum]?
+            let required: [UnboxTestEnum]
+            
+            init(unboxer: Unboxer) throws {
+                self.optionalA = unboxer.unbox(key: "optionalA")
+                self.optionalB = unboxer.unbox(key: "optionalB")
+                self.required = try unboxer.unbox(key: "required")
+            }
+        }
+        
+        let dictionary: UnboxableDictionary = [
+            "optionalA" : [0, 1],
+            "required" : [1, 0]
+        ]
+        
+        do {
+            let unboxed: Model = try Unbox(dictionary: dictionary)
+            XCTAssertEqual(unboxed.optionalA!, [.First, .Second])
+            XCTAssertNil(unboxed.optionalB)
+            XCTAssertEqual(unboxed.required, [.Second, .First])
+        } catch {
+            XCTFail("\(error)")
+        }
+    }
+    
     func testRequiredDateFormatting() {
         struct Model: Unboxable {
             let date: Date
