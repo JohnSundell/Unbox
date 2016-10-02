@@ -146,7 +146,10 @@ public protocol UnboxableWithContext {
 }
 
 /// Protocol that types that can be used in an unboxing process must conform to
-public protocol UnboxCompatibleType {}
+public protocol UnboxCompatibleType {
+    /// Unbox a value, or either throw or return nil if unboxing couldn't be performed
+    static func unbox(value: Any) throws -> Self?
+}
 
 /// Protocol used to enable a raw type for Unboxing. See default implementations further down.
 public protocol UnboxableRawType: UnboxCompatibleType {
@@ -160,7 +163,7 @@ public protocol UnboxableRawType: UnboxCompatibleType {
 public protocol UnboxableEnum: RawRepresentable, UnboxCompatibleType {}
 
 /// Protocol used to enable any type to be transformed from a JSON key into a dictionary key
-public protocol UnboxableKey: Hashable, UnboxCompatibleType {
+public protocol UnboxableKey: Hashable {
     /// Transform an unboxed key into a key that will be used in an unboxed dictionary
     static func transform(unboxedKey: String) -> Self?
 }
@@ -175,7 +178,7 @@ public protocol UnboxableByTransform: UnboxCompatibleType {
 }
 
 /// Protocol used to enable any type as being unboxable with a certain formatter type
-public protocol UnboxableWithFormatter: UnboxCompatibleType {
+public protocol UnboxableWithFormatter {
     /// The type of formatter to use to format an unboxed value into a value of this type
     associatedtype UnboxFormatterType: UnboxFormatter
 }
@@ -189,6 +192,46 @@ public protocol UnboxFormatter {
     
     /// Format an unboxed value into another value (or nil if the formatting failed)
     func format(unboxedValue: UnboxRawValueType) -> UnboxFormattedType?
+}
+
+// MARK: - Default protocol implementations
+
+public extension UnboxableRawType {
+    static func unbox(value: Any) throws -> Self? {
+        if let matchedValue = value as? Self {
+            return matchedValue
+        }
+        
+        if let string = value as? String {
+            return self.transform(unboxedString: string)
+        }
+
+        if let int = value as? Int {
+            return self.transform(unboxedInt: int)
+        }
+
+        return nil
+    }
+}
+
+public extension UnboxableByTransform {
+    static func unbox(value: Any) throws -> Self? {
+        guard let rawValue = value as? UnboxRawValueType else {
+            return nil
+        }
+        
+        return self.transform(unboxedValue: rawValue)
+    }
+}
+
+public extension UnboxableEnum {
+    static func unbox(value: Any) throws -> Self? {
+        guard let rawValue = value as? RawValue else {
+            return nil
+        }
+        
+        return self.init(rawValue: rawValue)
+    }
 }
 
 // MARK: - Extensions
@@ -356,7 +399,6 @@ public class Unboxer {
     
     /// Perform custom unboxing on an array of dictionaries, executing a closure with a new Unboxer for each one, or throw an UnboxError
     public static func performCustomUnboxing<T>(array: [UnboxableDictionary], context: Any? = nil, allowInvalidElements: Bool = false, closure: (Unboxer) throws -> T?) throws -> [T] {
-        
         if allowInvalidElements {
             return array.flatMap { (dictionary) -> T? in
                 return try? self.performCustomUnboxing(dictionary: dictionary, context: context, closure: closure)
@@ -377,67 +419,24 @@ public class Unboxer {
     
     /// Unbox a required raw type
     public func unbox<T: UnboxableRawType>(key: String, isKeyPath: Bool = true) throws -> T {
-        if let rawValue = UnboxValueResolver<T>(self).resolveOptionalValueForKey(key: key, isKeyPath: isKeyPath) {
-            return rawValue
-        }
-        
-        let transformedString = UnboxValueResolver<String>(self).resolveOptionalValueForKey(key: key, isKeyPath: isKeyPath, transform: {
-            return T.transform(unboxedString: $0)
-        })
-        
-        if let transformedString = transformedString {
-            return transformedString
-        }
-        
-        return try UnboxValueResolver<Int>(self).resolveRequiredValueForKey(key: key, isKeyPath: isKeyPath, transform: {
-            return T.transform(unboxedInt: $0)
-        })
+        return try UnboxValueResolver<Any>(self).resolveRequiredValueForKey(key: key, isKeyPath: isKeyPath, transform: T.unbox)
     }
     
     /// Unbox an optional raw type
     public func unbox<T: UnboxableRawType>(key: String, isKeyPath: Bool = true) -> T? {
-        if let rawValue = UnboxValueResolver<T>(self).resolveOptionalValueForKey(key: key, isKeyPath: isKeyPath) {
-            return rawValue
-        }
-        
-        let transformedString = UnboxValueResolver<String>(self).resolveOptionalValueForKey(key: key, isKeyPath: isKeyPath, transform: {
-            return T.transform(unboxedString: $0)
-        })
-        
-        if let transformedString = transformedString {
-            return transformedString
-        }
-        
-        return UnboxValueResolver<Int>(self).resolveOptionalValueForKey(key: key, isKeyPath: isKeyPath, transform: {
-            return T.transform(unboxedInt: $0)
-        })
+        return UnboxValueResolver<Any>(self).resolveOptionalValueForKey(key: key, isKeyPath: isKeyPath, transform: T.unbox)
     }
     
     /// Unbox a required Array containing values of a raw type
-    public func unbox<T: UnboxableRawType>(key: String, isKeyPath: Bool = true) throws -> [T] {
-        if let rawValueArray = UnboxValueResolver<[T]>(self).resolveOptionalValueForKey(key: key, isKeyPath: isKeyPath) {
-            return rawValueArray
-        }
-        
-        let transformedStringArray = UnboxValueResolver<[String]>(self).resolveOptionalValueForKey(key: key, isKeyPath: isKeyPath, transform: { stringArray -> [T]? in
-            var transformedStringArray = [T]()
-            for string in stringArray {
-                guard let transformedUnboxedString = T.transform(unboxedString: string) else { return nil }
-                transformedStringArray.append(transformedUnboxedString)
-            }
-            return transformedStringArray
-        })
-        
-        if let transformedStringArray = transformedStringArray {
-            return transformedStringArray
-        }
-        
-        return try UnboxValueResolver<[T]>(self).resolveRequiredValueForKey(key: key, isKeyPath: isKeyPath)
+    public func unbox<T: UnboxableRawType>(key: String, isKeyPath: Bool = true, allowInvalidElements: Bool = false) throws -> [T] {
+        let transform = T.makeArrayTransformClosure(allowInvalidElements: allowInvalidElements)
+        return try UnboxValueResolver<[Any]>(self).resolveRequiredValueForKey(key: key, isKeyPath: isKeyPath, transform: transform)
     }
     
     /// Unbox an optional Array containing values of a raw type
-    public func unbox<T: UnboxableRawType>(key: String, isKeyPath: Bool = true) -> [T]? {
-        return UnboxValueResolver<[T]>(self).resolveOptionalValueForKey(key: key, isKeyPath: isKeyPath)
+    public func unbox<T: UnboxableRawType>(key: String, isKeyPath: Bool = true, allowInvalidElements: Bool = false) -> [T]? {
+        let transform = T.makeArrayTransformClosure(allowInvalidElements: allowInvalidElements)
+        return UnboxValueResolver<[Any]>(self).resolveOptionalValueForKey(key: key, isKeyPath: isKeyPath, transform: transform)
     }
     
     /// Unbox a required Array of collections
@@ -453,13 +452,13 @@ public class Unboxer {
     /// Unbox a required Array of values that can be transformed into its final form
     public func unbox<T: UnboxableByTransform>(key: String, isKeyPath: Bool = true, allowInvalidElements: Bool = false) throws -> [T] {
         let transform = T.makeArrayTransformClosure(allowInvalidElements: allowInvalidElements)
-        return try UnboxValueResolver<[T.UnboxRawValueType]>(self).resolveRequiredValueForKey(key: key, isKeyPath: isKeyPath, transform: transform)
+        return try UnboxValueResolver<[Any]>(self).resolveRequiredValueForKey(key: key, isKeyPath: isKeyPath, transform: transform)
     }
 
     /// Unbox an optional Array of values that can be transformed into its final form
     public func unbox<T: UnboxableByTransform>(key: String, isKeyPath: Bool = true, allowInvalidElements: Bool = false) -> [T]? {
         let transform = T.makeArrayTransformClosure(allowInvalidElements: allowInvalidElements)
-        return UnboxValueResolver<[T.UnboxRawValueType]>(self).resolveOptionalValueForKey(key: key, isKeyPath: isKeyPath, transform: transform)
+        return UnboxValueResolver<[Any]>(self).resolveOptionalValueForKey(key: key, isKeyPath: isKeyPath, transform: transform)
     }
     
     /// Unbox a required raw value from a certain index in a nested Array
@@ -842,24 +841,10 @@ private struct UnboxArrayContainer<T: Unboxable>: UnboxableWithContext {
 
 // MARK: - Private extensions
 
-private extension UnboxableByTransform {
-    static func makeArrayTransformClosure(allowInvalidElements: Bool) -> ([UnboxRawValueType]) -> [Self]? {
+private extension UnboxCompatibleType {
+    static func makeArrayTransformClosure(allowInvalidElements: Bool) -> ([Any]) throws -> [Self]? {
         return {
-            if allowInvalidElements {
-                return $0.flatMap { Self.transform(unboxedValue: $0) }
-            }
-            
-            var transformedValues = [Self]()
-            
-            for rawValue in $0 {
-                guard let transformedvalue = Self.transform(unboxedValue: rawValue) else {
-                    return nil
-                }
-                
-                transformedValues.append(transformedvalue)
-            }
-            
-            return transformedValues
+            try $0.map(allowInvalidElements: allowInvalidElements, transform: self.unbox)
         }
     }
 }
@@ -910,11 +895,32 @@ private extension Unboxer {
 
 private extension Array {
     func map<T>(allowInvalidElements: Bool, transform: (Element) throws -> T) throws -> [T] {
+        return try self.flatMap {
+            do {
+                return try transform($0)
+            } catch {
+                if !allowInvalidElements {
+                    throw error
+                }
+                
+                return nil
+            }
+        }
+    }
+    
+    func map<T>(allowInvalidElements: Bool, transform: (Element) throws -> T?) throws -> [T]? {
         var transformedArray = [T]()
         
         for element in self {
             do {
-                let transformed = try transform(element)
+                guard let transformed = try transform(element) else {
+                    if allowInvalidElements {
+                        continue
+                    }
+                    
+                    return nil
+                }
+                
                 transformedArray.append(transformed)
             } catch {
                 if !allowInvalidElements {
