@@ -1005,27 +1005,6 @@ class UnboxTests: XCTestCase {
         }
     }
     
-    func testContext() {
-        class Model: Unboxable {
-            let nestedUnboxable: Model?
-            
-            required init(unboxer: Unboxer) {
-                if let context = unboxer.context as? String {
-                    XCTAssertTrue("context" == context, "")
-                } else {
-                    XCTFail("Context was of an unexpected type: \(unboxer.context)")
-                }
-                
-                self.nestedUnboxable = unboxer.unbox(key: "nested")
-            }
-        }
-        
-        let dictionary: UnboxableDictionary = ["nested" : UnboxableDictionary() as AnyObject]
-        let unboxed: Model? = try? Unbox(dictionary: dictionary, context: "context")
-        
-        XCTAssertFalse(unboxed == nil, "Could not unbox with a context")
-    }
-    
     func testRequiredContext() {
         let dictionary: UnboxableDictionary = [
             "nested" : [:],
@@ -1048,40 +1027,6 @@ class UnboxTests: XCTestCase {
             }
         } else {
             XCTFail("Failed to unbox")
-        }
-    }
-    
-    func testNestedUnboxableContext() {
-        struct Model: Unboxable {
-            let nested: NestedModel
-            
-            init(unboxer: Unboxer) throws {
-                self.nested = try unboxer.unbox(key: "nested", context: "Context")
-            }
-        }
-        
-        struct NestedModel: Unboxable {
-            let context: Any?
-            
-            init(unboxer: Unboxer) {
-                self.context = unboxer.context
-            }
-        }
-        
-        let dictionary: UnboxableDictionary = [
-            "nested": [:]
-        ]
-        
-        do {
-            let model: Model = try Unbox(dictionary: dictionary)
-            
-            if let stringContext = model.nested.context as? String {
-                XCTAssertEqual(stringContext, "Context")
-            } else {
-                XCTFail("Unexpected context: \(model.nested.context)")
-            }
-        } catch {
-            XCTFail("Unexpected error: \(error)")
         }
     }
 
@@ -1177,7 +1122,6 @@ class UnboxTests: XCTestCase {
             let context = "Context"
             
             let unboxingClosure: (Unboxer) -> Model? = {
-                XCTAssertEqual($0.context as? String, context)
                 return try? Model(int: $0.unbox(key: "int"), double: 3.14, string: $0.unbox(key: "string"))
             }
             
@@ -1322,7 +1266,6 @@ class UnboxTests: XCTestCase {
             let context = "Context"
             
             let unboxingClosure: (Unboxer) throws -> Model = {
-                XCTAssertEqual($0.context as? String, context)
                 return try Model(bool1: $0.unbox(key: "bool1"), bool2: $0.unbox(key: "bool2"), bool3: $0.unbox(key: "bool3"), bool4: $0.unbox(key: "bool4"), bool5: $0.unbox(key: "bool5"), bool6: $0.unbox(key: "bool6"), bool7: $0.unbox(key: "bool7"), bool8: $0.unbox(key: "bool8"))
             }
             

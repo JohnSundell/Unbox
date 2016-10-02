@@ -35,28 +35,26 @@ public typealias UnboxableDictionary = [String : Any]
 
 // MARK: - Unbox functions
 
-/// Unbox a JSON dictionary into a model `T`, optionally using a contextual object. Throws `UnboxError`.
-public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, context: Any? = nil) throws -> T {
-    return try Unboxer(dictionary: dictionary, context: context).performUnboxing()
+/// Unbox a JSON dictionary into a model `T`. Throws `UnboxError`.
+public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary) throws -> T {
+    return try Unboxer(dictionary: dictionary).performUnboxing()
 }
 
-/// Unbox a JSON dictionary into a model `T` beginning at a provided key, optionally using a contextual object. Throws `UnboxError`.
-public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, at key: String, isKeyPath: Bool = true, context: Any? = nil) throws -> T {
-    let containerContext = UnboxContainerContext(key: key, isKeyPath: isKeyPath, context: context)
+/// Unbox a JSON dictionary into a model `T` beginning at a provided key. Throws `UnboxError`.
+public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, at key: String, isKeyPath: Bool = true) throws -> T {
+    let containerContext = UnboxContainerContext(key: key, isKeyPath: isKeyPath)
     let container: UnboxContainer<T> = try Unbox(dictionary: dictionary, context: containerContext)
     return container.model
 }
 
-/// Unbox an array of JSON dictionaries into an array of `T`, optionally using a contextual object and/or invalid elements. Throws `UnboxError`.
-public func Unbox<T: Unboxable>(dictionaries: [UnboxableDictionary], context: Any? = nil, allowInvalidElements: Bool = false) throws -> [T] {
-    return try dictionaries.map(allowInvalidElements: allowInvalidElements, transform: {
-        try Unbox(dictionary: $0, context: context)
-    })
+/// Unbox an array of JSON dictionaries into an array of `T`, optionally allowing invalid elements. Throws `UnboxError`.
+public func Unbox<T: Unboxable>(dictionaries: [UnboxableDictionary], allowInvalidElements: Bool = false) throws -> [T] {
+    return try dictionaries.map(allowInvalidElements: allowInvalidElements, transform: Unbox)
 }
 
 /// Unbox an array JSON dictionary into an array of model `T` beginning at a provided key, optionally using a contextual object and/or invalid elements. Throws `UnboxError`.
 public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, at key: String, isKeyPath: Bool = true, context: Any? = nil) throws -> [T] {
-    let containerContext = UnboxContainerContext(key: key, isKeyPath: isKeyPath, context: context)
+    let containerContext = UnboxContainerContext(key: key, isKeyPath: isKeyPath)
     let container: UnboxArrayContainer<T> = try Unbox(dictionary: dictionary, context: containerContext)
     return container.models
 }
@@ -75,7 +73,7 @@ public func Unbox<T: Unboxable>(data: Data, context: Any? = nil, allowInvalidEle
 
 /// Unbox a JSON dictionary into a model `T` using a required contextual object. Throws `UnboxError`.
 public func Unbox<T: UnboxableWithContext>(dictionary: UnboxableDictionary, context: T.ContextType) throws -> T {
-    return try Unboxer(dictionary: dictionary, context: context).performUnboxing(context: context)
+    return try Unboxer(dictionary: dictionary).performUnboxing(context: context)
 }
 
 /// Unbox an array of JSON dictionaries into an array of `T` using a required contextual object and/or invalid elements. Throws `UnboxError`.
@@ -380,21 +378,18 @@ extension DateFormatter: UnboxFormatter {
 public class Unboxer {
     /// The underlying JSON dictionary that is being unboxed
     public let dictionary: UnboxableDictionary
-    /// Any contextual object that was supplied when unboxing was started
-    public let context: Any?
     
     // MARK: - Private initializer
     
-    fileprivate init(dictionary: UnboxableDictionary, context: Any?) {
+    fileprivate init(dictionary: UnboxableDictionary) {
         self.dictionary = dictionary
-        self.context = context
     }
     
     // MARK: - Custom unboxing API
     
     /// Perform custom unboxing using an Unboxer (created from a dictionary) passed to a closure, or throw an UnboxError
     public static func performCustomUnboxing<T>(dictionary: UnboxableDictionary, context: Any? = nil, closure: (Unboxer) throws -> T?) throws -> T {
-        return try Unboxer(dictionary: dictionary, context: context).performCustomUnboxing(closure: closure)
+        return try Unboxer(dictionary: dictionary).performCustomUnboxing(closure: closure)
     }
     
     /// Perform custom unboxing on an array of dictionaries, executing a closure with a new Unboxer for each one, or throw an UnboxError
@@ -518,56 +513,56 @@ public class Unboxer {
     /// Unbox a required Dictionary containing array of Unboxables
     public func unbox<K: UnboxableKey, V: Unboxable>(key: String, isKeyPath: Bool = true, allowInvalidElements: Bool = false) throws -> [K : [V]] {
         return try UnboxValueResolver<[String: [UnboxableDictionary]]>(self).resolveDictionaryValuesForKey(key: key, isKeyPath: isKeyPath, required: true, allowInvalidElements: allowInvalidElements) {
-            return try? Unbox(dictionaries: $0, context: self.context, allowInvalidElements: allowInvalidElements)
+            return try? Unbox(dictionaries: $0, allowInvalidElements: allowInvalidElements)
         }
     }
 
     /// Unbox an optional Dictionary containing array of Unboxables
     public func unbox<K: UnboxableKey, V: Unboxable>(key: String, isKeyPath: Bool = true, allowInvalidElements: Bool = false) -> [K : [V]]? {
         return try? UnboxValueResolver<[String: [UnboxableDictionary]]>(self).resolveDictionaryValuesForKey(key: key, isKeyPath: isKeyPath, required: false, allowInvalidElements: allowInvalidElements) {
-            return try? Unbox(dictionaries: $0, context: self.context, allowInvalidElements: allowInvalidElements)
+            return try? Unbox(dictionaries: $0, allowInvalidElements: allowInvalidElements)
         }
     }
     
     /// Unbox a required nested Unboxable, by unboxing a Dictionary and then using a transform
     public func unbox<T: Unboxable>(key: String, isKeyPath: Bool = true, context: Any? = nil) throws -> T {
         return try UnboxValueResolver<UnboxableDictionary>(self).resolveRequiredValueForKey(key: key, isKeyPath: isKeyPath, transform: {
-            return try? Unbox(dictionary: $0, context: context ?? self.context)
+            return try? Unbox(dictionary: $0)
         })
     }
     
     /// Unbox an optional nested Unboxable, by unboxing a Dictionary and then using a transform
     public func unbox<T: Unboxable>(key: String, isKeyPath: Bool = true, context: Any? = nil) -> T? {
         return UnboxValueResolver<UnboxableDictionary>(self).resolveOptionalValueForKey(key: key, isKeyPath: isKeyPath, transform: {
-            return try? Unbox(dictionary: $0, context: context ?? self.context)
+            return try? Unbox(dictionary: $0)
         })
     }
     
     /// Unbox a required Array of nested Unboxables, by unboxing an Array of Dictionaries and then using a transform (optionally allowing invalid elements)
     public func unbox<T: Unboxable>(key: String, isKeyPath: Bool = true, context: Any? = nil, allowInvalidElements: Bool = false) throws -> [T] {
         return try UnboxValueResolver<[UnboxableDictionary]>(self).resolveRequiredValueForKey(key: key, isKeyPath: isKeyPath, transform: {
-            return try? Unbox(dictionaries: $0, context: context ?? self.context, allowInvalidElements: allowInvalidElements)
+            return try? Unbox(dictionaries: $0, allowInvalidElements: allowInvalidElements)
         })
     }
     
     /// Unbox an optional Array of nested Unboxables, by unboxing an Array of Dictionaries and then using a transform (optionally allowing invalid elements)
     public func unbox<T: Unboxable>(key: String, isKeyPath: Bool = true, context: Any? = nil, allowInvalidElements: Bool = false) -> [T]? {
         return UnboxValueResolver<[UnboxableDictionary]>(self).resolveOptionalValueForKey(key: key, isKeyPath: isKeyPath, transform: {
-            return try? Unbox(dictionaries: $0, context: context ?? self.context, allowInvalidElements: allowInvalidElements)
+            return try? Unbox(dictionaries: $0, allowInvalidElements: allowInvalidElements)
         })
     }
     
     /// Unbox a required Dictionary of nested Unboxables, by unboxing an Dictionary of Dictionaries and then using a transform
     public func unbox<K: UnboxableKey, V: Unboxable>(key: String, isKeyPath: Bool = true, allowInvalidElements: Bool = false) throws -> [K : V] {
         return try UnboxValueResolver<[String : UnboxableDictionary]>(self).resolveDictionaryValuesForKey(key: key, isKeyPath: isKeyPath, required: true, allowInvalidElements: allowInvalidElements, valueTransform: {
-            return try? Unbox(dictionary: $0, context: self.context)
+            return try? Unbox(dictionary: $0)
         })
     }
     
     /// Unbox an optional Dictionary of nested Unboxables, by unboxing an Dictionary of Dictionaries and then using a transform
     public func unbox<K: UnboxableKey, V: Unboxable>(key: String, isKeyPath: Bool = true, allowInvalidElements: Bool = false) -> [K : V]? {
         return try? UnboxValueResolver<[String : UnboxableDictionary]>(self).resolveDictionaryValuesForKey(key: key, isKeyPath: isKeyPath, required: false, allowInvalidElements: allowInvalidElements, valueTransform: {
-            return try? Unbox(dictionary: $0, context: self.context)
+            return try? Unbox(dictionary: $0)
         })
     }
     
@@ -766,14 +761,13 @@ extension UnboxValueResolver where T: Collection, T: ExpressibleByDictionaryLite
 private struct UnboxContainerContext {
     let key: String
     let isKeyPath: Bool
-    let context: Any?
 }
 
 private struct UnboxContainer<T: Unboxable>: UnboxableWithContext {
     let model: T
     
     init(unboxer: Unboxer, context: UnboxContainerContext) throws {
-        self.model = try unboxer.unbox(key: context.key, isKeyPath: context.isKeyPath, context: context.context)
+        self.model = try unboxer.unbox(key: context.key, isKeyPath: context.isKeyPath)
     }
 }
 
@@ -802,7 +796,7 @@ private extension Unboxer {
                 throw UnboxError.invalidData
             }
             
-            return Unboxer(dictionary: dictionary, context: context)
+            return Unboxer(dictionary: dictionary)
         } catch {
             throw UnboxError.invalidData
         }
@@ -814,9 +808,7 @@ private extension Unboxer {
                 throw UnboxError.invalidData
             }
             
-            return array.map {
-                return Unboxer(dictionary: $0, context: context)
-            }
+            return array.map(Unboxer.init)
         } catch {
             throw UnboxError.invalidData
         }
