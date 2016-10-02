@@ -899,7 +899,7 @@ class UnboxTests: XCTestCase {
         do {
             _ = try Unbox(dictionary: invalidDictionary) as UnboxTestMock
             XCTFail("Unbox should have thrown for a missing value")
-        } catch UnboxValueError.MissingValueForKey(_) {
+        } catch UnboxError.missingValue(_) {
             // Test passed
         } catch {
             XCTFail("Unbox did not return the correct error type. Error: \(error)")
@@ -918,7 +918,7 @@ class UnboxTests: XCTestCase {
         do {
             _ = try Unbox(dictionary: invalidDictionary) as UnboxTestMock
             XCTFail("Unbox should have thrown for an invalid value")
-        } catch UnboxValueError.InvalidValue(_, _) {
+        } catch UnboxError.invalidValue(_, _) {
             // Test passed
         } catch {
             XCTFail("Unbox did not return the correct error type. Error: \(error)")
@@ -935,7 +935,7 @@ class UnboxTests: XCTestCase {
             do {
                 _ = try Unbox(data: data) as UnboxTestMock
                 XCTFail("Unbox should have thrown for invalid data")
-            } catch UnboxError.InvalidData {
+            } catch UnboxError.invalidData {
                 // Test passed
             } catch {
                 XCTFail("Unbox did not return the correct error type")
@@ -955,7 +955,7 @@ class UnboxTests: XCTestCase {
         do {
             _ = try Unbox(data: data) as UnboxTestMock
             XCTFail()
-        } catch UnboxError.InvalidData {
+        } catch UnboxError.invalidData {
             // Test passed
         } catch {
             XCTFail("Unbox did not return the correct error type")
@@ -1172,7 +1172,7 @@ class UnboxTests: XCTestCase {
             _ = try Unboxer.performCustomUnboxing(dictionary: [:], closure: { _ in
                 return nil
             }) as UnboxTestMock
-        } catch UnboxError.CustomUnboxingFailed {
+        } catch UnboxError.customUnboxingFailed {
             // Test passed
         } catch {
             XCTFail("Unexpected error thrown: \(error)")
