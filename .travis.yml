@@ -5,6 +5,7 @@ sudo: false
 branches:
   only:
     - master
+    - /^swift.*$/
     - /^release-.*$/
 
 before_install: ./ci/before_install.sh
