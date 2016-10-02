@@ -526,18 +526,6 @@ public class Unboxer {
         let transform = T.makeArrayTransformClosure(allowInvalidElements: allowInvalidElements)
         return UnboxValueResolver<[T.UnboxRawValueType]>(self).resolveOptionalValueForKey(key: key, isKeyPath: isKeyPath, transform: transform)
     }
-
-    /// Unbox a required Array of values that can be transformed into its final form
-    public func unbox<T: UnboxableByTransform>(key: String, isKeyPath: Bool = true, allowInvalidElements: Bool = false) -> [T] {
-        let transform = T.makeArrayTransformClosure(allowInvalidElements: allowInvalidElements)
-        return UnboxValueResolver<[T.UnboxRawValueType]>(self).resolveRequiredValueForKey(key, isKeyPath: isKeyPath, fallbackValue: [], transform: transform)
-    }
-
-    /// Unbox an optional Array of values that can be transformed into its final form
-    public func unbox<T: UnboxableByTransform>(key: String, isKeyPath: Bool = true, allowInvalidElements: Bool = false) -> [T]? {
-        let transform = T.makeArrayTransformClosure(allowInvalidElements: allowInvalidElements)
-        return UnboxValueResolver<[T.UnboxRawValueType]>(self).resolveOptionalValueForKey(key, isKeyPath: isKeyPath, transform: transform)
-    }
     
     /// Unbox a required raw value from a certain index in a nested Array
     public func unbox<T: UnboxableRawType>(key: String, isKeyPath: Bool = true, index: Int) -> T {
@@ -616,34 +604,6 @@ public class Unboxer {
     public func unbox<K: UnboxableKey, V: Unboxable>(key: String, isKeyPath: Bool = true, allowInvalidElements: Bool = false) -> [K : [V]]? {
         return UnboxValueResolver<[String: [UnboxableDictionary]]>(self).resolveDictionaryValuesForKey(key: key, isKeyPath: isKeyPath, required: false, allowInvalidElements: allowInvalidElements) {
             return try? Unbox(dictionaries: $0, context: self.context, allowInvalidElements: allowInvalidElements)
-        }
-    }
-    
-    /// Unbox a required Dictionary containing array of simple values
-    public func unbox<K: UnboxableKey, V: UnboxableRawType>(key: String, isKeyPath: Bool = true, allowInvalidElements: Bool = false) -> [K : [V]] {
-        return UnboxValueResolver<[String: [V]]>(self).resolveDictionaryValuesForKey(key, isKeyPath: isKeyPath, required: true, allowInvalidElements: allowInvalidElements) {
-            return $0
-        } ?? [K: [V]]()
-    }
-    
-    /// Unbox an optional Dictionary containing array of simple values
-    public func unbox<K: UnboxableKey, V: UnboxableRawType>(key: String, isKeyPath: Bool = true, allowInvalidElements: Bool = false) -> [K : [V]]? {
-        return UnboxValueResolver<[String: [V]]>(self).resolveDictionaryValuesForKey(key, isKeyPath: isKeyPath, required: false, allowInvalidElements: allowInvalidElements) {
-            return $0
-        }
-    }
-    
-    /// Unbox a required Dictionary containing array of Unboxables
-    public func unbox<K: UnboxableKey, V: Unboxable>(key: String, isKeyPath: Bool = true, allowInvalidElements: Bool = false) -> [K : [V]] {
-        return UnboxValueResolver<[String: [UnboxableDictionary]]>(self).resolveDictionaryValuesForKey(key, isKeyPath: isKeyPath, required: true, allowInvalidElements: allowInvalidElements) {
-            return try? Unbox($0, context: self.context, allowInvalidElements: allowInvalidElements)
-        } ?? [K: [V]]()
-    }
-
-    /// Unbox an optional Dictionary containing array of Unboxables
-    public func unbox<K: UnboxableKey, V: Unboxable>(key: String, isKeyPath: Bool = true, allowInvalidElements: Bool = false) -> [K : [V]]? {
-        return UnboxValueResolver<[String: [UnboxableDictionary]]>(self).resolveDictionaryValuesForKey(key, isKeyPath: isKeyPath, required: false, allowInvalidElements: allowInvalidElements) {
-            return try? Unbox($0, context: self.context, allowInvalidElements: allowInvalidElements)
         }
     }
     
@@ -801,45 +761,6 @@ public class Unboxer {
                 
                 for value in array {
                     guard let formattedValue = formatter.format(unboxedValue: value) else {
-                        return nil
-                    }
-                    
-                    formattedArray.append(formattedValue)
-                }
-                
-                return formattedArray
-            }
-        })
-    }
-    
-    /// Unbox a required Array containing values that can be formatted using a formatter (optionally allowing invalid elements)
-    public func unbox<T: UnboxableWithFormatter, F: UnboxFormatter where F.UnboxFormattedType == T>(key: String, isKeyPath: Bool = true, formatter: F, allowInvalidElements: Bool = false) -> [T] {
-        return UnboxValueResolver<[F.UnboxRawValueType]>(self).resolveRequiredValueForKey(key, isKeyPath: isKeyPath, fallbackValue: [], transform: { (array) -> [T]? in
-            if allowInvalidElements {
-                return array.flatMap({ formatter.formatUnboxedValue($0) })
-            } else {
-                return array.map({ (value) -> T in
-                    if let formattedValue = formatter.formatUnboxedValue(value) {
-                        return formattedValue
-                    }
-                    
-                    self.failForInvalidValue(value, forKey: key)
-                    return T.unboxFallbackValue()
-                })
-            }
-        })
-    }
-    
-    /// Unbox an optional Array containing values that can be formatted using a formatter (optionally allowing invalid elements)
-    public func unbox<T: UnboxableWithFormatter, F: UnboxFormatter where F.UnboxFormattedType == T>(key: String, isKeyPath: Bool = true, formatter: F, allowInvalidElements: Bool = false) -> [T]? {
-        return UnboxValueResolver<[F.UnboxRawValueType]>(self).resolveOptionalValueForKey(key, isKeyPath: isKeyPath, transform: { (array) -> [T]? in
-            if allowInvalidElements {
-                return array.flatMap({ formatter.formatUnboxedValue($0) })
-            } else {
-                var formattedArray = [T]()
-                
-                for value in array {
-                    guard let formattedValue = formatter.formatUnboxedValue(value) else {
                         return nil
                     }
                     
