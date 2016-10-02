@@ -1507,10 +1507,6 @@ private func UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: Bool)
 private enum UnboxTestEnum: Int, UnboxableEnum {
     case First
     case Second
-    
-    fileprivate static func unboxFallbackValue() -> UnboxTestEnum {
-        return .First
-    }
 }
 
 private struct UnboxTestDictionaryKey: UnboxableKey {
@@ -1524,10 +1520,6 @@ private struct UnboxTestDictionaryKey: UnboxableKey {
         }
         
         return UnboxTestDictionaryKey(key: unboxedKey)
-    }
-    
-    static func unboxFallbackValue() -> UnboxTestDictionaryKey {
-        return UnboxTestDictionaryKey(key: "")
     }
 }
 
