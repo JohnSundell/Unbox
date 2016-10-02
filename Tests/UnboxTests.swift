@@ -686,8 +686,8 @@ class UnboxTests: XCTestCase {
             let optional: String?
             
             init(unboxer: Unboxer) throws {
-                self.required = try unboxer.unbox(key: "required", index: 0)
-                self.optional = unboxer.unbox(key: "optional", index: 1)
+                self.required = try unboxer.unbox(keyPath: "required.0")
+                self.optional = unboxer.unbox(keyPath: "optional.1")
             }
         }
         
@@ -710,7 +710,7 @@ class UnboxTests: XCTestCase {
             let int: Int
             
             init(unboxer: Unboxer) throws {
-                self.int = try unboxer.unbox(key: "values", index: 3)
+                self.int = try unboxer.unbox(keyPath: "values.3")
             }
         }
         
