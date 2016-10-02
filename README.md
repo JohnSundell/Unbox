@@ -38,8 +38,8 @@ struct User {
 
 extension User: Unboxable {
     init(unboxer: Unboxer) {
-        self.name = unboxer.unbox("name")
-        self.age = unboxer.unbox("age")
+        self.name = unboxer.unbox(key: "name")
+        self.age = unboxer.unbox(key: "age")
     }
 }
 ```
@@ -47,11 +47,11 @@ extension User: Unboxable {
 Unbox automatically (or, actually, Swift does) figures out what types your properties are, and decodes them accordingly. Now, we can decode a `User` like this:
 
 ```swift
-let user: User = try Unbox(dictionary)
+let user: User = try Unbox(dictionary: dictionary)
 ```
 or even:
 ```swift
-let user: User = try Unbox(data)
+let user: User = try Unbox(data: data)
 ```
 
 ### Advanced example
@@ -64,23 +64,23 @@ struct SpaceShip {
     let weight: Double
     let engine: Engine
     let passengers: [Astronaut]
-    let launchLiveStreamURL: NSURL?
+    let launchLiveStreamURL: URL?
     let lastPilot: Astronaut?
-    let lastLaunchDate: NSDate?
+    let lastLaunchDate: Date?
 }
 
 extension SpaceShip: Unboxable {
     init(unboxer: Unboxer) {
-        self.type = unboxer.unbox("type")
-        self.weight = unboxer.unbox("weight")
-        self.engine = unboxer.unbox("engine")
-        self.passengers = unboxer.unbox("passengers")
-        self.launchLiveStreamURL = unboxer.unbox("liveStreamURL")
-        self.lastPilot = unboxer.unbox("lastPilot")
+        self.type = unboxer.unbox(key: "type")
+        self.weight = unboxer.unbox(key: "weight")
+        self.engine = unboxer.unbox(key: "engine")
+        self.passengers = unboxer.unbox(key: "passengers")
+        self.launchLiveStreamURL = unboxer.unbox(key: "liveStreamURL")
+        self.lastPilot = unboxer.unbox(key: "lastPilot")
 
-        let dateFormatter = NSDateFormatter()
+        let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "YYYY-MM-dd"
-        self.lastLaunchDate = unboxer.unbox("lastLaunchDate", formatter: dateFormatter)
+        self.lastLaunchDate = unboxer.unbox(key: "lastLaunchDate", formatter: dateFormatter)
     }
 }
 
@@ -102,8 +102,8 @@ struct Engine {
 
 extension Engine: Unboxable {
     init(unboxer: Unboxer) {
-        self.manufacturer = unboxer.unbox("manufacturer")
-        self.fuelConsumption = unboxer.unbox("fuelConsumption")
+        self.manufacturer = unboxer.unbox(key: "manufacturer")
+        self.fuelConsumption = unboxer.unbox(key: "fuelConsumption")
     }
 }
 
@@ -113,7 +113,7 @@ struct Astronaut {
 
 extension Astronaut: Unboxable {
     init(unboxer: Unboxer) {
-        self.name = unboxer.unbox("name")
+        self.name = unboxer.unbox(key: "name")
     }
 }
 ```
@@ -144,13 +144,13 @@ Unbox supports decoding all standard JSON types, like:
 
 It also supports `Arrays` and `Dictionaries` that contain nested unboxable types, as you can see in the **Advanced example** above (where an array of the unboxable `Astronaut` struct is being unboxed).
 
-Finally, it also supports `NSURL` through the use of a transformer, and `NSDate` by using any `NSDateFormatter`.
+Finally, it also supports `URL` through the use of a transformer, and `Date` by using any `DateFormatter`.
 
 ### Transformations
 
 Unbox also supports transformations that let you treat any value or object as if it was a raw JSON type.
 
-It ships with a default `String` -> `NSURL` transformation, which lets you unbox any `NSURL` property from a string describing an URL without writing any transformation code.
+It ships with a default `String` -> `URL` transformation, which lets you unbox any `URL` property from a string describing an URL without writing any transformation code.
 
 The same is also true for `String` -> `Int, Double, Float, CGFloat` transformations. If you’re unboxing a number type and a string was found, that string will automatically be converted to that number type (if possible).
 
@@ -165,18 +165,18 @@ struct UniqueIdentifier: UnboxableByTransform {
     let identifierString: String
 
     init?(identifierString: String) {
-        if let UUID = NSUUID(UUIDString: identifierString) {
-            self.identifierString = UUID.UUIDString
+        if let UUID = NSUUID(uuidString: identifierString) {
+            self.identifierString = UUID.uuidString
         } else {
             return nil
         }
     }
 
     init() {
-        self.identifierString = NSUUID().UUIDString
+        self.identifierString = NSUUID().uuidString
     }
 
-    static func transformUnboxedValue(unboxedValue: String) -> UniqueIdentifier? {
+    static func transform(unboxedValue: String) -> UniqueIdentifier? {
         return UniqueIdentifier(identifierString: unboxedValue)
     }
 
@@ -196,11 +196,11 @@ You can also unbox `enums` directly, without having to handle the case if they f
 
 ```swift
 enum Profession: Int, UnboxableEnum {
-    case Developer
-    case Astronaut
+    case developer
+    case astronaut
 
     static func unboxFallbackValue() -> Profession {
-        return .Developer
+        return .developer
     }
 }
 ```
@@ -212,7 +212,7 @@ struct Passenger: Unboxable {
     let profession: Profession
 
     init(unboxer: Unboxer) {
-        self.profession = unboxer.unbox("profession")
+        self.profession = unboxer.unbox(key: "profession")
     }
 }
 ```
@@ -258,10 +258,10 @@ struct User {
 
 extension User: Unboxable {
     init(unboxer: Unboxer) {
-        self.name = unboxer.unbox("name")
-        self.age = unboxer.unbox("age")
-        self.runningDistance = unboxer.unbox("activities.running.distance", isKeyPath: true)
-        self.primaryDeviceName = unboxer.unbox("devices.0", isKeyPath: true)
+        self.name = unboxer.unbox(key: "name")
+        self.age = unboxer.unbox(key: "age")
+        self.runningDistance = unboxer.unbox(key: "activities.running.distance", isKeyPath: true)
+        self.primaryDeviceName = unboxer.unbox(key: "devices.0", isKeyPath: true)
     }
 }
 ```
@@ -294,8 +294,8 @@ struct JobOpening {
 
 extension JobOpening: Unboxable {
     init(unboxer: Unboxer) {
-        self.title = unboxer.unbox("title")
-        self.salary = unboxer.unbox("salary")
+        self.title = unboxer.unbox(key: "title")
+        self.salary = unboxer.unbox(key: "salary")
     }
 }
 
@@ -305,15 +305,15 @@ struct Company {
 
 extension Company: Unboxable {
     init(unboxer: Unboxer) {
-        self.name = unboxer.unbox("name")
+        self.name = unboxer.unbox(key: "name")
     }
 }
 ```
 
 ```swift
-let company: Company = try Unbox(json, at: "company")
-let jobOpenings: [JobOpening] = try Unbox(json, at: "jobOpenings")
-let featuredOpening: JobOpening = try Unbox(json, at: "jobOpenings.0")
+let company: Company = try Unbox(dictionary: json, at: "company")
+let jobOpenings: [JobOpening] = try Unbox(dictionary: json, at: "jobOpenings")
+let featuredOpening: JobOpening = try Unbox(dictionary: json, at: "jobOpenings.0")
 ```
 
 ### Custom unboxing
@@ -323,12 +323,12 @@ Sometimes you need more fine grained control over the decoding process, and even
 ```swift
 let dependency = DependencyManager.loadDependency()
 
-let model: Model = try Unboxer.performCustomUnboxingWithDictionary(dictionary, closure: {
+let model: Model = try Unboxer.performCustomUnboxing(dictionary: dictionary, closure: {
     let unboxer = $0
 
     var model = Model(dependency: dependency)
-    model.name = unboxer.unbox("name")
-    model.count = unboxer.unbox("count")
+    model.name = unboxer.unbox(key: "name")
+    model.count = unboxer.unbox(key: "count")
 
     return model
 })
