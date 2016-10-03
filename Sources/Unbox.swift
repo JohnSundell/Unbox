@@ -232,33 +232,23 @@ public extension UnboxableRawType {
 
 public extension UnboxableCollection {
     static func unbox(value: Any, allowInvalidCollectionElements: Bool) throws -> Self? {
-        guard let collection = value as? UnboxRawCollection else {
-            return nil
+        return try (value as? UnboxRawCollection).map {
+            try self.unbox(collection: $0,
+                           allowInvalidElements: allowInvalidCollectionElements,
+                           transform: nil)
         }
-        
-        return try self.unbox(collection: collection,
-                              allowInvalidElements: allowInvalidCollectionElements,
-                              transform: nil)
     }
 }
 
 public extension UnboxableByTransform {
     static func unbox(value: Any, allowInvalidCollectionElements: Bool) throws -> Self? {
-        guard let rawValue = value as? UnboxRawValueType else {
-            return nil
-        }
-        
-        return self.transform(unboxedValue: rawValue)
+        return (value as? UnboxRawValueType).map(self.transform)
     }
 }
 
 public extension UnboxableEnum {
     static func unbox(value: Any, allowInvalidCollectionElements: Bool) throws -> Self? {
-        guard let rawValue = value as? RawValue else {
-            return nil
-        }
-        
-        return self.init(rawValue: rawValue)
+        return (value as? RawValue).map(self.init)
     }
 }
 
@@ -763,62 +753,42 @@ private extension UnboxCompatibleType where Self: Collection {
 
 private extension Unboxable {
     static func makeTransform() -> (Any) throws -> Self? {
-        return {
-            guard let dictionary = $0 as? UnboxableDictionary else {
-                return nil
-            }
-            
-            let unboxed: Self = try Unbox(dictionary: dictionary)
-            return unboxed
-        }
+        return { try ($0 as? UnboxableDictionary).map(Unbox) }
     }
 }
 
 private extension UnboxableWithContext {
     static func makeTransform(context: ContextType) -> (Any) throws -> Self? {
         return {
-            guard let dictionary = $0 as? UnboxableDictionary else {
-                return nil
+            try ($0 as? UnboxableDictionary).map {
+                try Unbox(dictionary: $0, context: context)
             }
-            
-            let unboxed: Self = try Unbox(dictionary: dictionary, context: context)
-            return unboxed
         }
     }
     
     static func makeCollectionTransform<C: UnboxableCollection>(context: ContextType, allowInvalidElements: Bool) -> UnboxTransform<C> where C.UnboxValue == Self {
         return {
-            guard let collection = $0 as? C.UnboxRawCollection else {
-                return nil
+            return try ($0 as? C.UnboxRawCollection).map {
+                return try C.unbox(collection: $0,
+                                   allowInvalidElements: allowInvalidElements,
+                                   transform: self.makeTransform(context: context))
             }
-            
-            return try C.unbox(collection: collection,
-                               allowInvalidElements: allowInvalidElements,
-                               transform: self.makeTransform(context: context))
         }
     }
 }
 
 private extension UnboxFormatter {
     func makeTransform() -> UnboxTransform<UnboxFormattedType> {
-        return {
-            guard let rawValue = $0 as? UnboxRawValueType else {
-                return nil
-            }
-            
-            return self.format(unboxedValue: rawValue)
-        }
+        return { ($0 as? UnboxRawValueType).map(self.format) }
     }
     
     func makeCollectionTransform<C: UnboxableCollection>(allowInvalidElements: Bool) -> UnboxTransform<C> where C.UnboxValue == UnboxFormattedType {
         return {
-            guard let collection = $0 as? C.UnboxRawCollection else {
-                return nil
+            return try ($0 as? C.UnboxRawCollection).map {
+                return try C.unbox(collection: $0,
+                                   allowInvalidElements: allowInvalidElements,
+                                   transform: self.makeTransform())
             }
-            
-            return try C.unbox(collection: collection,
-                               allowInvalidElements: allowInvalidElements,
-                               transform: self.makeTransform())
         }
     }
 }
@@ -827,19 +797,12 @@ private extension Unboxer {
     func unbox<R>(path: UnboxPath, transform: (Any) throws -> R?) throws -> R {
         var currentMode = UnboxingMode.dictionary(self.dictionary)
         let components = path.components
-        
-        guard let lastKey = components.last else {
-            throw UnboxError.emptyKeyPath
-        }
+        let lastKey = try components.last.orThrow(.emptyKeyPath)
         
         for key in components {
             switch currentMode {
             case .dictionary(let dictionary):
-                guard let value = dictionary[key] else {
-                    throw UnboxError.missingValue(key)
-                }
-                
-                currentMode = UnboxingMode(value: value)
+                currentMode = try UnboxingMode(value: dictionary[key].orThrow(.missingValue(key)))
             case .array(let array):
                 guard let index = Int(key), index < array.count else {
                     throw UnboxError.missingValue(key)
@@ -851,11 +814,7 @@ private extension Unboxer {
             }
         }
         
-        guard let value = try transform(currentMode.value) else {
-            throw UnboxError.invalidValue(currentMode.value, lastKey)
-        }
-        
-        return value
+        return try transform(currentMode.value).orThrow(UnboxError.invalidValue(currentMode.value, lastKey))
     }
     
     func performUnboxing<T: Unboxable>() throws -> T {
@@ -867,22 +826,32 @@ private extension Unboxer {
     }
     
     func performCustomUnboxing<T>(closure: (Unboxer) throws -> T?) throws -> T {
-        guard let unboxed: T = try closure(self) else {
-            throw UnboxError.customUnboxingFailed
+        return try closure(self).orThrow(.customUnboxingFailed)
+    }
+}
+
+private extension Optional {
+    func map<T>(_ transform: (Wrapped) throws -> T?) rethrows -> T? {
+        guard let value = self else {
+            return nil
         }
         
-        return unboxed
+        return try transform(value)
+    }
+    
+    func orThrow(_ errorClosure: @autoclosure () -> UnboxError) throws -> Wrapped {
+        guard let value = self else {
+            throw errorClosure()
+        }
+        
+        return value
     }
 }
 
 private extension JSONSerialization {
     static func unbox<T>(data: Data, options: ReadingOptions = []) throws -> T {
         do {
-            guard let object = try self.jsonObject(with: data, options: options) as? T else {
-                throw UnboxError.invalidData
-            }
-            
-            return object
+            return try (self.jsonObject(with: data, options: options) as? T).orThrow(.invalidData)
         } catch {
             throw UnboxError.invalidData
         }
@@ -899,11 +868,7 @@ private extension Data {
     }
     
     func unbox<T>(closure: (Unboxer) throws -> T?) throws -> T {
-        guard let unboxed = try closure(Unboxer(dictionary: JSONSerialization.unbox(data: self))) else {
-            throw UnboxError.customUnboxingFailed
-        }
-        
-        return unboxed
+        return try closure(Unboxer(dictionary: JSONSerialization.unbox(data: self))).orThrow(.customUnboxingFailed)
     }
     
     func unbox<T: Unboxable>(allowInvalidElements: Bool) throws -> [T] {
