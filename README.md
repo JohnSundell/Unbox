@@ -37,9 +37,9 @@ struct User {
 }
 
 extension User: Unboxable {
-    init(unboxer: Unboxer) {
-        self.name = unboxer.unbox("name")
-        self.age = unboxer.unbox("age")
+    init(unboxer: Unboxer) throws {
+        self.name = try unboxer.unbox(key: "name")
+        self.age = try unboxer.unbox(key: "age")
     }
 }
 ```
@@ -47,11 +47,11 @@ extension User: Unboxable {
 Unbox automatically (or, actually, Swift does) figures out what types your properties are, and decodes them accordingly. Now, we can decode a `User` like this:
 
 ```swift
-let user: User = try Unbox(dictionary)
+let user: User = try unbox(dictionary: dictionary)
 ```
 or even:
 ```swift
-let user: User = try Unbox(data)
+let user: User = try unbox(data: data)
 ```
 
 ### Advanced example
@@ -64,35 +64,29 @@ struct SpaceShip {
     let weight: Double
     let engine: Engine
     let passengers: [Astronaut]
-    let launchLiveStreamURL: NSURL?
+    let launchLiveStreamURL: URL?
     let lastPilot: Astronaut?
-    let lastLaunchDate: NSDate?
+    let lastLaunchDate: Date?
 }
 
 extension SpaceShip: Unboxable {
-    init(unboxer: Unboxer) {
-        self.type = unboxer.unbox("type")
-        self.weight = unboxer.unbox("weight")
-        self.engine = unboxer.unbox("engine")
-        self.passengers = unboxer.unbox("passengers")
-        self.launchLiveStreamURL = unboxer.unbox("liveStreamURL")
-        self.lastPilot = unboxer.unbox("lastPilot")
+    init(unboxer: Unboxer) throws {
+        self.type = try unboxer.unbox(key: "type")
+        self.weight = try unboxer.unbox(key: "weight")
+        self.engine = try unboxer.unbox(key: "engine")
+        self.passengers = try unboxer.unbox(key: "passengers")
+        self.launchLiveStreamURL = unboxer.unbox(key: "liveStreamURL")
+        self.lastPilot = unboxer.unbox(key: "lastPilot")
 
-        let dateFormatter = NSDateFormatter()
+        let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "YYYY-MM-dd"
-        self.lastLaunchDate = unboxer.unbox("lastLaunchDate", formatter: dateFormatter)
+        self.lastLaunchDate = unboxer.unbox(key: "lastLaunchDate", formatter: dateFormatter)
     }
 }
 
-enum SpaceShipType: Int {
-    case Apollo
-    case Sputnik
-}
-
-extension SpaceShipType: UnboxableEnum {
-    static func unboxFallbackValue() -> SpaceShipType {
-        return .Apollo
-    }
+enum SpaceShipType: Int, UnboxableEnum {
+    case apollo
+    case sputnik
 }
 
 struct Engine {
@@ -101,9 +95,9 @@ struct Engine {
 }
 
 extension Engine: Unboxable {
-    init(unboxer: Unboxer) {
-        self.manufacturer = unboxer.unbox("manufacturer")
-        self.fuelConsumption = unboxer.unbox("fuelConsumption")
+    init(unboxer: Unboxer) throws {
+        self.manufacturer = try unboxer.unbox(key: "manufacturer")
+        self.fuelConsumption = try unboxer.unbox(key: "fuelConsumption")
     }
 }
 
@@ -112,25 +106,17 @@ struct Astronaut {
 }
 
 extension Astronaut: Unboxable {
-    init(unboxer: Unboxer) {
-        self.name = unboxer.unbox("name")
+    init(unboxer: Unboxer) throws {
+        self.name = try unboxer.unbox(key: "name")
     }
 }
 ```
 
 ### Error handling
 
-Decoding JSON is inherently a failable operation. The JSON might be in an unexpected format, or a required value might be missing. Thankfully, Unbox provides several ways to trigger and handle errors during the unboxing process.
+Decoding JSON is inherently a failable operation. The JSON might be in an unexpected format, or a required value might be missing. Thankfully, Unbox takes care of handling both missing and mismatched values gracefully, and uses Swift’s `do, try, catch` pattern to return errors to you.
 
-What all these techniques share is that you never have to manually exit out of an initializer (which in Swift requires you to assign default values to all stored properites, generating a lot of unwanted boilerplate).
-
-Instead, if an error occurs, the currently used `Unboxer` is marked as failed, which in turn will cause the `Unbox()` function call that triggered the unboxing process to throw an `UnboxError`.
-
-#### Missing or invalid required properties
-If a non-optional property couldn’t be unboxed, this will automatically cause the current `Unboxer` to be marked as failed.
-
-#### Manually failing an Unboxer
-You can also perform custom validation inside of an initializer, and in case you want to abort the unboxing process, simply call `unboxer.failForKey()` or `unboxer.failForInvalidValue(forKey:)`.
+You don’t have to deal with multiple error types and perform any checking yourself, and you always have the option to manually exit an unboxing process by `throwing`. All errors returned by Unbox are of the type `UnboxError`.
 
 ### Supported types
 
@@ -142,15 +128,15 @@ Unbox supports decoding all standard JSON types, like:
 - `Array`
 - `Dictionary`
 
-It also supports `Arrays` and `Dictionaries` that contain nested unboxable types, as you can see in the **Advanced example** above (where an array of the unboxable `Astronaut` struct is being unboxed).
+It also supports all possible combinations of nested arrays & dictionaries. As you can see in the **Advanced example** above (where an array of the unboxable `Astronaut` struct is being unboxed), we can unbox even a complicated data structure with one simple call to `unbox()`.
 
-Finally, it also supports `NSURL` through the use of a transformer, and `NSDate` by using any `NSDateFormatter`.
+Finally, it also supports `URL` through the use of a transformer, and `Date` by using any `DateFormatter`.
 
 ### Transformations
 
 Unbox also supports transformations that let you treat any value or object as if it was a raw JSON type.
 
-It ships with a default `String` -> `NSURL` transformation, which lets you unbox any `NSURL` property from a string describing an URL without writing any transformation code.
+It ships with a default `String` -> `URL` transformation, which lets you unbox any `URL` property from a string describing an URL without writing any transformation code.
 
 The same is also true for `String` -> `Int, Double, Float, CGFloat` transformations. If you’re unboxing a number type and a string was found, that string will automatically be converted to that number type (if possible).
 
@@ -165,23 +151,15 @@ struct UniqueIdentifier: UnboxableByTransform {
     let identifierString: String
 
     init?(identifierString: String) {
-        if let UUID = NSUUID(UUIDString: identifierString) {
-            self.identifierString = UUID.UUIDString
+        if let UUID = NSUUID(uuidString: identifierString) {
+            self.identifierString = UUID.uuidString
         } else {
             return nil
         }
     }
 
-    init() {
-        self.identifierString = NSUUID().UUIDString
-    }
-
-    static func transformUnboxedValue(unboxedValue: String) -> UniqueIdentifier? {
+    static func transform(unboxedValue: String) -> UniqueIdentifier? {
         return UniqueIdentifier(identifierString: unboxedValue)
-    }
-
-    static func unboxFallbackValue() -> UniqueIdentifier {
-        return UniqueIdentifier()
     }
 }
 ```
@@ -196,12 +174,8 @@ You can also unbox `enums` directly, without having to handle the case if they f
 
 ```swift
 enum Profession: Int, UnboxableEnum {
-    case Developer
-    case Astronaut
-
-    static func unboxFallbackValue() -> Profession {
-        return .Developer
-    }
+    case developer
+    case astronaut
 }
 ```
 
@@ -211,21 +185,17 @@ Now `Profession` can be unboxed directly in any model
 struct Passenger: Unboxable {
     let profession: Profession
 
-    init(unboxer: Unboxer) {
-        self.profession = unboxer.unbox("profession")
+    init(unboxer: Unboxer) throws {
+        self.profession = try unboxer.unbox(key: "profession")
     }
 }
 ```
 
 ### Contextual objects
 
-Sometimes you need to use data other than what's contained in a dictionary during the decoding process. For this, Unbox has support for contextual objects that can be made available on the `Unboxer` that is being used.
+Sometimes you need to use data other than what's contained in a dictionary during the decoding process. For this, Unbox has support for strongly typed contextual objects that can be made available in the unboxing initializer.
 
-To pass a contextual object, use the `Unbox(dictionary:context:)` overload when you start the unboxing process.
-
-The `Unboxer` passed to your `Unboxable`'s init method will then make your contextual object available through its `context` property.
-
-You can also **require** that a contextual object is present during the unboxing process by using the `UnboxableWithContext` protocol. Types that conform to this protocol can then be unboxed using `Unbox(dictionary:context:)`, where `context` must be of the type’s defined `ContextType`.
+To use contextual objects, make your type conform to `UnboxableWithContext`, which can then be unboxed using `unbox(dictionary:context)` where `context` is of the type of your choice.
 
 ### Key path support
 
@@ -257,11 +227,11 @@ struct User {
 }
 
 extension User: Unboxable {
-    init(unboxer: Unboxer) {
-        self.name = unboxer.unbox("name")
-        self.age = unboxer.unbox("age")
-        self.runningDistance = unboxer.unbox("activities.running.distance", isKeyPath: true)
-        self.primaryDeviceName = unboxer.unbox("devices.0", isKeyPath: true)
+    init(unboxer: Unboxer) throws {
+        self.name = try unboxer.unbox(key: "name")
+        self.age = try unboxer.unbox(key: "age")
+        self.runningDistance = try unboxer.unbox(keyPath: "activities.running.distance")
+        self.primaryDeviceName = try unboxer.unbox(keyPath: "devices.0")
     }
 }
 ```
@@ -293,9 +263,9 @@ struct JobOpening {
 }
 
 extension JobOpening: Unboxable {
-    init(unboxer: Unboxer) {
-        self.title = unboxer.unbox("title")
-        self.salary = unboxer.unbox("salary")
+    init(unboxer: Unboxer) throws {
+        self.title = try unboxer.unbox(key: "title")
+        self.salary = try unboxer.unbox(key: "salary")
     }
 }
 
@@ -304,16 +274,16 @@ struct Company {
 }
 
 extension Company: Unboxable {
-    init(unboxer: Unboxer) {
-        self.name = unboxer.unbox("name")
+    init(unboxer: Unboxer) throws {
+        self.name = try unboxer.unbox(key: "name")
     }
 }
 ```
 
 ```swift
-let company: Company = try Unbox(json, at: "company")
-let jobOpenings: [JobOpening] = try Unbox(json, at: "jobOpenings")
-let featuredOpening: JobOpening = try Unbox(json, at: "jobOpenings.0")
+let company: Company = try unbox(dictionary: json, atKey: "company")
+let jobOpenings: [JobOpening] = try unbox(dictionary: json, atKey: "jobOpenings")
+let featuredOpening: JobOpening = try unbox(dictionary: json, atKeyPath: "jobOpenings.0")
 ```
 
 ### Custom unboxing
@@ -323,12 +293,11 @@ Sometimes you need more fine grained control over the decoding process, and even
 ```swift
 let dependency = DependencyManager.loadDependency()
 
-let model: Model = try Unboxer.performCustomUnboxingWithDictionary(dictionary, closure: {
-    let unboxer = $0
+let model: Model = try Unboxer.performCustomUnboxing(dictionary: dictionary, closure: { unboxer in
 
     var model = Model(dependency: dependency)
-    model.name = unboxer.unbox("name")
-    model.count = unboxer.unbox("count")
+    model.name = unboxer.unbox(key: "name")
+    model.count = unboxer.unbox(key: "count")
 
     return model
 })
@@ -350,7 +319,7 @@ Clone the repo and drag the file `Unbox.swift` into your Xcode project.
 
 **Swift Package Manager:**
 
-Add the line `.Package(url: "https://github.com/johnsundell/unbox.git", majorVersion: 1)` to your `Package.swift`
+Add the line `.Package(url: "https://github.com/johnsundell/unbox.git", majorVersion: 2)` to your `Package.swift`
 
 ### Platform support
 
@@ -369,9 +338,17 @@ In case your unboxing code isn’t working like you expect it to, here are some 
 
 Swift cannot find the appropriate overload of the `unbox` method to call. Make sure you have conformed to any required protocol (such as `Unboxable`, `UnboxableEnum`, etc). Note that you can only conform to one Unbox protocol for each type (that is, a type cannot be both an `UnboxableEnum` and `UnboxableByTransform`). Also remember that you can only reference concrete types (not `Protocol` types) in order for Swift to be able to select what overload to use.
 
-**`Unbox()` throws**
+**`unbox()` throws**
 
-Either set a breakpoint in `Unboxer.failForInvalidValue(forKey:)` to see what key/value combination that caused the unboxing process to fail, or catch an `UnboxError` in the `catch` block when calling `try Unbox()`.
+Use the `do, try, catch` pattern to catch and handle the error:
+
+```swift
+do {
+    let model: Model = try unbox(data: data)
+} catch {
+    print("An error occured: \(error)")
+}
+```
 
 If you need any help in resolving any problems that you might encounter while using Unbox, feel free to open an Issue.
 
