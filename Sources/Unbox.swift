@@ -42,10 +42,15 @@ public func unbox<T: Unboxable>(dictionary: UnboxableDictionary) throws -> T {
     return try Unboxer(dictionary: dictionary).performUnboxing()
 }
 
-/// Unbox a JSON dictionary into a model `T` beginning at a provided key. Throws `UnboxError`.
-public func unbox<T: Unboxable>(dictionary: UnboxableDictionary, at key: String, isKeyPath: Bool = true) throws -> T {
-    let path: UnboxPath = isKeyPath ? .keyPath(key) : .key(key)
-    let container: UnboxContainer<T> = try unbox(dictionary: dictionary, context: path)
+/// Unbox a JSON dictionary into a model `T` beginning at a certain key. Throws `UnboxError`.
+public func unbox<T: Unboxable>(dictionary: UnboxableDictionary, atKey key: String) throws -> T {
+    let container: UnboxContainer<T> = try unbox(dictionary: dictionary, context: .key(key))
+    return container.model
+}
+
+/// Unbox a JSON dictionary into a model `T` beginning at a certain key path. Throws `UnboxError`.
+public func unbox<T: Unboxable>(dictionary: UnboxableDictionary, atKeyPath keyPath: String) throws -> T {
+    let container: UnboxContainer<T> = try unbox(dictionary: dictionary, context: .keyPath(keyPath))
     return container.model
 }
 
@@ -54,14 +59,19 @@ public func unbox<T: Unboxable>(dictionaries: [UnboxableDictionary], allowInvali
     return try dictionaries.map(allowInvalidElements: allowInvalidElements, transform: unbox)
 }
 
-/// Unbox an array JSON dictionary into an array of model `T` beginning at a provided key, optionally using a contextual object and/or invalid elements. Throws `UnboxError`.
-public func unbox<T: Unboxable>(dictionary: UnboxableDictionary, at key: String, isKeyPath: Bool = true) throws -> [T] {
-    let path: UnboxPath = isKeyPath ? .keyPath(key) : .key(key)
-    let container: UnboxArrayContainer<T> = try unbox(dictionary: dictionary, context: path)
+/// Unbox an array JSON dictionary into an array of model `T` beginning at a certain key, optionally allowing invalid elements. Throws `UnboxError`.
+public func unbox<T: Unboxable>(dictionary: UnboxableDictionary, atKey key: String) throws -> [T] {
+    let container: UnboxArrayContainer<T> = try unbox(dictionary: dictionary, context: .key(key))
     return container.models
 }
 
-/// Unbox binary data into a model `T`, optionally using a contextual object. Throws `UnboxError`.
+/// Unbox an array JSON dictionary into an array of model `T` beginning at a certain key path, optionally allowing invalid elements. Throws `UnboxError`.
+public func unbox<T: Unboxable>(dictionary: UnboxableDictionary, atKeyPath keyPath: String) throws -> [T] {
+    let container: UnboxArrayContainer<T> = try unbox(dictionary: dictionary, context: .keyPath(keyPath))
+    return container.models
+}
+
+/// Unbox binary data into a model `T`. Throws `UnboxError`.
 public func unbox<T: Unboxable>(data: Data) throws -> T {
     return try data.unbox()
 }
@@ -76,7 +86,7 @@ public func unbox<T: UnboxableWithContext>(dictionary: UnboxableDictionary, cont
     return try Unboxer(dictionary: dictionary).performUnboxing(context: context)
 }
 
-/// Unbox an array of JSON dictionaries into an array of `T` using a required contextual object and/or invalid elements. Throws `UnboxError`.
+/// Unbox an array of JSON dictionaries into an array of `T` using a required contextual object, optionally allowing invalid elements. Throws `UnboxError`.
 public func unbox<T: UnboxableWithContext>(dictionaries: [UnboxableDictionary], context: T.UnboxContextType, allowInvalidElements: Bool = false) throws -> [T] {
     return try dictionaries.map(allowInvalidElements: allowInvalidElements, transform: {
         try unbox(dictionary: $0, context: context)
@@ -88,7 +98,7 @@ public func unbox<T: UnboxableWithContext>(data: Data, context: T.UnboxContextTy
     return try data.unbox(context: context)
 }
 
-/// Unbox binary data into an array of `T` using a required contextual object and/or invalid elements. Throws `UnboxError`.
+/// Unbox binary data into an array of `T` using a required contextual object, optionally allowing invalid elements. Throws `UnboxError`.
 public func unbox<T: UnboxableWithContext>(data: Data, context: T.UnboxContextType, allowInvalidElements: Bool = false) throws -> [T] {
     return try data.unbox(context: context, allowInvalidElements: allowInvalidElements)
 }
@@ -474,10 +484,8 @@ extension DateFormatter: UnboxFormatter {
 /**
  *  Class used to Unbox (decode) values from a dictionary
  *
- *  For each supported type, simply call `unbox(string)` (where `string` is either a key or a key path in the dictionary
- *  that is being unboxed) - and the correct type will be returned. If a required (non-optional) value couldn't be
- *  unboxed, the Unboxer will be marked as failed, and a `nil` value will be returned from the `Unbox()` function that
- *  triggered the Unboxer.
+ *  For each supported type, simply call `unbox(key: string)` (where `string` is a key in the dictionary that is being unboxed)
+ *  - and the correct type will be returned. If a required (non-optional) value couldn't be unboxed `UnboxError` will be thrown.
  */
 public final class Unboxer {
     /// The underlying JSON dictionary that is being unboxed

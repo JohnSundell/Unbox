@@ -1309,7 +1309,7 @@ class UnboxTests: XCTestCase {
         ]
         
         do {
-            let unboxed: UnboxTestSimpleMock = try unbox(dictionary: dictionary, at: "A")
+            let unboxed: UnboxTestSimpleMock = try unbox(dictionary: dictionary, atKey: "A")
             XCTAssertEqual(unboxed.int, 14)
         } catch {
             XCTFail("Unexpected error thrown: \(error)")
@@ -1324,7 +1324,7 @@ class UnboxTests: XCTestCase {
         ]
         
         do {
-            let _ : UnboxTestSimpleMock = try unbox(dictionary: dictionary, at: "B")
+            let _ : UnboxTestSimpleMock = try unbox(dictionary: dictionary, atKey: "B")
             XCTFail()
         } catch {
             // Test Passed
@@ -1341,7 +1341,7 @@ class UnboxTests: XCTestCase {
         ]
         
         do {
-            let unboxed: UnboxTestSimpleMock = try unbox(dictionary: dictionary, at: "A.B", isKeyPath: true)
+            let unboxed: UnboxTestSimpleMock = try unbox(dictionary: dictionary, atKeyPath: "A.B")
             XCTAssertEqual(unboxed.int, 14)
         } catch {
             XCTFail("Unexpected error thrown: \(error)")
@@ -1356,7 +1356,7 @@ class UnboxTests: XCTestCase {
         ]
         
         do {
-            let _: UnboxTestSimpleMock = try unbox(dictionary: dictionary, at: "A.B", isKeyPath: true)
+            let _: UnboxTestSimpleMock = try unbox(dictionary: dictionary, atKeyPath: "A.B")
             XCTFail()
         } catch {
             // Test Passed
@@ -1381,7 +1381,7 @@ class UnboxTests: XCTestCase {
         ]
         
         do {
-            let unboxedArray: [UnboxTestSimpleMock] = try unbox(dictionary: dictionary, at: "A.B", isKeyPath: true)
+            let unboxedArray: [UnboxTestSimpleMock] = try unbox(dictionary: dictionary, atKeyPath: "A.B")
             unboxedArray.forEach {
                 XCTAssertEqual($0.int, 14)
             }
@@ -1395,7 +1395,7 @@ class UnboxTests: XCTestCase {
             ["A": ["B": [["int": 14], ["int": 14], ["int": 20]]]]
         
         do {
-            let unboxed: UnboxTestSimpleMock = try unbox(dictionary: dictionary, at: "A.B.2", isKeyPath: true)
+            let unboxed: UnboxTestSimpleMock = try unbox(dictionary: dictionary, atKeyPath: "A.B.2")
             XCTAssertEqual(unboxed.int, 20)
             
         } catch {
@@ -1408,7 +1408,7 @@ class UnboxTests: XCTestCase {
             ["A": ["B": [["int": 14], ["int": 14], ["int": 20]]]]
         
         do {
-            _ = try unbox(dictionary: dictionary, at: "A.B.3", isKeyPath: true) as UnboxTestSimpleMock
+            _ = try unbox(dictionary: dictionary, atKeyPath: "A.B.3") as UnboxTestSimpleMock
             XCTFail("Should have thrown")
         } catch {
             // Test Passed
