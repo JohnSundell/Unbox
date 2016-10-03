@@ -1496,6 +1496,43 @@ class UnboxTests: XCTestCase {
             XCTFail("\(error)")
         }
     }
+    
+    func testComplexCollection() {
+        struct NestedModel: Unboxable {
+            let title: String
+            
+            init(unboxer: Unboxer) throws {
+                self.title = try unboxer.unbox(key: "title")
+            }
+        }
+        
+        struct Model: Unboxable {
+            let dictionary: [String : [String : [NestedModel]]]
+            
+            init(unboxer: Unboxer) throws {
+                self.dictionary = try unboxer.unbox(key: "complex")
+            }
+        }
+        
+        let dictionary: UnboxableDictionary = [
+            "complex" : [
+                "nested" : [
+                    "again": [
+                        [
+                            "title" : "Hello"
+                        ]
+                    ]
+                ]
+            ]
+        ]
+        
+        do {
+            let model: Model = try unbox(dictionary: dictionary)
+            XCTAssertEqual(model.dictionary["nested"]?["again"]?.first?.title, "Hello")
+        } catch {
+            XCTFail("\(error)")
+        }
+    }
 }
 
 private func UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: Bool) -> UnboxableDictionary {
