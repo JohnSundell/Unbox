@@ -573,12 +573,12 @@ public class Unboxer {
     
     /// Unbox an optional Unboxable type by key
     public func unbox<T: Unboxable>(key: String) -> T? {
-        return try? unbox(key: key)
+        return try? self.unbox(key: key)
     }
     
     /// Unbox an optional Unboxable type by key path
     public func unbox<T: Unboxable>(keyPath: String) -> T? {
-        return try? unbox(keyPath: keyPath)
+        return try? self.unbox(keyPath: keyPath)
     }
     
     /// Unbox a required UnboxableWithContext type by key
@@ -593,12 +593,12 @@ public class Unboxer {
     
     /// Unbox an optional UnboxableWithContext type by key
     public func unbox<T: UnboxableWithContext>(key: String, context: T.ContextType) -> T? {
-        return try? unbox(key: key, context: context)
+        return try? self.unbox(key: key, context: context)
     }
     
     /// Unbox an optional UnboxableWithContext type by key path
     public func unbox<T: UnboxableWithContext>(keyPath: String, context: T.ContextType) -> T? {
-        return try? unbox(keyPath: keyPath, context: context)
+        return try? self.unbox(keyPath: keyPath, context: context)
     }
     
     /// Unbox a required collection of UnboxableWithContext values by key
@@ -613,12 +613,12 @@ public class Unboxer {
     
     /// Unbox an optional collection of UnboxableWithContext values by key
     public func unbox<C: UnboxableCollection, V: UnboxableWithContext>(key: String, context: V.ContextType, allowInvalidElements: Bool = false) -> C? where C.UnboxValue == V {
-        return try? unbox(key: key, context: context, allowInvalidElements: allowInvalidElements)
+        return try? self.unbox(key: key, context: context, allowInvalidElements: allowInvalidElements)
     }
     
     /// Unbox an optional collection of UnboxableWithContext values by key path
     public func unbox<C: UnboxableCollection, V: UnboxableWithContext>(keyPath: String, context: V.ContextType, allowInvalidElements: Bool = false) -> C? where C.UnboxValue == V {
-        return try? unbox(keyPath: keyPath, context: context, allowInvalidElements: allowInvalidElements)
+        return try? self.unbox(keyPath: keyPath, context: context, allowInvalidElements: allowInvalidElements)
     }
     
     /// Unbox a required value using a formatter by key
@@ -633,12 +633,12 @@ public class Unboxer {
     
     /// Unbox an optional value using a formatter by key
     public func unbox<F: UnboxFormatter>(key: String, formatter: F) -> F.UnboxFormattedType? {
-        return try? unbox(key: key, formatter: formatter)
+        return try? self.unbox(key: key, formatter: formatter)
     }
     
     /// Unbox an optional value using a formatter by key path
     public func unbox<F: UnboxFormatter>(keyPath: String, formatter: F) -> F.UnboxFormattedType? {
-        return try? unbox(keyPath: keyPath, formatter: formatter)
+        return try? self.unbox(keyPath: keyPath, formatter: formatter)
     }
     
     /// Unbox a required collection of values using a formatter by key
