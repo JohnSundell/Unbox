@@ -1008,7 +1008,8 @@ class UnboxTests: XCTestCase {
     func testRequiredContext() {
         let dictionary: UnboxableDictionary = [
             "nested" : [:],
-            "nestedArray": [[:]]
+            "nestedArray": [[:]],
+            "nestedDictionary": ["key" : [:]]
         ]
         
         if let model: UnboxTestContextMock = try? Unbox(dictionary: dictionary, context: "context") {
@@ -1024,6 +1025,12 @@ class UnboxTests: XCTestCase {
                 XCTAssertEqual(nestedArrayModel.context, "nestedArrayContext")
             } else {
                 XCTFail("Failed to unbox nested model array")
+            }
+            
+            if let nestedDictionaryModel = model.nestedDictionary?.first?.value {
+                XCTAssertEqual(nestedDictionaryModel.context, "nestedDictionaryContext")
+            } else {
+                XCTFail("Failed to unbox nested model dictionary")
             }
         } else {
             XCTFail("Failed to unbox")
@@ -1756,11 +1763,13 @@ private final class UnboxTestContextMock: UnboxableWithContext {
     let context: String
     let nested: UnboxTestContextMock?
     let nestedArray: [UnboxTestContextMock]?
+    let nestedDictionary: [String : UnboxTestContextMock]?
     
     init(unboxer: Unboxer, context: String) {
         self.context = context
         self.nested = unboxer.unbox(key: "nested", context: "nestedContext")
         self.nestedArray = unboxer.unbox(key: "nestedArray", context: "nestedArrayContext")
+        self.nestedDictionary = unboxer.unbox(key: "nestedDictionary", context: "nestedDictionaryContext")
     }
 }
 
