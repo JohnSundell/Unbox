@@ -30,13 +30,10 @@ import Foundation
 import CoreGraphics
 #endif
 
-// MARK: - Type aliases
+// MARK: - API
     
 /// Type alias defining what type of Dictionary that is Unboxable (valid JSON)
 public typealias UnboxableDictionary = [String : Any]
-
-/// Type alias defining a transform type (used internally only)
-public typealias UnboxTransform<T> = (Any) throws -> T?
 
 // MARK: - Unbox functions
 
@@ -116,6 +113,7 @@ public enum UnboxError: Error {
     case customUnboxingFailed
 }
 
+/// Extension making it possible to print descriptions from UnboxError
 extension UnboxError: CustomStringConvertible {
     public var description: String {
         let baseDescription = "[Unbox error] "
@@ -209,6 +207,9 @@ public protocol UnboxFormatter {
     /// Format an unboxed value into another value (or nil if the formatting failed)
     func format(unboxedValue: UnboxRawValueType) -> UnboxFormattedType?
 }
+
+/// Type alias defining a transform type (used internally only)
+public typealias UnboxTransform<T> = (Any) throws -> T?
 
 // MARK: - Default protocol implementations
 
@@ -744,7 +745,7 @@ private extension UnboxCompatibleType {
 }
 
 private extension UnboxCompatibleType where Self: Collection {
-    static func makeTransform(allowInvalidElements: Bool) -> (Any) throws -> Self? {
+    static func makeTransform(allowInvalidElements: Bool) -> UnboxTransform<Self> {
         return {
             try self.unbox(value: $0, allowInvalidCollectionElements: allowInvalidElements)
         }
@@ -752,13 +753,13 @@ private extension UnboxCompatibleType where Self: Collection {
 }
 
 private extension Unboxable {
-    static func makeTransform() -> (Any) throws -> Self? {
+    static func makeTransform() -> UnboxTransform<Self> {
         return { try ($0 as? UnboxableDictionary).map(unbox) }
     }
 }
 
 private extension UnboxableWithContext {
-    static func makeTransform(context: ContextType) -> (Any) throws -> Self? {
+    static func makeTransform(context: ContextType) -> UnboxTransform<Self> {
         return {
             try ($0 as? UnboxableDictionary).map {
                 try unbox(dictionary: $0, context: context)
@@ -794,7 +795,7 @@ private extension UnboxFormatter {
 }
 
 private extension Unboxer {
-    func unbox<R>(path: UnboxPath, transform: (Any) throws -> R?) throws -> R {
+    func unbox<R>(path: UnboxPath, transform: UnboxTransform<R>) throws -> R {
         var currentMode = UnboxingMode.dictionary(self.dictionary)
         let components = path.components
         let lastKey = try components.last.orThrow(.emptyKeyPath)
