@@ -536,18 +536,24 @@ public class Unboxer {
         return try UnboxValueResolver<Any>(self).resolveValue(forPath: .keyPath(keyPath), transform: transform)
     }
     
-    /// Unbox a required nested Unboxable, by unboxing a Dictionary and then using a transform
-    public func unbox<T: Unboxable>(key: String, isKeyPath: Bool = true, context: Any? = nil) throws -> T {
-        return try UnboxValueResolver<UnboxableDictionary>(self).resolveRequiredValueForKey(key: key, isKeyPath: isKeyPath, transform: {
-            return try? Unbox(dictionary: $0)
-        })
+    /// Unbox a required Unboxable by key
+    public func unbox<T: Unboxable>(key: String) throws -> T {
+        return try UnboxValueResolver<Any>(self).resolveValue(forPath: .key(key), transform: T.makeTransform())
     }
     
-    /// Unbox an optional nested Unboxable, by unboxing a Dictionary and then using a transform
-    public func unbox<T: Unboxable>(key: String, isKeyPath: Bool = true, context: Any? = nil) -> T? {
-        return UnboxValueResolver<UnboxableDictionary>(self).resolveOptionalValueForKey(key: key, isKeyPath: isKeyPath, transform: {
-            return try? Unbox(dictionary: $0)
-        })
+    /// Unbox a required Unboxable by key path
+    public func unbox<T: Unboxable>(keyPath: String) throws -> T {
+        return try UnboxValueResolver<Any>(self).resolveValue(forPath: .keyPath(keyPath), transform: T.makeTransform())
+    }
+    
+    /// Unbox an optional Unboxable by key
+    public func unbox<T: Unboxable>(key: String) -> T? {
+        return try? unbox(key: key)
+    }
+    
+    /// Unbox an optional Unboxable by key path
+    public func unbox<T: Unboxable>(keyPath: String) -> T? {
+        return try? unbox(keyPath: keyPath)
     }
     
     /// Unbox a required nested UnboxableWithContext type
@@ -837,7 +843,7 @@ private struct UnboxContainer<T: Unboxable>: UnboxableWithContext {
         case .key(let key):
             self.model = try unboxer.unbox(key: key)
         case .keyPath(let keyPath):
-            self.model = try unboxer.unbox(key: keyPath, isKeyPath: true)
+            self.model = try unboxer.unbox(keyPath: keyPath)
         }
     }
 }
@@ -867,6 +873,19 @@ private extension UnboxCompatibleType where Self: Collection {
     static func makeTransform(allowInvalidElements: Bool) -> (Any) throws -> Self? {
         return {
             try self.unbox(value: $0, allowInvalidCollectionElements: allowInvalidElements)
+        }
+    }
+}
+
+private extension Unboxable {
+    static func makeTransform() -> (Any) throws -> Self? {
+        return {
+            guard let dictionary = $0 as? UnboxableDictionary else {
+                return nil
+            }
+            
+            let unboxed: Self = try Unbox(dictionary: dictionary)
+            return unboxed
         }
     }
 }
