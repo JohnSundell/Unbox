@@ -128,7 +128,7 @@ Unbox supports decoding all standard JSON types, like:
 - `Array`
 - `Dictionary`
 
-It also contains all possible combinations of nested arrays & dictionaries. As you can see in the **Advanced example** above (where an array of the unboxable `Astronaut` struct is being unboxed), we can unbox even a complicated data structure with one simple call to `unbox()`.
+It also supports all possible combinations of nested arrays & dictionaries. As you can see in the **Advanced example** above (where an array of the unboxable `Astronaut` struct is being unboxed), we can unbox even a complicated data structure with one simple call to `unbox()`.
 
 Finally, it also supports `URL` through the use of a transformer, and `Date` by using any `DateFormatter`.
 
