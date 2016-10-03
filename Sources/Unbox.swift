@@ -546,28 +546,34 @@ public class Unboxer {
         return try UnboxValueResolver<Any>(self).resolveValue(forPath: .keyPath(keyPath), transform: T.makeTransform())
     }
     
-    /// Unbox an optional Unboxable by key
+    /// Unbox an optional Unboxable type by key
     public func unbox<T: Unboxable>(key: String) -> T? {
         return try? unbox(key: key)
     }
     
-    /// Unbox an optional Unboxable by key path
+    /// Unbox an optional Unboxable type by key path
     public func unbox<T: Unboxable>(keyPath: String) -> T? {
         return try? unbox(keyPath: keyPath)
     }
     
-    /// Unbox a required nested UnboxableWithContext type
-    public func unbox<T: UnboxableWithContext>(key: String, isKeyPath: Bool = true, context: T.ContextType) throws -> T {
-        return try UnboxValueResolver<UnboxableDictionary>(self).resolveRequiredValueForKey(key: key, isKeyPath: isKeyPath, transform: {
-            return try? Unbox(dictionary: $0, context: context)
-        })
+    /// Unbox a required UnboxableWithContext type by key
+    public func unbox<T: UnboxableWithContext>(key: String, context: T.ContextType) throws -> T {
+        return try UnboxValueResolver<Any>(self).resolveValue(forPath: .key(key), transform: T.makeTransform(context: context))
     }
     
-    /// Unbox an optional nested UnboxableWithContext type
-    public func unbox<T: UnboxableWithContext>(key: String, isKeyPath: Bool = true, context: T.ContextType) -> T? {
-        return UnboxValueResolver<UnboxableDictionary>(self).resolveOptionalValueForKey(key: key, isKeyPath: isKeyPath, transform: {
-            return try? Unbox(dictionary: $0, context: context)
-        })
+    /// Unbox a required UnboxableWithContext type by key path
+    public func unbox<T: UnboxableWithContext>(keyPath: String, context: T.ContextType) throws -> T {
+        return try UnboxValueResolver<Any>(self).resolveValue(forPath: .keyPath(keyPath), transform: T.makeTransform(context: context))
+    }
+    
+    /// Unbox an optional UnboxableWithContext type by key
+    public func unbox<T: UnboxableWithContext>(key: String, context: T.ContextType) -> T? {
+        return try? unbox(key: key, context: context)
+    }
+    
+    /// Unbox an optional UnboxableWithContext type by key path
+    public func unbox<T: UnboxableWithContext>(keyPath: String, context: T.ContextType) -> T? {
+        return try? unbox(keyPath: keyPath, context: context)
     }
     
     /// Unbox a required Array of nested UnboxableWithContext types, by unboxing an Array of Dictionaries and then using a transform (optionally allowing invalid elements)
@@ -885,6 +891,19 @@ private extension Unboxable {
             }
             
             let unboxed: Self = try Unbox(dictionary: dictionary)
+            return unboxed
+        }
+    }
+}
+
+private extension UnboxableWithContext {
+    static func makeTransform(context: ContextType) -> (Any) throws -> Self? {
+        return {
+            guard let dictionary = $0 as? UnboxableDictionary else {
+                return nil
+            }
+            
+            let unboxed: Self = try Unbox(dictionary: dictionary, context: context)
             return unboxed
         }
     }
