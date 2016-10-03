@@ -1041,7 +1041,7 @@ class UnboxTests: XCTestCase {
                 self.intValue = try unboxer.unbox(keyPath: keyPath)
 
                 let dictionaryKeyPath = [UnboxTestMock.requiredUnboxableDictionaryKey, "test"].joined(separator: ".")
-                self.dictionary = try unboxer.unbox(key: dictionaryKeyPath, isKeyPath: true)
+                self.dictionary = try unboxer.unbox(keyPath: dictionaryKeyPath)
             }
         }
 
@@ -1448,6 +1448,49 @@ class UnboxTests: XCTestCase {
         }
     }
     
+    func testThrowingForDictionaryWithInvalidKeyType() {
+        struct Model: Unboxable {
+            let dictionary: [ObjectIdentifier : String]
+            
+            init(unboxer: Unboxer) throws {
+                self.dictionary = try unboxer.unbox(key: "dictionary")
+            }
+        }
+        
+        let dictionary: UnboxableDictionary = [
+            "dictionary" : [:]
+        ]
+        
+        do {
+            _ = try Unbox(dictionary: dictionary) as Model
+        } catch UnboxError.invalidDictionaryKeyType(let keyType) {
+            XCTAssertNotNil(keyType as? ObjectIdentifier.Type)
+        } catch {
+            XCTFail("\(error)")
+        }
+    }
+    
+    func testThrowingForDictionaryWithInvalidValueType() {
+        struct Model: Unboxable {
+            let dictionary: [String : ObjectIdentifier]
+            
+            init(unboxer: Unboxer) throws {
+                self.dictionary = try unboxer.unbox(key: "dictionary")
+            }
+        }
+        
+        let dictionary: UnboxableDictionary = [
+            "dictionary" : [:]
+        ]
+        
+        do {
+            _ = try Unbox(dictionary: dictionary) as Model
+        } catch UnboxError.invalidElementType(let elementType) {
+            XCTAssertNotNil(elementType as? ObjectIdentifier.Type)
+        } catch {
+            XCTFail("\(error)")
+        }
+    }
 }
 
 private func UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: Bool) -> UnboxableDictionary {
@@ -1480,7 +1523,7 @@ private enum UnboxTestEnum: Int, UnboxableEnum {
     case Second
 }
 
-private struct UnboxTestDictionaryKey: UnboxableKey {
+private struct UnboxTestDictionaryKey: UnboxableKey, Hashable {
     var hashValue: Int { return self.key.hashValue }
     
     let key: String
