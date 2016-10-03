@@ -201,21 +201,21 @@ public protocol UnboxableKey {
 /// Protocol used to enable any type as being unboxable, by transforming a raw value
 public protocol UnboxableByTransform: UnboxCompatibleType {
     /// The type of raw value that this type can be transformed from. Must be a valid JSON type.
-    associatedtype UnboxRawValueType
+    associatedtype UnboxRawValue
     
     /// Attempt to transform a raw unboxed value into an instance of this type
-    static func transform(unboxedValue: UnboxRawValueType) -> Self?
+    static func transform(unboxedValue: UnboxRawValue) -> Self?
 }
 
 /// Protocol used by objects that may format raw values into some other value
 public protocol UnboxFormatter {
     /// The type of raw value that this formatter accepts as input
-    associatedtype UnboxRawValueType: UnboxableRawType
+    associatedtype UnboxRawValue: UnboxableRawType
     /// The type of value that this formatter produces as output
     associatedtype UnboxFormattedType
     
     /// Format an unboxed value into another value (or nil if the formatting failed)
-    func format(unboxedValue: UnboxRawValueType) -> UnboxFormattedType?
+    func format(unboxedValue: UnboxRawValue) -> UnboxFormattedType?
 }
 
 /// Type alias defining a transform type (used internally only)
@@ -253,7 +253,7 @@ public extension UnboxableCollection {
 
 public extension UnboxableByTransform {
     static func unbox(value: Any, allowInvalidCollectionElements: Bool) throws -> Self? {
-        return (value as? UnboxRawValueType).map(self.transform)
+        return (value as? UnboxRawValue).map(self.transform)
     }
 }
 
@@ -437,7 +437,7 @@ extension Dictionary: UnboxableCollection {
 #if !os(Linux)
 /// Extension making CGFloat an Unboxable raw type
 extension CGFloat: UnboxableByTransform {
-    public typealias UnboxRawValueType = Double
+    public typealias UnboxRawValue = Double
     
     public static func transform(unboxedValue: Double) -> CGFloat? {
         return CGFloat(unboxedValue)
@@ -458,7 +458,7 @@ extension String: UnboxableRawType {
 
 /// Extension making URL Unboxable by transform
 extension URL: UnboxableByTransform {
-    public typealias UnboxRawValueType = String
+    public typealias UnboxRawValue = String
     
     public static func transform(unboxedValue: String) -> URL? {
         return URL(string: unboxedValue)
@@ -788,7 +788,7 @@ private extension UnboxableWithContext {
 
 private extension UnboxFormatter {
     func makeTransform() -> UnboxTransform<UnboxFormattedType> {
-        return { ($0 as? UnboxRawValueType).map(self.format) }
+        return { ($0 as? UnboxRawValue).map(self.format) }
     }
     
     func makeCollectionTransform<C: UnboxableCollection>(allowInvalidElements: Bool) -> UnboxTransform<C> where C.UnboxValue == UnboxFormattedType {

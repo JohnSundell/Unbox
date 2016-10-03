@@ -1723,7 +1723,7 @@ private class UnboxTestBaseMock: Unboxable {
     }
     
     func verifyTransformableValue<T: UnboxableByTransform>(value: T?, againstDictionaryValue dictionaryValue: Any?) -> Bool where T: Equatable {
-        if let rawValue = dictionaryValue as? T.UnboxRawValueType {
+        if let rawValue = dictionaryValue as? T.UnboxRawValue {
             return self.verifyPropertyValue(value: value, againstDictionaryValue: T.transform(unboxedValue: rawValue))
         }
         
