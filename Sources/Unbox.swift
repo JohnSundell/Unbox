@@ -65,15 +65,13 @@ public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, at key: String,
 }
 
 /// Unbox binary data into a model `T`, optionally using a contextual object. Throws `UnboxError`.
-public func Unbox<T: Unboxable>(data: Data, context: Any? = nil) throws -> T {
-    return try Unboxer.unboxer(from: data, context: context).performUnboxing()
+public func Unbox<T: Unboxable>(data: Data) throws -> T {
+    return try data.unbox()
 }
 
-/// Unbox binary data into an array of `T`, optionally using a contextual object and/or invalid elements. Throws `UnboxError`.
-public func Unbox<T: Unboxable>(data: Data, context: Any? = nil, allowInvalidElements: Bool = false) throws -> [T] {
-    return try Unboxer.unboxersFromData(data: data, context: context).map(allowInvalidElements: allowInvalidElements, transform: {
-        return try $0.performUnboxing()
-    })
+/// Unbox binary data into an array of `T`, optionally allowing invalid elements. Throws `UnboxError`.
+public func Unbox<T: Unboxable>(data: Data, allowInvalidElements: Bool = false) throws -> [T] {
+    return try data.unbox(allowInvalidElements: allowInvalidElements)
 }
 
 /// Unbox a JSON dictionary into a model `T` using a required contextual object. Throws `UnboxError`.
@@ -90,14 +88,12 @@ public func Unbox<T: UnboxableWithContext>(dictionaries: [UnboxableDictionary], 
 
 /// Unbox binary data into a model `T` using a required contextual object. Throws `UnboxError`.
 public func Unbox<T: UnboxableWithContext>(data: Data, context: T.ContextType) throws -> T {
-    return try Unboxer.unboxer(from: data, context: context).performUnboxing(context: context)
+    return try data.unbox(context: context)
 }
 
 /// Unbox binary data into an array of `T` using a required contextual object and/or invalid elements. Throws `UnboxError`.
 public func Unbox<T: UnboxableWithContext>(data: Data, context: T.ContextType, allowInvalidElements: Bool = false) throws -> [T] {
-    return try Unboxer.unboxersFromData(data: data, context: context).map(allowInvalidElements: allowInvalidElements, transform: {
-        return try $0.performUnboxing(context: context)
-    })
+    return try data.unbox(context: context, allowInvalidElements: allowInvalidElements)
 }
 
 // MARK: - Error type
@@ -492,7 +488,7 @@ extension DateFormatter: UnboxFormatter {
  *  unboxed, the Unboxer will be marked as failed, and a `nil` value will be returned from the `Unbox()` function that
  *  triggered the Unboxer.
  */
-public class Unboxer {
+public final class Unboxer {
     /// The underlying JSON dictionary that is being unboxed
     public let dictionary: UnboxableDictionary
     
@@ -505,26 +501,20 @@ public class Unboxer {
     // MARK: - Custom unboxing API
     
     /// Perform custom unboxing using an Unboxer (created from a dictionary) passed to a closure, or throw an UnboxError
-    public static func performCustomUnboxing<T>(dictionary: UnboxableDictionary, context: Any? = nil, closure: (Unboxer) throws -> T?) throws -> T {
+    public static func performCustomUnboxing<T>(dictionary: UnboxableDictionary, closure: (Unboxer) throws -> T?) throws -> T {
         return try Unboxer(dictionary: dictionary).performCustomUnboxing(closure: closure)
     }
     
     /// Perform custom unboxing on an array of dictionaries, executing a closure with a new Unboxer for each one, or throw an UnboxError
-    public static func performCustomUnboxing<T>(array: [UnboxableDictionary], context: Any? = nil, allowInvalidElements: Bool = false, closure: (Unboxer) throws -> T?) throws -> [T] {
-        if allowInvalidElements {
-            return array.flatMap { (dictionary) -> T? in
-                return try? self.performCustomUnboxing(dictionary: dictionary, context: context, closure: closure)
-            }
-        } else {
-            return try array.map { (dictionary) -> T in
-                return try self.performCustomUnboxing(dictionary: dictionary, context: context, closure: closure)
-            }
+    public static func performCustomUnboxing<T>(array: [UnboxableDictionary], allowInvalidElements: Bool = false, closure: (Unboxer) throws -> T?) throws -> [T] {
+        return try array.map(allowInvalidElements: allowInvalidElements) {
+            try Unboxer(dictionary: $0).performCustomUnboxing(closure: closure)
         }
     }
     
-    /// Perform custom unboxing using an Unboxer (created from NSData) passed to a closure, or throw an UnboxError
-    public static func performCustomUnboxing<T>(data: Data, context: Any? = nil, closure: (Unboxer) throws -> T?) throws -> T {
-        return try Unboxer.unboxer(from: data, context: context).performCustomUnboxing(closure: closure)
+    /// Perform custom unboxing using an Unboxer (created from binary data) passed to a closure, or throw an UnboxError
+    public static func performCustomUnboxing<T>(data: Data, closure: @escaping (Unboxer) throws -> T?) throws -> T {
+        return try data.unbox(closure: closure)
     }
     
     // MARK: - Unboxing required values (by key)
@@ -834,30 +824,6 @@ private extension UnboxFormatter {
 }
 
 private extension Unboxer {
-    static func unboxer(from data: Data, context: Any?) throws -> Unboxer {
-        do {
-            guard let dictionary = try JSONSerialization.jsonObject(with: data, options: []) as? UnboxableDictionary else {
-                throw UnboxError.invalidData
-            }
-            
-            return Unboxer(dictionary: dictionary)
-        } catch {
-            throw UnboxError.invalidData
-        }
-    }
-    
-    static func unboxersFromData(data: Data, context: Any?) throws -> [Unboxer] {
-        do {
-            guard let array = try JSONSerialization.jsonObject(with: data, options: [.allowFragments]) as? [UnboxableDictionary] else {
-                throw UnboxError.invalidData
-            }
-            
-            return array.map(Unboxer.init)
-        } catch {
-            throw UnboxError.invalidData
-        }
-    }
-    
     func unbox<R>(path: UnboxPath, transform: (Any) throws -> R?) throws -> R {
         var currentMode = UnboxingMode.dictionary(self.dictionary)
         let components = path.components
@@ -906,6 +872,51 @@ private extension Unboxer {
         }
         
         return unboxed
+    }
+}
+
+private extension JSONSerialization {
+    static func unbox<T>(data: Data, options: ReadingOptions = []) throws -> T {
+        do {
+            guard let object = try self.jsonObject(with: data, options: options) as? T else {
+                throw UnboxError.invalidData
+            }
+            
+            return object
+        } catch {
+            throw UnboxError.invalidData
+        }
+    }
+}
+
+private extension Data {
+    func unbox<T: Unboxable>() throws -> T {
+        return try Unbox(dictionary: JSONSerialization.unbox(data: self))
+    }
+    
+    func unbox<T: UnboxableWithContext>(context: T.ContextType) throws -> T {
+        return try Unbox(dictionary: JSONSerialization.unbox(data: self), context: context)
+    }
+    
+    func unbox<T>(closure: (Unboxer) throws -> T?) throws -> T {
+        guard let unboxed = try closure(Unboxer(dictionary: JSONSerialization.unbox(data: self))) else {
+            throw UnboxError.customUnboxingFailed
+        }
+        
+        return unboxed
+    }
+    
+    func unbox<T: Unboxable>(allowInvalidElements: Bool) throws -> [T] {
+        let array: [UnboxableDictionary] = try JSONSerialization.unbox(data: self, options: [.allowFragments])
+        return try array.map(allowInvalidElements: allowInvalidElements, transform: Unbox)
+    }
+    
+    func unbox<T: UnboxableWithContext>(context: T.ContextType, allowInvalidElements: Bool) throws -> [T] {
+        let array: [UnboxableDictionary] = try JSONSerialization.unbox(data: self, options: [.allowFragments])
+        
+        return try array.map(allowInvalidElements: allowInvalidElements) {
+            try Unbox(dictionary: $0, context: context)
+        }
     }
 }
 

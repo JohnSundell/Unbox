@@ -966,7 +966,7 @@ class UnboxTests: XCTestCase {
             } catch UnboxError.invalidData {
                 // Test passed
             } catch {
-                XCTFail("Unbox did not return the correct error type")
+                XCTFail("Unbox did not return the correct error type: \(error)")
             }
         } else {
             XCTFail("Could not create data from a string")
@@ -1126,18 +1126,17 @@ class UnboxTests: XCTestCase {
                 "string" : "Hello"
             ]
             let data = try JSONSerialization.data(withJSONObject: dictionary as AnyObject, options: [])
-            let context = "Context"
             
             let unboxingClosure: (Unboxer) -> Model? = {
                 return try? Model(int: $0.unbox(key: "int"), double: 3.14, string: $0.unbox(key: "string"))
             }
             
-            let unboxedFromDictionary: Model = try Unboxer.performCustomUnboxing(dictionary: dictionary, context: context, closure: unboxingClosure)
+            let unboxedFromDictionary: Model = try Unboxer.performCustomUnboxing(dictionary: dictionary, closure: unboxingClosure)
             XCTAssertEqual(unboxedFromDictionary.int, 5)
             XCTAssertEqual(unboxedFromDictionary.double, 3.14)
             XCTAssertEqual(unboxedFromDictionary.string, "Hello")
             
-            let unboxedFromData: Model = try Unboxer.performCustomUnboxing(data: data, context: context, closure: unboxingClosure)
+            let unboxedFromData: Model = try Unboxer.performCustomUnboxing(data: data, closure: unboxingClosure)
             XCTAssertEqual(unboxedFromData.int, 5)
             XCTAssertEqual(unboxedFromData.double, 3.14)
             XCTAssertEqual(unboxedFromData.string, "Hello")
@@ -1270,13 +1269,12 @@ class UnboxTests: XCTestCase {
             ]
             
             let data = try JSONSerialization.data(withJSONObject: dictionary, options: [])
-            let context = "Context"
             
             let unboxingClosure: (Unboxer) throws -> Model = {
                 return try Model(bool1: $0.unbox(key: "bool1"), bool2: $0.unbox(key: "bool2"), bool3: $0.unbox(key: "bool3"), bool4: $0.unbox(key: "bool4"), bool5: $0.unbox(key: "bool5"), bool6: $0.unbox(key: "bool6"), bool7: $0.unbox(key: "bool7"), bool8: $0.unbox(key: "bool8"))
             }
             
-            let unboxedFromDictionary: Model = try Unboxer.performCustomUnboxing(dictionary: dictionary, context: context, closure: unboxingClosure)
+            let unboxedFromDictionary: Model = try Unboxer.performCustomUnboxing(dictionary: dictionary, closure: unboxingClosure)
             
             XCTAssertEqual(unboxedFromDictionary.bool1, true)
             XCTAssertEqual(unboxedFromDictionary.bool2, false)
@@ -1288,7 +1286,7 @@ class UnboxTests: XCTestCase {
             XCTAssertEqual(unboxedFromDictionary.bool8, false)
             
             
-            let unboxedFromData: Model = try Unboxer.performCustomUnboxing(data: data, context: context, closure: unboxingClosure)
+            let unboxedFromData: Model = try Unboxer.performCustomUnboxing(data: data, closure: unboxingClosure)
             XCTAssertEqual(unboxedFromData.bool1, true)
             XCTAssertEqual(unboxedFromData.bool2, false)
             XCTAssertEqual(unboxedFromData.bool3, true)
