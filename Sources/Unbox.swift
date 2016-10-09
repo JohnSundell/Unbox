@@ -491,10 +491,16 @@ public final class Unboxer {
     /// The underlying JSON dictionary that is being unboxed
     public let dictionary: UnboxableDictionary
     
-    // MARK: - Private initializer
+    // MARK: - Initializer
     
-    fileprivate init(dictionary: UnboxableDictionary) {
+    /// Initialize an instance with a dictionary that can then be decoded using the `unbox()` methods.
+    public init(dictionary: UnboxableDictionary) {
         self.dictionary = dictionary
+    }
+    
+    /// Initialize an instance with binary data than can then be decoded using the `unbox()` methods. Throws `UnboxError` for invalid data.
+    public init(data: Data) throws {
+        self.dictionary = try JSONSerialization.unbox(data: data)
     }
     
     // MARK: - Custom unboxing API
@@ -869,15 +875,15 @@ private extension JSONSerialization {
 
 private extension Data {
     func unbox<T: Unboxable>() throws -> T {
-        return try Unbox.unbox(dictionary: JSONSerialization.unbox(data: self))
+        return try Unboxer(data: self).performUnboxing()
     }
     
     func unbox<T: UnboxableWithContext>(context: T.UnboxContext) throws -> T {
-        return try Unbox.unbox(dictionary: JSONSerialization.unbox(data: self), context: context)
+        return try Unboxer(data: self).performUnboxing(context: context)
     }
     
     func unbox<T>(closure: (Unboxer) throws -> T?) throws -> T {
-        return try closure(Unboxer(dictionary: JSONSerialization.unbox(data: self))).orThrow(.customUnboxingFailed)
+        return try closure(Unboxer(data: self)).orThrow(.customUnboxingFailed)
     }
     
     func unbox<T: Unboxable>(allowInvalidElements: Bool) throws -> [T] {
