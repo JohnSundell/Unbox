@@ -172,8 +172,8 @@ public protocol UnboxCompatible {
 
 /// Protocol used to enable a raw type for Unboxing. See default implementations further down.
 public protocol UnboxableRawType: UnboxCompatible {
-    /// Transform an instance of this type from an unboxed integer
-    static func transform(unboxedInt: Int) -> Self?
+    /// Transform an instance of this type from an unboxed number
+    static func transform(unboxedNumber: NSNumber) -> Self?
     /// Transform an instance of this type from an unboxed string
     static func transform(unboxedString: String) -> Self?
 }
@@ -233,8 +233,8 @@ public extension UnboxableRawType {
             return self.transform(unboxedString: string)
         }
 
-        if let int = value as? Int {
-            return self.transform(unboxedInt: int)
+        if let number = value as? NSNumber {
+            return self.transform(unboxedNumber: number)
         }
 
         return nil
@@ -267,8 +267,8 @@ public extension UnboxableEnum {
 
 /// Extension making Bool an Unboxable raw type
 extension Bool: UnboxableRawType {
-    public static func transform(unboxedInt: Int) -> Bool? {
-        return unboxedInt != 0
+    public static func transform(unboxedNumber: NSNumber) -> Bool? {
+        return unboxedNumber.boolValue
     }
     
     public static func transform(unboxedString: String) -> Bool? {
@@ -282,8 +282,8 @@ extension Bool: UnboxableRawType {
 
 /// Extension making Int an Unboxable raw type
 extension Int: UnboxableRawType {
-    public static func transform(unboxedInt: Int) -> Int? {
-        return unboxedInt
+    public static func transform(unboxedNumber: NSNumber) -> Int? {
+        return unboxedNumber.intValue
     }
     
     public static func transform(unboxedString: String) -> Int? {
@@ -293,8 +293,8 @@ extension Int: UnboxableRawType {
 
 /// Extension making UInt an Unboxable raw type
 extension UInt: UnboxableRawType {
-    public static func transform(unboxedInt: Int) -> UInt? {
-        return UInt(unboxedInt)
+    public static func transform(unboxedNumber: NSNumber) -> UInt? {
+        return unboxedNumber.uintValue
     }
     
     public static func transform(unboxedString: String) -> UInt? {
@@ -304,8 +304,8 @@ extension UInt: UnboxableRawType {
 
 /// Extension making Int32 an Unboxable raw type
 extension Int32: UnboxableRawType {
-    public static func transform(unboxedInt: Int) -> Int32? {
-        return Int32(unboxedInt)
+    public static func transform(unboxedNumber: NSNumber) -> Int32? {
+        return unboxedNumber.int32Value
     }
     
     public static func transform(unboxedString: String) -> Int32? {
@@ -315,8 +315,8 @@ extension Int32: UnboxableRawType {
 
 /// Extension making Int64 an Unboxable raw type
 extension Int64: UnboxableRawType {
-    public static func transform(unboxedInt: Int) -> Int64? {
-        return Int64(unboxedInt)
+    public static func transform(unboxedNumber: NSNumber) -> Int64? {
+        return unboxedNumber.int64Value
     }
     
     public static func transform(unboxedString: String) -> Int64? {
@@ -324,10 +324,32 @@ extension Int64: UnboxableRawType {
     }
 }
 
+/// Extension making UInt32 an Unboxable raw type
+extension UInt32: UnboxableRawType {
+    public static func transform(unboxedNumber: NSNumber) -> UInt32? {
+        return unboxedNumber.uint32Value
+    }
+    
+    public static func transform(unboxedString: String) -> UInt32? {
+        return UInt32(unboxedString)
+    }
+}
+
+/// Extension making UInt64 an Unboxable raw type
+extension UInt64: UnboxableRawType {
+    public static func transform(unboxedNumber: NSNumber) -> UInt64? {
+        return unboxedNumber.uint64Value
+    }
+    
+    public static func transform(unboxedString: String) -> UInt64? {
+        return UInt64(unboxedString)
+    }
+}
+
 /// Extension making Double an Unboxable raw type
 extension Double: UnboxableRawType {
-    public static func transform(unboxedInt: Int) -> Double? {
-        return Double(unboxedInt)
+    public static func transform(unboxedNumber: NSNumber) -> Double? {
+        return unboxedNumber.doubleValue
     }
     
     public static func transform(unboxedString: String) -> Double? {
@@ -337,8 +359,8 @@ extension Double: UnboxableRawType {
 
 /// Extension making Float an Unboxable raw type
 extension Float: UnboxableRawType {
-    public static func transform(unboxedInt: Int) -> Float? {
-        return Float(unboxedInt)
+    public static func transform(unboxedNumber: NSNumber) -> Float? {
+        return unboxedNumber.floatValue
     }
     
     public static func transform(unboxedString: String) -> Float? {
@@ -447,8 +469,8 @@ extension CGFloat: UnboxableByTransform {
     
 /// Extension making String an Unboxable raw type
 extension String: UnboxableRawType {
-    public static func transform(unboxedInt: Int) -> String? {
-        return String(unboxedInt)
+    public static func transform(unboxedNumber: NSNumber) -> String? {
+        return unboxedNumber.stringValue
     }
     
     public static func transform(unboxedString: String) -> String? {

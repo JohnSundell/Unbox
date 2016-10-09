@@ -119,14 +119,14 @@ class UnboxTests: XCTestCase {
         }
         
         let dictionary: UnboxableDictionary = [
-            "required": 27,
-            "optional1": 10
+            "required": Int32.max,
+            "optional1": Int32.max
         ]
         
         do {
             let unboxed: Model = try unbox(dictionary: dictionary)
-            XCTAssertEqual(unboxed.required, 27)
-            XCTAssertEqual(unboxed.optional1, 10)
+            XCTAssertEqual(unboxed.required, Int32.max)
+            XCTAssertEqual(unboxed.optional1, Int32.max)
             XCTAssertNil(unboxed.optional2)
         } catch {
             XCTFail("\(error)")
@@ -147,14 +147,70 @@ class UnboxTests: XCTestCase {
         }
         
         let dictionary: UnboxableDictionary = [
-            "required": 27,
-            "optional1": 10
+            "required": Int64.max,
+            "optional1": Int64.max
         ]
         
         do {
             let unboxed: Model = try unbox(dictionary: dictionary)
-            XCTAssertEqual(unboxed.required, 27)
-            XCTAssertEqual(unboxed.optional1, 10)
+            XCTAssertEqual(unboxed.required, Int64.max)
+            XCTAssertEqual(unboxed.optional1, Int64.max)
+            XCTAssertNil(unboxed.optional2)
+        } catch {
+            XCTFail("\(error)")
+        }
+    }
+    
+    func testUInt32() {
+        struct Model: Unboxable {
+            let required: UInt32
+            let optional1: UInt32?
+            let optional2: UInt32?
+            
+            init(unboxer: Unboxer) throws {
+                self.required = try unboxer.unbox(key: "required")
+                self.optional1 = unboxer.unbox(key: "optional1")
+                self.optional2 = unboxer.unbox(key: "optional2")
+            }
+        }
+        
+        let dictionary: UnboxableDictionary = [
+            "required": UInt32.max,
+            "optional1": UInt32.min
+        ]
+        
+        do {
+            let unboxed: Model = try unbox(dictionary: dictionary)
+            XCTAssertEqual(unboxed.required, UInt32.max)
+            XCTAssertEqual(unboxed.optional1, UInt32.min)
+            XCTAssertNil(unboxed.optional2)
+        } catch {
+            XCTFail("\(error)")
+        }
+    }
+    
+    func testUInt64() {
+        struct Model: Unboxable {
+            let required: UInt64
+            let optional1: UInt64?
+            let optional2: UInt64?
+            
+            init(unboxer: Unboxer) throws {
+                self.required = try unboxer.unbox(key: "required")
+                self.optional1 = unboxer.unbox(key: "optional1")
+                self.optional2 = unboxer.unbox(key: "optional2")
+            }
+        }
+        
+        let dictionary: UnboxableDictionary = [
+            "required": UInt64.max,
+            "optional1": UInt64.min
+        ]
+        
+        do {
+            let unboxed: Model = try unbox(dictionary: dictionary)
+            XCTAssertEqual(unboxed.required, UInt64.max)
+            XCTAssertEqual(unboxed.optional1, UInt64.min)
             XCTAssertNil(unboxed.optional2)
         } catch {
             XCTFail("\(error)")
