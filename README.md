@@ -1,8 +1,9 @@
 # Unbox
 
-![Travis](https://img.shields.io/travis/JohnSundell/Unbox/master.svg)
-![CocoaPods](https://img.shields.io/cocoapods/v/Unbox.svg)
-[![Carthage](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
+[![Travis](https://img.shields.io/travis/JohnSundell/Unbox/master.svg)](https://travis-ci.org/JohnSundell/Unbox/branches)
+[![CocoaPods](https://img.shields.io/cocoapods/v/Unbox.svg)](https://cocoapods.org/pods/Unbox)
+[![Carthage](https://img.shields.io/badge/carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
+[![Twitter: @johnsundell](https://img.shields.io/badge/contact-@johnsundell-blue.svg?style=flat)](https://twitter.com/johnsundell)
 
 Unbox is an easy to use Swift JSON decoder. Don't spend hours writing JSON decoding code - just unbox it instead!
 
