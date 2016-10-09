@@ -487,6 +487,15 @@ extension URL: UnboxableByTransform {
     }
 }
 
+/// Extension making Decimal Unboxable by transform
+extension Decimal: UnboxableByTransform {
+    public typealias UnboxRawValue = String
+
+    public static func transform(unboxedValue: String) -> Decimal? {
+        return self.init(string: unboxedValue)
+    }
+}
+
 /// Extension making String values usable as an Unboxable keys
 extension String: UnboxableKey {
     public static func transform(unboxedKey: String) -> String? {
