@@ -1800,13 +1800,7 @@ private class UnboxTestBaseMock: Unboxable {
     func verifyArrayPropertyValue<T: Equatable>(value: [T]?, againstDictionaryValue dictionaryValue: Any?) -> Bool {
         if let propertyValue = value {
             if let dictionaryArrayValue = dictionaryValue as? [T] {
-                for i in 0..<dictionaryArrayValue.count {
-                    if dictionaryArrayValue[i] != propertyValue[i] {
-                        return false
-                    }
-                }
-                
-                return true
+                return dictionaryArrayValue == propertyValue
             }
         }
         
