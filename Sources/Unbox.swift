@@ -105,45 +105,26 @@ public func unbox<T: UnboxableWithContext>(data: Data, context: T.UnboxContext, 
 
 // MARK: - Error type
 
-/// Enum describing errors that can occur during unboxing
-public enum UnboxError: Error {
-    /// Thrown when an invalid required value was encountered. Contains the value and the key.
-    case invalidValue(Any, String)
-    /// Thrown when a required value was missing. Contains the key.
-    case missingValue(String)
-    /// Thrown when an empty key path was supplied
-    case emptyKeyPath
-    /// Thrown when a dictionary with an invalid key type was attempted to be unboxed
-    case invalidDictionaryKeyType(Any)
-    /// Thrown when a collection with an invalid element type was attempted to be unboxed
-    case invalidElementType(Any)
-    /// Thrown when a piece of data (Data) could not be unboxed because it was considered invalid
-    case invalidData
-    /// Thrown when a custom unboxing closure returned nil
-    case customUnboxingFailed
+/// Error type that Unbox throws in case an unrecoverable error was encountered
+public struct UnboxError: Error, CustomStringConvertible {
+    public let description: String
+    
+    fileprivate init(description: String) {
+        self.description = "[UnboxError] " + description
+    }
 }
 
-/// Extension making it possible to print descriptions from UnboxError
-extension UnboxError: CustomStringConvertible {
-    public var description: String {
-        let baseDescription = "[Unbox error] "
-        
-        switch self {
-        case .invalidValue(let value, let key):
-            return baseDescription + "Invalid value found (\(value)) for key \"\(key)\""
-        case .missingValue(let key):
-            return baseDescription + "Missing value for key \"\(key)\""
-        case .emptyKeyPath:
-            return baseDescription + "Empty key path"
-        case .invalidDictionaryKeyType(let type):
-            return baseDescription + "Invalid dictionary key type (\(type)). Must be either String or UnboxableKey."
-        case .invalidElementType(let type):
-            return baseDescription + "Invalid collection element type (\(type)). Must be an Unbox compatible type."
-        case .invalidData:
-            return baseDescription + "Invalid Data"
-        case .customUnboxingFailed:
-            return baseDescription + "A custom unboxing closure returned nil"
-        }
+private extension UnboxError {
+    static var invalidData: UnboxError {
+        return UnboxError(description: "Invalid data.")
+    }
+    
+    static var customUnboxingFailed: UnboxError {
+        return UnboxError(description: "Custom unboxing failed.")
+    }
+    
+    init(path: UnboxPath, description: String) {
+        self.init(description: "An error occured while unboxing path \"\(path)\": \(description)")
     }
 }
 
@@ -243,6 +224,10 @@ public extension UnboxableRawType {
 
 public extension UnboxableCollection {
     static func unbox(value: Any, allowInvalidCollectionElements: Bool) throws -> Self? {
+        if let matchingCollection = value as? Self {
+            return matchingCollection
+        }
+        
         return try (value as? UnboxRawCollection).map {
             try self.unbox(collection: $0,
                            allowInvalidElements: allowInvalidCollectionElements,
@@ -408,51 +393,53 @@ extension Dictionary: UnboxableCollection {
     public typealias UnboxRawCollection = [String : Any]
     public typealias UnboxValue = Value
     
-    public static func unbox(collection: [String : Any], allowInvalidElements: Bool, transform: UnboxTransform<Value>?) throws -> Dictionary? {
+    public static func unbox(collection: [String : Any], allowInvalidElements: Bool, transform valueTransform: UnboxTransform<Value>?) throws -> Dictionary? {
+        let keyTransform = try self.makeKeyTransform()
+        let valueTransform = try valueTransform ?? self.makeValueTransform(allowInvalidElements: allowInvalidElements)
+        
         return try collection.map(allowInvalidElements: allowInvalidElements) { key, value in
-            let unboxedKey: Key
-            
-            if let keyType = Key.self as? UnboxableKey.Type {
-                guard let transformedKey = keyType.transform(unboxedKey: key) else {
-                    return nil
-                }
-                
-                unboxedKey = transformedKey as! Key
-            } else if Key.self is String.Type {
-                unboxedKey = key as! Key
-            } else {
-                throw UnboxError.invalidDictionaryKeyType(Key.self)
+            guard let unboxedKey = keyTransform(key) else {
+                throw UnboxPathError.invalidDictionaryKey(key)
             }
             
-            let unboxedValue: Value
-            
-            if let transform = transform {
-                guard let transformedValue = try transform(value) else {
-                    return nil
-                }
-                
-                unboxedValue = transformedValue
-            } else if let matchingValue = value as? Value {
-                unboxedValue = matchingValue
-            } else if let valueType = Value.self as? UnboxCompatible.Type {
-                guard let optionalUnboxedValue = try valueType.unbox(value: value, allowInvalidCollectionElements: allowInvalidElements) else {
-                    return nil
-                }
-                
-                unboxedValue = optionalUnboxedValue as! Value
-            } else if let valueType = Value.self as? Unboxable.Type {
-                guard let nestedDictionary = value as? UnboxableDictionary else {
-                    return nil
-                }
-                
-                let unboxer = Unboxer(dictionary: nestedDictionary)
-                unboxedValue = try valueType.init(unboxer: unboxer) as! Value
-            } else {
-                throw UnboxError.invalidElementType(Value.self)
+            guard let unboxedValue = try valueTransform(value) else {
+                throw UnboxPathError.invalidDictionaryValue(value, key)
             }
             
             return (unboxedKey, unboxedValue)
         }
+    }
+    
+    private static func makeKeyTransform() throws -> (String) -> Key? {
+        if Key.self is String.Type {
+            return { $0 as? Key }
+        }
+        
+        if let keyType = Key.self as? UnboxableKey.Type {
+            return { keyType.transform(unboxedKey: $0) as? Key }
+        }
+        
+        throw UnboxPathError.invalidDictionaryKeyType(Key.self)
+    }
+    
+    private static func makeValueTransform(allowInvalidElements: Bool) throws -> UnboxTransform<Value> {
+        if let valueType = Value.self as? UnboxCompatible.Type {
+            return {
+                try valueType.unbox(value: $0, allowInvalidCollectionElements: allowInvalidElements) as? Value
+            }
+        }
+        
+        if let valueType = Value.self as? Unboxable.Type {
+            return {
+                guard let dictionary = $0 as? UnboxableDictionary else {
+                    return nil
+                }
+                
+                return try valueType.init(unboxer: Unboxer(dictionary: dictionary)) as? Value
+            }
+        }
+
+        throw UnboxPathError.invalidDictionaryValueType(Value.self)
     }
 }
 
@@ -722,6 +709,53 @@ extension UnboxPath {
     }
 }
 
+extension UnboxPath: CustomStringConvertible {
+    var description: String {
+        switch self {
+        case .key(let key):
+            return key
+        case .keyPath(let keyPath):
+            return keyPath
+        }
+    }
+}
+
+// MARK: - UnboxPathError
+
+private enum UnboxPathError: Error {
+    case emptyKeyPath
+    case missingKey(String)
+    case invalidValue(Any, String)
+    case invalidArrayElement(Any, Int)
+    case invalidDictionaryKeyType(Any)
+    case invalidDictionaryKey(Any)
+    case invalidDictionaryValueType(Any)
+    case invalidDictionaryValue(Any, String)
+}
+
+extension UnboxPathError {
+    func publicError(forPath path: UnboxPath) -> UnboxError {
+        switch self {
+        case .emptyKeyPath:
+            return UnboxError(path: path, description: "Key path can't be empty.")
+        case .missingKey(let key):
+            return UnboxError(path: path, description: "The key \"\(key)\" is missing.")
+        case .invalidValue(let value, let key):
+            return UnboxError(path: path, description: "Invalid value (\(value)) for key \"\(key)\".")
+        case .invalidArrayElement(let element, let index):
+            return UnboxError(path: path, description: "Invalid array element (\(element)) at index \(index).")
+        case .invalidDictionaryKeyType(let type):
+            return UnboxError(path: path, description: "Invalid dictionary key type: \(type). Must be either String or UnboxableKey.")
+        case .invalidDictionaryKey(let key):
+            return UnboxError(path: path, description: "Invalid dictionary key: \(key).")
+        case .invalidDictionaryValueType(let type):
+            return UnboxError(path: path, description: "Invalid dictionary value type: \(type). Must be UnboxCompatible or Unboxable.")
+        case .invalidDictionaryValue(let value, let key):
+            return UnboxError(path: path, description: "Invalid dictionary value (\(value)) for key \"\(key)\".")
+        }
+    }
+}
+
 // MARK: - UnboxingMode
 
 private enum UnboxingMode {
@@ -841,26 +875,36 @@ private extension UnboxFormatter {
 
 private extension Unboxer {
     func unbox<R>(path: UnboxPath, transform: UnboxTransform<R>) throws -> R {
-        var currentMode = UnboxingMode.dictionary(self.dictionary)
-        let components = path.components
-        let lastKey = try components.last.orThrow(.emptyKeyPath)
-        
-        for key in components {
-            switch currentMode {
-            case .dictionary(let dictionary):
-                currentMode = try UnboxingMode(value: dictionary[key].orThrow(.missingValue(key)))
-            case .array(let array):
-                guard let index = Int(key), index < array.count else {
-                    throw UnboxError.missingValue(key)
+        do {
+            var currentMode = UnboxingMode.dictionary(self.dictionary)
+            let components = path.components
+            let lastKey = try components.last.orThrow(UnboxPathError.emptyKeyPath)
+            
+            for key in components {
+                switch currentMode {
+                case .dictionary(let dictionary):
+                    currentMode = try UnboxingMode(value: dictionary[key].orThrow(UnboxPathError.missingKey(key)))
+                case .array(let array):
+                    guard let index = Int(key), index < array.count else {
+                        throw UnboxPathError.missingKey(key)
+                    }
+                    
+                    currentMode = UnboxingMode(value: array[index])
+                case .value(let value):
+                    throw UnboxPathError.invalidValue(value, key)
                 }
-                
-                currentMode = UnboxingMode(value: array[index])
-            case .value(let value):
-                throw UnboxError.invalidValue(value, key)
             }
+            
+            return try transform(currentMode.value).orThrow(UnboxPathError.invalidValue(currentMode.value, lastKey))
+        } catch {
+            if let publicError = error as? UnboxError {
+                throw publicError
+            } else if let pathError = error as? UnboxPathError {
+                throw pathError.publicError(forPath: path)
+            }
+            
+            throw error
         }
-        
-        return try transform(currentMode.value).orThrow(UnboxError.invalidValue(currentMode.value, lastKey))
     }
     
     func performUnboxing<T: Unboxable>() throws -> T {
@@ -872,7 +916,7 @@ private extension Unboxer {
     }
     
     func performCustomUnboxing<T>(closure: (Unboxer) throws -> T?) throws -> T {
-        return try closure(self).orThrow(.customUnboxingFailed)
+        return try closure(self).orThrow(UnboxError.customUnboxingFailed)
     }
 }
 
@@ -885,7 +929,7 @@ private extension Optional {
         return try transform(value)
     }
     
-    func orThrow(_ errorClosure: @autoclosure () -> UnboxError) throws -> Wrapped {
+    func orThrow<E: Error>(_ errorClosure: @autoclosure () -> E) throws -> Wrapped {
         guard let value = self else {
             throw errorClosure()
         }
@@ -897,7 +941,7 @@ private extension Optional {
 private extension JSONSerialization {
     static func unbox<T>(data: Data, options: ReadingOptions = []) throws -> T {
         do {
-            return try (self.jsonObject(with: data, options: options) as? T).orThrow(.invalidData)
+            return try (self.jsonObject(with: data, options: options) as? T).orThrow(UnboxError.invalidData)
         } catch {
             throw UnboxError.invalidData
         }
@@ -914,7 +958,7 @@ private extension Data {
     }
     
     func unbox<T>(closure: (Unboxer) throws -> T?) throws -> T {
-        return try closure(Unboxer(data: self)).orThrow(.customUnboxingFailed)
+        return try closure(Unboxer(data: self)).orThrow(UnboxError.customUnboxingFailed)
     }
     
     func unbox<T: Unboxable>(allowInvalidElements: Bool) throws -> [T] {

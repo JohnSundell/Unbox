@@ -978,39 +978,36 @@ class UnboxTests: XCTestCase {
     }
     
     func testThrowingForMissingRequiredValue() {
-        let invalidDictionary: UnboxableDictionary = [:]
+        struct Model: Unboxable {
+            let string: String
+            
+            init(unboxer: Unboxer) throws {
+                self.string = try unboxer.unbox(key: "string")
+            }
+        }
         
         do {
-            _ = try unbox(dictionary: invalidDictionary) as UnboxTestMock
+            _ = try unbox(dictionary: [:]) as Model
             XCTFail("Unbox should have thrown for a missing value")
-        } catch UnboxError.missingValue(_) {
-            // Test passed
         } catch {
-            XCTFail("Unbox did not return the correct error type. Error: \(error)")
+            XCTAssertEqual("\(error)", "[UnboxError] An error occured while unboxing path \"string\": The key \"string\" is missing.")
         }
     }
     
     func testThrowingForInvalidRequiredValue() {
-        var invalidDictionary = UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: false)
-        
-        for key in invalidDictionary.keys {
-            let invalidValue = NSObject()
-            invalidDictionary[key] = invalidValue
-            break
+        struct Model: Unboxable {
+            let string: String
+            
+            init(unboxer: Unboxer) throws {
+                self.string = try unboxer.unbox(key: "string")
+            }
         }
         
         do {
-            _ = try unbox(dictionary: invalidDictionary) as UnboxTestMock
+            _ = try unbox(dictionary: ["string" : []]) as Model
             XCTFail("Unbox should have thrown for an invalid value")
-        } catch UnboxError.invalidValue(_, _) {
-            // Test passed
         } catch {
-            XCTFail("Unbox did not return the correct error type. Error: \(error)")
-        }
-        
-        defer {
-            let unboxed: UnboxTestMock? = try? unbox(dictionary: invalidDictionary)
-            XCTAssertNil(unboxed, "Unbox did not return nil for an invalid dictionary")
+            XCTAssertEqual("\(error)", "[UnboxError] An error occured while unboxing path \"string\": Invalid value ([]) for key \"string\".")
         }
     }
     
@@ -1019,10 +1016,8 @@ class UnboxTests: XCTestCase {
             do {
                 _ = try unbox(data: data) as UnboxTestMock
                 XCTFail("Unbox should have thrown for invalid data")
-            } catch UnboxError.invalidData {
-                // Test passed
             } catch {
-                XCTFail("Unbox did not return the correct error type: \(error)")
+                XCTAssertEqual("\(error)", "[UnboxError] Invalid data.")
             }
         } else {
             XCTFail("Could not create data from a string")
@@ -1038,11 +1033,9 @@ class UnboxTests: XCTestCase {
         
         do {
             _ = try unbox(data: data) as UnboxTestMock
-            XCTFail()
-        } catch UnboxError.invalidData {
-            // Test passed
+            XCTFail("Unbox should have thrown for invalid data")
         } catch {
-            XCTFail("Unbox did not return the correct error type")
+            XCTAssertEqual("\(error)", "[UnboxError] Invalid data.")
         }
     }
     
@@ -1110,13 +1103,15 @@ class UnboxTests: XCTestCase {
 
 
         let validDictionary = UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: false)
-        let model: KeyPathModel? = try? unbox(dictionary: validDictionary)
-        XCTAssertNotNil(model)
-        XCTAssertEqual(15, model?.intValue)
-        if let result = model?.dictionary[UnboxTestMock.requiredArrayKey] as? [String] {
+        
+        do {
+            let model: KeyPathModel = try unbox(dictionary: validDictionary)
+            XCTAssertEqual(15, model.intValue)
+            
+            let result = model.dictionary[UnboxTestMock.requiredArrayKey] as! [String]
             XCTAssertEqual(["unbox", "is", "pretty", "cool", "right?"], result)
-        } else {
-            XCTFail()
+        } catch {
+            XCTFail("\(error)")
         }
     }
     
@@ -1206,10 +1201,8 @@ class UnboxTests: XCTestCase {
             _ = try Unboxer.performCustomUnboxing(dictionary: [:], closure: { _ in
                 return nil
             }) as UnboxTestMock
-        } catch UnboxError.customUnboxingFailed {
-            // Test passed
         } catch {
-            XCTFail("Unexpected error thrown: \(error)")
+            XCTAssertEqual("\(error)", "[UnboxError] Custom unboxing failed.")
         }
     }
     
@@ -1519,15 +1512,14 @@ class UnboxTests: XCTestCase {
         }
         
         let dictionary: UnboxableDictionary = [
-            "dictionary" : [:]
+            "dictionary" : ["key" : "value"]
         ]
         
         do {
             _ = try unbox(dictionary: dictionary) as Model
-        } catch UnboxError.invalidDictionaryKeyType(let keyType) {
-            XCTAssertNotNil(keyType as? ObjectIdentifier.Type)
+            XCTFail("Should have thrown")
         } catch {
-            XCTFail("\(error)")
+            XCTAssertEqual("\(error)", "[UnboxError] An error occured while unboxing path \"dictionary\": Invalid dictionary key type: ObjectIdentifier. Must be either String or UnboxableKey.")
         }
     }
     
@@ -1541,15 +1533,14 @@ class UnboxTests: XCTestCase {
         }
         
         let dictionary: UnboxableDictionary = [
-            "dictionary" : [:]
+            "dictionary" : ["key" : "value"]
         ]
         
         do {
             _ = try unbox(dictionary: dictionary) as Model
-        } catch UnboxError.invalidElementType(let elementType) {
-            XCTAssertNotNil(elementType as? ObjectIdentifier.Type)
+            XCTFail("Should have thrown")
         } catch {
-            XCTFail("\(error)")
+            XCTAssertEqual("\(error)", "[UnboxError] An error occured while unboxing path \"dictionary\": Invalid dictionary value type: ObjectIdentifier. Must be UnboxCompatible or Unboxable.")
         }
     }
     
