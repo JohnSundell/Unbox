@@ -689,17 +689,6 @@ private enum UnboxPath {
     case keyPath(String)
 }
 
-extension UnboxPath {
-    var components: [String] {
-        switch self {
-        case .key(let key):
-            return [key]
-        case .keyPath(let keyPath):
-            return keyPath.components(separatedBy: ".")
-        }
-    }
-}
-
 extension UnboxPath: CustomStringConvertible {
     var description: String {
         switch self {
@@ -870,26 +859,32 @@ private extension UnboxFormatter {
 private extension Unboxer {
     func unbox<R>(path: UnboxPath, transform: UnboxTransform<R>) throws -> R {
         do {
-            var currentMode = UnboxingMode.dictionary(self.dictionary)
-            let components = path.components
-            let lastKey = try components.last.orThrow(UnboxPathError.emptyKeyPath)
-            
-            for key in components {
-                switch currentMode {
-                case .dictionary(let dictionary):
-                    currentMode = try UnboxingMode(value: dictionary[key].orThrow(UnboxPathError.missingKey(key)))
-                case .array(let array):
-                    guard let index = Int(key), index < array.count else {
-                        throw UnboxPathError.missingKey(key)
+            switch path {
+            case .key(let key):
+                let value = try self.dictionary[key].orThrow(UnboxPathError.missingKey(key))
+                return try transform(value).orThrow(UnboxPathError.invalidValue(value, key))
+            case .keyPath(let keyPath):
+                var currentMode = UnboxingMode.dictionary(self.dictionary)
+                let components = keyPath.components(separatedBy: ".")
+                let lastKey = try components.last.orThrow(UnboxPathError.emptyKeyPath)
+                
+                try components.forEach { key in
+                    switch currentMode {
+                    case .dictionary(let dictionary):
+                        currentMode = try UnboxingMode(value: dictionary[key].orThrow(UnboxPathError.missingKey(key)))
+                    case .array(let array):
+                        guard let index = Int(key), index < array.count else {
+                            throw UnboxPathError.missingKey(key)
+                        }
+                        
+                        currentMode = UnboxingMode(value: array[index])
+                    case .value(let value):
+                        throw UnboxPathError.invalidValue(value, key)
                     }
-                    
-                    currentMode = UnboxingMode(value: array[index])
-                case .value(let value):
-                    throw UnboxPathError.invalidValue(value, key)
                 }
+                
+                return try transform(currentMode.value).orThrow(UnboxPathError.invalidValue(currentMode.value, lastKey))
             }
-            
-            return try transform(currentMode.value).orThrow(UnboxPathError.invalidValue(currentMode.value, lastKey))
         } catch {
             if let publicError = error as? UnboxError {
                 throw publicError
@@ -971,16 +966,12 @@ private extension Data {
 
 private extension Sequence {
     func map<T>(allowInvalidElements: Bool, transform: (Iterator.Element) throws -> T) throws -> [T] {
-        return try self.flatMap {
-            do {
-                return try transform($0)
-            } catch {
-                if !allowInvalidElements {
-                    throw error
-                }
-                
-                return nil
-            }
+        if !allowInvalidElements {
+            return try self.map(transform)
+        }
+        
+        return self.flatMap {
+            return try? transform($0)
         }
     }
 }
