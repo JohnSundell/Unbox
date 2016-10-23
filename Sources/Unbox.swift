@@ -114,20 +114,6 @@ public struct UnboxError: Error, CustomStringConvertible {
     }
 }
 
-private extension UnboxError {
-    static var invalidData: UnboxError {
-        return UnboxError(description: "Invalid data.")
-    }
-    
-    static var customUnboxingFailed: UnboxError {
-        return UnboxError(description: "Custom unboxing failed.")
-    }
-    
-    init(path: UnboxPath, description: String) {
-        self.init(description: "An error occured while unboxing path \"\(path)\": \(description)")
-    }
-}
-
 // MARK: - Protocols
 
 /// Protocol used to declare a model as being Unboxable, for use with the unbox() function
@@ -839,6 +825,20 @@ private extension UnboxFormatter {
             let transformer = UnboxFormatterCollectionElementTransformer(formatter: self)
             return try C.unbox(value: $0, allowInvalidElements: allowInvalidElements, transformer: transformer)
         }
+    }
+}
+
+private extension UnboxError {
+    static var invalidData: UnboxError {
+        return UnboxError(description: "Invalid data.")
+    }
+    
+    static var customUnboxingFailed: UnboxError {
+        return UnboxError(description: "Custom unboxing failed.")
+    }
+    
+    init(path: UnboxPath, description: String) {
+        self.init(description: "An error occured while unboxing path \"\(path)\": \(description)")
     }
 }
 
