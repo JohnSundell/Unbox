@@ -483,13 +483,6 @@ extension Decimal: UnboxableByTransform {
     }
 }
 
-/// Extension making String values usable as an Unboxable keys
-extension String: UnboxableKey {
-    public static func transform(unboxedKey: String) -> String? {
-        return unboxedKey
-    }
-}
-
 /// Extension making DateFormatter usable as a UnboxFormatter
 extension DateFormatter: UnboxFormatter {
     public func format(unboxedValue: String) -> Date? {
