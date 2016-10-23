@@ -161,13 +161,22 @@ public protocol UnboxableRawType: UnboxCompatible {
 
 /// Protocol used to enable collections to be unboxed. Default implementations exist for Array & Dictionary
 public protocol UnboxableCollection: Collection, UnboxCompatible {
-    /// The raw collection type that this type can be unboxed from
-    associatedtype UnboxRawCollection: Collection
     /// The value type that this collection contains
     associatedtype UnboxValue
     
-    /// Unbox a collection, optionally allowing invalid elements & using a transform
-    static func unbox(collection: UnboxRawCollection, allowInvalidElements: Bool, transform: UnboxTransform<UnboxValue>?) throws -> Self?
+    /// Unbox a value into a collection, optionally allowing invalid elements
+    static func unbox<T: UnboxCollectionElementTransformer>(value: Any, allowInvalidElements: Bool, transformer: T) throws -> Self? where T.UnboxedElement == UnboxValue
+}
+
+/// Protocol used to unbox an element in a collection. Unbox provides default implementations of this protocol.
+public protocol UnboxCollectionElementTransformer {
+    /// The raw element type that this transformer expects as input
+    associatedtype UnboxRawElement
+    /// The unboxed element type that this transformer outputs
+    associatedtype UnboxedElement
+    
+    /// Unbox an element from a collection, optionally allowing invalid elements for nested collections
+    func unbox(element: UnboxRawElement, allowInvalidCollectionElements: Bool) throws -> UnboxedElement?
 }
 
 /// Protocol used to enable an enum to be directly unboxable
@@ -199,9 +208,6 @@ public protocol UnboxFormatter {
     func format(unboxedValue: UnboxRawValue) -> UnboxFormattedType?
 }
 
-/// Type alias defining a transform type (used internally only)
-public typealias UnboxTransform<T> = (Any) throws -> T?
-
 // MARK: - Default protocol implementations
 
 public extension UnboxableRawType {
@@ -223,16 +229,29 @@ public extension UnboxableRawType {
 }
 
 public extension UnboxableCollection {
-    static func unbox(value: Any, allowInvalidCollectionElements: Bool) throws -> Self? {
+    public static func unbox(value: Any, allowInvalidCollectionElements: Bool) throws -> Self? {
         if let matchingCollection = value as? Self {
             return matchingCollection
         }
         
-        return try (value as? UnboxRawCollection).map {
-            try self.unbox(collection: $0,
-                           allowInvalidElements: allowInvalidCollectionElements,
-                           transform: nil)
+        if let unboxableType = UnboxValue.self as? Unboxable.Type {
+            let transformer = UnboxCollectionElementClosureTransformer<UnboxableDictionary, UnboxValue>() { element in
+                let unboxer = Unboxer(dictionary: element)
+                return try unboxableType.init(unboxer: unboxer) as? UnboxValue
+            }
+            
+            return try self.unbox(value: value, allowInvalidElements: allowInvalidCollectionElements, transformer: transformer)
         }
+        
+        if let unboxCompatibleType = UnboxValue.self as? UnboxCompatible.Type {
+            let transformer = UnboxCollectionElementClosureTransformer<Any, UnboxValue>() { element in
+                return try unboxCompatibleType.unbox(value: element, allowInvalidCollectionElements: allowInvalidCollectionElements) as? UnboxValue
+            }
+            
+            return try self.unbox(value: value, allowInvalidElements: allowInvalidCollectionElements, transformer: transformer)
+        }
+        
+        throw UnboxPathError.invalidCollectionElementType(UnboxValue.self)
     }
 }
 
@@ -355,52 +374,36 @@ extension Float: UnboxableRawType {
 
 /// Extension making Array an unboxable collection
 extension Array: UnboxableCollection {
-    public typealias UnboxRawCollection = [Any]
     public typealias UnboxValue = Element
     
-    public static func unbox(collection: [Any], allowInvalidElements: Bool, transform: UnboxTransform<Element>?) throws -> Array? {
-        let transform = try transform ?? self.makeElementTransform(allowInvalid: allowInvalidElements)
-        return try collection.enumerated().map(allowInvalidElements: allowInvalidElements) { index, element in
-            return try transform(element).orThrow(UnboxPathError.invalidArrayElement(element, index))
-        }
-    }
-    
-    private static func makeElementTransform(allowInvalid: Bool) throws -> UnboxTransform<Element> {
-        if let elementType = Element.self as? UnboxCompatible.Type {
-            return {
-                try elementType.unbox(value: $0, allowInvalidCollectionElements: allowInvalid) as? Element
-            }
+    public static func unbox<T: UnboxCollectionElementTransformer>(value: Any, allowInvalidElements: Bool, transformer: T) throws -> Array? where T.UnboxedElement == UnboxValue {
+        guard let array = value as? [T.UnboxRawElement] else {
+            return nil
         }
         
-        if let elementType = Element.self as? Unboxable.Type {
-            return {
-                guard let dictionary = $0 as? UnboxableDictionary else {
-                    return nil
-                }
-                
-                return try elementType.init(unboxer: Unboxer(dictionary: dictionary)) as? Element
-            }
+        return try array.enumerated().map(allowInvalidElements: allowInvalidElements) { index, element in
+            try transformer.unbox(element: element, allowInvalidCollectionElements: allowInvalidElements).orThrow(UnboxPathError.invalidArrayElement(element, index))
         }
-        
-        throw UnboxPathError.invalidArrayElementType(Element.self)
     }
 }
 
 /// Extension making Dictionary an unboxable collection
 extension Dictionary: UnboxableCollection {
-    public typealias UnboxRawCollection = [String : Any]
     public typealias UnboxValue = Value
-    
-    public static func unbox(collection: [String : Any], allowInvalidElements: Bool, transform valueTransform: UnboxTransform<Value>?) throws -> Dictionary? {
-        let keyTransform = try self.makeKeyTransform()
-        let valueTransform = try valueTransform ?? self.makeValueTransform(allowInvalidElements: allowInvalidElements)
+
+    public static func unbox<T: UnboxCollectionElementTransformer>(value: Any, allowInvalidElements: Bool, transformer: T) throws -> Dictionary? where T.UnboxedElement == UnboxValue {
+        guard let dictionary = value as? [String : T.UnboxRawElement] else {
+            return nil
+        }
         
-        return try collection.map(allowInvalidElements: allowInvalidElements) { key, value in
+        let keyTransform = try self.makeKeyTransform()
+        
+        return try dictionary.map(allowInvalidElements: allowInvalidElements) { key, value in
             guard let unboxedKey = keyTransform(key) else {
                 throw UnboxPathError.invalidDictionaryKey(key)
             }
             
-            guard let unboxedValue = try valueTransform(value) else {
+            guard let unboxedValue = try transformer.unbox(element: value, allowInvalidCollectionElements: allowInvalidElements) else {
                 throw UnboxPathError.invalidDictionaryValue(value, key)
             }
             
@@ -418,26 +421,6 @@ extension Dictionary: UnboxableCollection {
         }
         
         throw UnboxPathError.invalidDictionaryKeyType(Key.self)
-    }
-    
-    private static func makeValueTransform(allowInvalidElements: Bool) throws -> UnboxTransform<Value> {
-        if let valueType = Value.self as? UnboxCompatible.Type {
-            return {
-                try valueType.unbox(value: $0, allowInvalidCollectionElements: allowInvalidElements) as? Value
-            }
-        }
-        
-        if let valueType = Value.self as? Unboxable.Type {
-            return {
-                guard let dictionary = $0 as? UnboxableDictionary else {
-                    return nil
-                }
-                
-                return try valueType.init(unboxer: Unboxer(dictionary: dictionary)) as? Value
-            }
-        }
-
-        throw UnboxPathError.invalidDictionaryValueType(Value.self)
     }
 }
 
@@ -682,6 +665,10 @@ public final class Unboxer {
     }
 }
 
+// MARK: - UnboxTransform
+
+private typealias UnboxTransform<T> = (Any) throws -> T?
+
 // MARK: - UnboxPath
 
 private enum UnboxPath {
@@ -706,11 +693,10 @@ private enum UnboxPathError: Error {
     case emptyKeyPath
     case missingKey(String)
     case invalidValue(Any, String)
-    case invalidArrayElementType(Any)
+    case invalidCollectionElementType(Any)
     case invalidArrayElement(Any, Int)
     case invalidDictionaryKeyType(Any)
     case invalidDictionaryKey(Any)
-    case invalidDictionaryValueType(Any)
     case invalidDictionaryValue(Any, String)
 }
 
@@ -723,16 +709,14 @@ extension UnboxPathError {
             return UnboxError(path: path, description: "The key \"\(key)\" is missing.")
         case .invalidValue(let value, let key):
             return UnboxError(path: path, description: "Invalid value (\(value)) for key \"\(key)\".")
-        case .invalidArrayElementType(let type):
-            return UnboxError(path: path, description: "Invalid array element type: \(type). Must be UnboxCompatible or Unboxable.")
+        case .invalidCollectionElementType(let type):
+            return UnboxError(path: path, description: "Invalid collection element type: \(type). Must be UnboxCompatible or Unboxable.")
         case .invalidArrayElement(let element, let index):
             return UnboxError(path: path, description: "Invalid array element (\(element)) at index \(index).")
         case .invalidDictionaryKeyType(let type):
             return UnboxError(path: path, description: "Invalid dictionary key type: \(type). Must be either String or UnboxableKey.")
         case .invalidDictionaryKey(let key):
             return UnboxError(path: path, description: "Invalid dictionary key: \(key).")
-        case .invalidDictionaryValueType(let type):
-            return UnboxError(path: path, description: "Invalid dictionary value type: \(type). Must be UnboxCompatible or Unboxable.")
         case .invalidDictionaryValue(let value, let key):
             return UnboxError(path: path, description: "Invalid dictionary value (\(value)) for key \"\(key)\".")
         }
@@ -798,6 +782,45 @@ private struct UnboxArrayContainer<T: Unboxable>: UnboxableWithContext {
     }
 }
 
+// MARK: - Collection element transformers
+
+private class UnboxCollectionElementClosureTransformer<I, O>: UnboxCollectionElementTransformer {
+    private let closure: (I) throws -> O?
+    
+    init(closure: @escaping (I) throws -> O?) {
+        self.closure = closure
+    }
+    
+    func unbox(element: I, allowInvalidCollectionElements: Bool) throws -> O? {
+        return try self.closure(element)
+    }
+}
+
+private class UnboxableWithContextCollectionElementTransformer<T: UnboxableWithContext>: UnboxCollectionElementTransformer {
+    private let context: T.UnboxContext
+    
+    init(context: T.UnboxContext) {
+        self.context = context
+    }
+    
+    func unbox(element: UnboxableDictionary, allowInvalidCollectionElements: Bool) throws -> T? {
+        let unboxer = Unboxer(dictionary: element)
+        return try T(unboxer: unboxer, context: self.context)
+    }
+}
+
+private class UnboxFormatterCollectionElementTransformer<T: UnboxFormatter>: UnboxCollectionElementTransformer {
+    private let formatter: T
+    
+    init(formatter: T) {
+        self.formatter = formatter
+    }
+    
+    func unbox(element: T.UnboxRawValue, allowInvalidCollectionElements: Bool) throws -> T.UnboxFormattedType? {
+        return self.formatter.format(unboxedValue: element)
+    }
+}
+
 // MARK: - Private extensions
 
 private extension UnboxCompatible {
@@ -831,11 +854,8 @@ private extension UnboxableWithContext {
     
     static func makeCollectionTransform<C: UnboxableCollection>(context: UnboxContext, allowInvalidElements: Bool) -> UnboxTransform<C> where C.UnboxValue == Self {
         return {
-            return try ($0 as? C.UnboxRawCollection).map {
-                return try C.unbox(collection: $0,
-                                   allowInvalidElements: allowInvalidElements,
-                                   transform: self.makeTransform(context: context))
-            }
+            let transformer = UnboxableWithContextCollectionElementTransformer<Self>(context: context)
+            return try C.unbox(value: $0, allowInvalidElements: allowInvalidElements, transformer: transformer)
         }
     }
 }
@@ -847,11 +867,8 @@ private extension UnboxFormatter {
     
     func makeCollectionTransform<C: UnboxableCollection>(allowInvalidElements: Bool) -> UnboxTransform<C> where C.UnboxValue == UnboxFormattedType {
         return {
-            return try ($0 as? C.UnboxRawCollection).map {
-                return try C.unbox(collection: $0,
-                                   allowInvalidElements: allowInvalidElements,
-                                   transform: self.makeTransform())
-            }
+            let transformer = UnboxFormatterCollectionElementTransformer(formatter: self)
+            return try C.unbox(value: $0, allowInvalidElements: allowInvalidElements, transformer: transformer)
         }
     }
 }
