@@ -1502,6 +1502,48 @@ class UnboxTests: XCTestCase {
         }
     }
     
+    func testThrowingForArrayWithInvalidElementType() {
+        struct Model: Unboxable {
+            let array: [ObjectIdentifier]
+            
+            init(unboxer: Unboxer) throws {
+                self.array = try unboxer.unbox(key: "array")
+            }
+        }
+        
+        let dictionary: UnboxableDictionary = [
+            "array" : ["value"]
+        ]
+        
+        do {
+            _ = try unbox(dictionary: dictionary) as Model
+            XCTFail("Should have thrown")
+        } catch {
+            XCTAssertEqual("\(error)", "[UnboxError] An error occured while unboxing path \"array\": Invalid array element type: ObjectIdentifier. Must be UnboxCompatible or Unboxable.")
+        }
+    }
+    
+    func testThrowingForArrayWithInvalidElement() {
+        struct Model: Unboxable {
+            let array: [String]
+            
+            init(unboxer: Unboxer) throws {
+                self.array = try unboxer.unbox(key: "array")
+            }
+        }
+        
+        let dictionary: UnboxableDictionary = [
+            "array" : [[:]]
+        ]
+        
+        do {
+            _ = try unbox(dictionary: dictionary) as Model
+            XCTFail("Should have thrown")
+        } catch {
+            XCTAssertEqual("\(error)", "[UnboxError] An error occured while unboxing path \"array\": Invalid array element ([:]) at index 0.")
+        }
+    }
+    
     func testThrowingForDictionaryWithInvalidKeyType() {
         struct Model: Unboxable {
             let dictionary: [ObjectIdentifier : String]

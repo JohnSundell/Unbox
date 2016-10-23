@@ -359,32 +359,30 @@ extension Array: UnboxableCollection {
     public typealias UnboxValue = Element
     
     public static func unbox(collection: [Any], allowInvalidElements: Bool, transform: UnboxTransform<Element>?) throws -> Array? {
-        return try collection.map(allowInvalidElements: allowInvalidElements) { element in
-            if let transform = transform {
-                return try transform(element)
-            }
-            
-            if let elementType = Element.self as? UnboxCompatible.Type {
-                guard let value = try elementType.unbox(value: element, allowInvalidCollectionElements: allowInvalidElements) else {
-                    return nil
-                }
-                
-                let unboxedElement = value as! Element
-                return unboxedElement
-            }
-            
-            if let elementType = Element.self as? Unboxable.Type {
-                guard let dictionary = element as? UnboxableDictionary else {
-                    return nil
-                }
-                
-                let unboxer = Unboxer(dictionary: dictionary)
-                let unboxedElement = try elementType.init(unboxer: unboxer) as! Element
-                return unboxedElement
-            }
-            
-            return nil
+        let transform = try transform ?? self.makeElementTransform(allowInvalid: allowInvalidElements)
+        return try collection.enumerated().map(allowInvalidElements: allowInvalidElements) { index, element in
+            return try transform(element).orThrow(UnboxPathError.invalidArrayElement(element, index))
         }
+    }
+    
+    private static func makeElementTransform(allowInvalid: Bool) throws -> UnboxTransform<Element> {
+        if let elementType = Element.self as? UnboxCompatible.Type {
+            return {
+                try elementType.unbox(value: $0, allowInvalidCollectionElements: allowInvalid) as? Element
+            }
+        }
+        
+        if let elementType = Element.self as? Unboxable.Type {
+            return {
+                guard let dictionary = $0 as? UnboxableDictionary else {
+                    return nil
+                }
+                
+                return try elementType.init(unboxer: Unboxer(dictionary: dictionary)) as? Element
+            }
+        }
+        
+        throw UnboxPathError.invalidArrayElementType(Element.self)
     }
 }
 
@@ -719,6 +717,7 @@ private enum UnboxPathError: Error {
     case emptyKeyPath
     case missingKey(String)
     case invalidValue(Any, String)
+    case invalidArrayElementType(Any)
     case invalidArrayElement(Any, Int)
     case invalidDictionaryKeyType(Any)
     case invalidDictionaryKey(Any)
@@ -735,6 +734,8 @@ extension UnboxPathError {
             return UnboxError(path: path, description: "The key \"\(key)\" is missing.")
         case .invalidValue(let value, let key):
             return UnboxError(path: path, description: "Invalid value (\(value)) for key \"\(key)\".")
+        case .invalidArrayElementType(let type):
+            return UnboxError(path: path, description: "Invalid array element type: \(type). Must be UnboxCompatible or Unboxable.")
         case .invalidArrayElement(let element, let index):
             return UnboxError(path: path, description: "Invalid array element (\(element)) at index \(index).")
         case .invalidDictionaryKeyType(let type):
@@ -968,8 +969,8 @@ private extension Data {
     }
 }
 
-private extension Array {
-    func map<T>(allowInvalidElements: Bool, transform: (Element) throws -> T) throws -> [T] {
+private extension Sequence {
+    func map<T>(allowInvalidElements: Bool, transform: (Iterator.Element) throws -> T) throws -> [T] {
         return try self.flatMap {
             do {
                 return try transform($0)
@@ -981,30 +982,6 @@ private extension Array {
                 return nil
             }
         }
-    }
-    
-    func map<T>(allowInvalidElements: Bool, transform: (Element) throws -> T?) throws -> [T]? {
-        var transformedArray = [T]()
-        
-        for element in self {
-            do {
-                guard let transformed = try transform(element) else {
-                    if allowInvalidElements {
-                        continue
-                    }
-                    
-                    return nil
-                }
-                
-                transformedArray.append(transformed)
-            } catch {
-                if !allowInvalidElements {
-                    throw error
-                }
-            }
-        }
-        
-        return transformedArray
     }
 }
 
