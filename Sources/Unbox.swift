@@ -723,37 +723,6 @@ extension UnboxPathError {
     }
 }
 
-// MARK: - UnboxingMode
-
-private enum UnboxingMode {
-    case dictionary(UnboxableDictionary)
-    case array([Any])
-    case value(Any)
-}
-
-extension UnboxingMode {
-    var value: Any {
-        switch self {
-        case .dictionary(let dictionary):
-            return dictionary
-        case .array(let array):
-            return array
-        case .value(let value):
-            return value
-        }
-    }
-    
-    init(value: Any) {
-        if let dictionary = value as? UnboxableDictionary {
-            self = .dictionary(dictionary)
-        } else if let array = value as? [Any] {
-            self = .array(array)
-        } else {
-            self = .value(value)
-        }
-    }
-}
-
 // MARK: - UnboxContainers
 
 private struct UnboxContainer<T: Unboxable>: UnboxableWithContext {
@@ -873,6 +842,46 @@ private extension UnboxFormatter {
     }
 }
 
+// MARK: - Path nodes
+
+private protocol UnboxPathNode {
+    func unboxPathValue(forKey key: String) -> Any?
+}
+
+extension Dictionary: UnboxPathNode {
+    func unboxPathValue(forKey key: String) -> Any? {
+        return self[key as! Key]
+    }
+}
+
+extension Array: UnboxPathNode {
+    func unboxPathValue(forKey key: String) -> Any? {
+        guard let index = Int(key) else {
+            return nil
+        }
+        
+        if index >= self.count {
+            return nil
+        }
+        
+        return self[index]
+    }
+}
+
+#if !os(Linux)
+extension NSDictionary: UnboxPathNode {
+    func unboxPathValue(forKey key: String) -> Any? {
+        return self[key]
+    }
+}
+    
+extension NSArray: UnboxPathNode {
+    func unboxPathValue(forKey key: String) -> Any? {
+        return (self as Array).unboxPathValue(forKey: key)
+    }
+}
+#endif
+
 private extension Unboxer {
     func unbox<R>(path: UnboxPath, transform: UnboxTransform<R>) throws -> R {
         do {
@@ -881,26 +890,28 @@ private extension Unboxer {
                 let value = try self.dictionary[key].orThrow(UnboxPathError.missingKey(key))
                 return try transform(value).orThrow(UnboxPathError.invalidValue(value, key))
             case .keyPath(let keyPath):
-                var currentMode = UnboxingMode.dictionary(self.dictionary)
+                var node: UnboxPathNode = self.dictionary
                 let components = keyPath.components(separatedBy: ".")
-                let lastKey = try components.last.orThrow(UnboxPathError.emptyKeyPath)
+                let lastKey = components.last
                 
-                try components.forEach { key in
-                    switch currentMode {
-                    case .dictionary(let dictionary):
-                        currentMode = try UnboxingMode(value: dictionary[key].orThrow(UnboxPathError.missingKey(key)))
-                    case .array(let array):
-                        guard let index = Int(key), index < array.count else {
-                            throw UnboxPathError.missingKey(key)
-                        }
-                        
-                        currentMode = UnboxingMode(value: array[index])
-                    case .value(let value):
-                        throw UnboxPathError.invalidValue(value, key)
+                for key in components {
+                    guard let nextValue = node.unboxPathValue(forKey: key) else {
+                        throw UnboxPathError.missingKey(key)
                     }
+                    
+                    if key == lastKey {
+                        return try transform(nextValue).orThrow(UnboxPathError.invalidValue(nextValue, key))
+                    }
+                    
+                    guard let nextNode = nextValue as? UnboxPathNode else {
+                        print(type(of: nextValue))
+                        throw UnboxPathError.invalidValue(nextValue, key)
+                    }
+                    
+                    node = nextNode
                 }
                 
-                return try transform(currentMode.value).orThrow(UnboxPathError.invalidValue(currentMode.value, lastKey))
+                throw UnboxPathError.emptyKeyPath
             }
         } catch {
             if let publicError = error as? UnboxError {
