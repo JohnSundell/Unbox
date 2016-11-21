@@ -109,7 +109,7 @@ public func unbox<T: UnboxableWithContext>(data: Data, context: T.UnboxContext, 
 public struct UnboxError: Error, CustomStringConvertible {
     public let description: String
     
-    fileprivate init(description: String) {
+    public init(description: String) {
         self.description = "[UnboxError] " + description
     }
 }
