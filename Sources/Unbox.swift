@@ -376,8 +376,15 @@ extension Date: UnboxableWithFormatter {
     }
 }
 
-/// Extension making DateFormatter usable as a UnboxFormatter
+/// Extension making DateFormatter usable as an UnboxFormatter
 extension DateFormatter: UnboxFormatter {
+    public func format(unboxedValue: String) -> Date? {
+        return self.date(from: unboxedValue)
+    }
+}
+
+/// Extension making ISO8601DateFormatter usable as an UnboxFormatter
+extension ISO8601DateFormatter: UnboxFormatter {
     public func format(unboxedValue: String) -> Date? {
         return self.date(from: unboxedValue)
     }
