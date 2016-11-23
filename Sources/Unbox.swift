@@ -904,7 +904,6 @@ private extension Unboxer {
                     }
                     
                     guard let nextNode = nextValue as? UnboxPathNode else {
-                        print(type(of: nextValue))
                         throw UnboxPathError.invalidValue(nextValue, key)
                     }
                     
