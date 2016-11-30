@@ -1413,6 +1413,14 @@ class UnboxTests: XCTestCase {
     }
     
     func testUnboxingArrayStartingAtCustomKeyPath() {
+        struct Model: Unboxable {
+            let int: Int
+            
+            init(unboxer: Unboxer) throws {
+                int = try unboxer.unbox(key: "int")
+            }
+        }
+        
         let dictionary: UnboxableDictionary = [
             "A": [
                 "B": [
@@ -1420,20 +1428,29 @@ class UnboxTests: XCTestCase {
                         "int": 14
                     ],
                     [
-                        "int": 14
+                        "int": 15
                     ],
                     [
-                        "int": 14
+                        "int": 16
                     ]
                 ]
             ]
         ]
         
+        func verify(array: [Model]) {
+            XCTAssertEqual(array.count, 3)
+            XCTAssertEqual(array[0].int, 14)
+            XCTAssertEqual(array[1].int, 15)
+            XCTAssertEqual(array[2].int, 16)
+        }
+        
         do {
-            let unboxedArray: [UnboxTestSimpleMock] = try unbox(dictionary: dictionary, atKeyPath: "A.B")
-            unboxedArray.forEach {
-                XCTAssertEqual($0.int, 14)
-            }
+            let arrayA: [Model] = try unbox(dictionary: dictionary, atKeyPath: "A.B")
+            verify(array: arrayA)
+            
+            let data = try JSONSerialization.data(withJSONObject: dictionary, options: [])
+            let arrayB: [Model] = try unbox(data: data, atKeyPath: "A.B")
+            verify(array: arrayB)
         } catch {
             XCTFail("Unexpected error thrown: \(error)")
         }

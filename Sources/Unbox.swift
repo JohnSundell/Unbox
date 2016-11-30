@@ -77,7 +77,11 @@ public func unbox<T: Unboxable>(data: Data) throws -> T {
 }
 
 /// Unbox binary data into an array of `T`, optionally allowing invalid elements. Throws `UnboxError`.
-public func unbox<T: Unboxable>(data: Data, allowInvalidElements: Bool = false) throws -> [T] {
+public func unbox<T: Unboxable>(data: Data, atKeyPath keyPath: String? = nil, allowInvalidElements: Bool = false) throws -> [T] {
+    if let keyPath = keyPath {
+        return try unbox(dictionary: JSONSerialization.unbox(data: data), atKeyPath: keyPath)
+    }
+    
     return try data.unbox(allowInvalidElements: allowInvalidElements)
 }
 
