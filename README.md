@@ -1,9 +1,21 @@
-# Unbox
+<p align="center">
+    <img src="logo.png" width="300" max-width="50%" alt="Unbox" />
+</p>
 
-[![Travis](https://img.shields.io/travis/JohnSundell/Unbox/master.svg)](https://travis-ci.org/JohnSundell/Unbox/branches)
-[![CocoaPods](https://img.shields.io/cocoapods/v/Unbox.svg)](https://cocoapods.org/pods/Unbox)
-[![Carthage](https://img.shields.io/badge/carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
-[![Twitter: @johnsundell](https://img.shields.io/badge/contact-@johnsundell-blue.svg?style=flat)](https://twitter.com/johnsundell)
+<p align="center">
+    <a href="https://travis-ci.org/JohnSundell/Unbox/branches">
+        <img src="https://img.shields.io/travis/JohnSundell/Unbox/master.svg" alt="Travis status" />
+    </a>
+    <a href="https://cocoapods.org/pods/Unbox">
+        <img src="https://img.shields.io/cocoapods/v/Unbox.svg" alt="CocoaPods" />
+    </a>
+    <a href="https://github.com/Carthage/Carthage">
+        <img src="https://img.shields.io/badge/carthage-compatible-4BC51D.svg?style=flat" alt="Carthage" />
+    </a>
+    <a href="https://twitter.com/johnsundell">
+        <img src="https://img.shields.io/badge/contact-@johnsundell-blue.svg?style=flat" alt="Twitter: @johnsundell" />
+    </a>
+</p>
 
 Unbox is an easy to use Swift JSON decoder. Don't spend hours writing JSON decoding code - just unbox it instead!
 
