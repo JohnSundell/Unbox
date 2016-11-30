@@ -979,14 +979,16 @@ private extension Data {
     
     func unbox<T: Unboxable>(allowInvalidElements: Bool) throws -> [T] {
         let array: [UnboxableDictionary] = try JSONSerialization.unbox(data: self, options: [.allowFragments])
-        return try array.map(allowInvalidElements: allowInvalidElements, transform: Unbox.unbox)
+        return try array.map(allowInvalidElements: allowInvalidElements) { dictionary in
+            return try Unboxer(dictionary: dictionary).performUnboxing()
+        }
     }
     
     func unbox<T: UnboxableWithContext>(context: T.UnboxContext, allowInvalidElements: Bool) throws -> [T] {
         let array: [UnboxableDictionary] = try JSONSerialization.unbox(data: self, options: [.allowFragments])
         
-        return try array.map(allowInvalidElements: allowInvalidElements) {
-            try Unbox.unbox(dictionary: $0, context: context)
+        return try array.map(allowInvalidElements: allowInvalidElements) { dictionary in
+            return try Unboxer(dictionary: dictionary).performUnboxing(context: context)
         }
     }
 }
