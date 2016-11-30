@@ -378,3 +378,5 @@ If you need any help in resolving any problems that you might encounter while us
 ### Hope you enjoy unboxing your JSON!
 
 For more updates on Unbox, and my other open source projects, follow me on Twitter: [@johnsundell](http://www.twitter.com/johnsundell)
+
+Also make sure to check out [Wrap](http://github.com/johnsundell/wrap) that let’s you easily **encode** JSON.
