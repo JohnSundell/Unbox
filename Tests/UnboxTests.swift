@@ -1442,6 +1442,73 @@ class UnboxTests: XCTestCase {
             // Test Passed
         }
     }
+
+    func testUnboxingObjectWithContextAtCustomKeyPath() {
+        let dictionary = [
+            "at_key": [
+                "nested" : [:],
+                "nestedArray": [[:]]
+            ]
+        ]
+
+        do {
+            let model: UnboxTestContextMock = try Unbox(dictionary, at: "at_key", context: "this context")
+            XCTAssertEqual(model.context, "this context")
+
+            if let nestedModel = model.nested {
+                XCTAssertEqual(nestedModel.context, "nestedContext")
+            } else {
+                XCTFail("Failed to unbox nested model")
+            }
+
+            if let nestedArrayModel = model.nestedArray?.first {
+                XCTAssertEqual(nestedArrayModel.context, "nestedArrayContext")
+            } else {
+                XCTFail("Failed to unbox nested model array")
+            }
+
+        } catch {
+            XCTFail()
+        }
+    }
+
+    func testUnboxingArrayOfObjectWithContextAtCustomKeyPath() {
+        let dictionary = [
+            "at_key": [
+                [
+                    "nested" : [:],
+                    "nestedArray": [[:]],
+                ],
+                [
+                    "nested" : [:],
+                    "nestedArray": [[:]],
+                ]
+            ]
+        ]
+
+        do {
+            let models: [UnboxTestContextMock] = try Unbox(dictionary, at: "at_key", context: "this context")
+            XCTAssertEqual(models.count, 2)
+            let model = models.first!
+            XCTAssertEqual(model.context, "this context")
+
+            if let nestedModel = model.nested {
+                XCTAssertEqual(nestedModel.context, "nestedContext")
+            } else {
+                XCTFail("Failed to unbox nested model")
+            }
+
+            if let nestedArrayModel = model.nestedArray?.first {
+                XCTAssertEqual(nestedArrayModel.context, "nestedArrayContext")
+            } else {
+                XCTFail("Failed to unbox nested model array")
+            }
+
+        } catch {
+            XCTFail()
+        }
+    }
+
     
     func testUnboxingArrayOfStringsTransformedToInt() {
         let dictionary: UnboxableDictionary = ["intArray": ["123", "456", "789"]]

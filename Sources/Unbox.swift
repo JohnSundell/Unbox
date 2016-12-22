@@ -47,6 +47,13 @@ public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, at key: String,
     return container.model
 }
 
+/// Unbox a JSON dictionary into a model `T` beginning at a provided key, optionally using a contextual object. Throws `UnboxError`.
+public func Unbox<T: UnboxableWithContext>(dictionary: UnboxableDictionary, at key: String, isKeyPath: Bool = true, context: T.ContextType) throws -> T {
+    let containerContext = UnboxContainerContext(key: key, isKeyPath: isKeyPath, context: context)
+    let container: UnboxWithContextContainer<T> = try Unbox(dictionary, context: containerContext)
+    return container.model
+}
+
 /// Unbox an array of JSON dictionaries into an array of `T`, optionally using a contextual object and/or invalid elements. Throws `UnboxError`.
 public func Unbox<T: Unboxable>(dictionaries: [UnboxableDictionary], context: Any? = nil, allowInvalidElements: Bool = false) throws -> [T] {
     return try dictionaries.mapAllowingInvalidElements(allowInvalidElements, transform: {
@@ -58,6 +65,13 @@ public func Unbox<T: Unboxable>(dictionaries: [UnboxableDictionary], context: An
 public func Unbox<T: Unboxable>(dictionary: UnboxableDictionary, at key: String, isKeyPath: Bool = true, context: Any? = nil) throws -> [T] {
     let containerContext = UnboxContainerContext(key: key, isKeyPath: isKeyPath, context: context)
     let container: UnboxArrayContainer<T> = try Unbox(dictionary, context: containerContext)
+    return container.models
+}
+
+/// Unbox an array JSON dictionary into an array of model `T` beginning at a provided key, optionally using a contextual object. Throws `UnboxError`.
+public func Unbox<T: UnboxableWithContext>(dictionary: UnboxableDictionary, at key: String, isKeyPath: Bool = true, context: T.ContextType) throws -> [T] {
+    let containerContext = UnboxContainerContext(key: key, isKeyPath: isKeyPath, context: context)
+    let container: UnboxArrayWithContextContainer<T> = try Unbox(dictionary, context: containerContext)
     return container.models
 }
 
@@ -894,16 +908,16 @@ extension UnboxValueResolver where T: CollectionType, T: DictionaryLiteralConver
 
 // MARK: - UnboxContainerContext
 
-private struct UnboxContainerContext {
+private struct UnboxContainerContext<T> {
     let key: String
     let isKeyPath: Bool
-    let context: Any?
+    let context: T
 }
 
 private struct UnboxContainer<T: Unboxable>: UnboxableWithContext {
     let model: T
     
-    init(unboxer: Unboxer, context: UnboxContainerContext) {
+    init(unboxer: Unboxer, context: UnboxContainerContext<Any>) {
         self.model = unboxer.unbox(context.key, isKeyPath: context.isKeyPath, context: context.context)
     }
 }
@@ -911,8 +925,24 @@ private struct UnboxContainer<T: Unboxable>: UnboxableWithContext {
 private struct UnboxArrayContainer<T: Unboxable>: UnboxableWithContext {
     let models: [T]
     
-    init(unboxer: Unboxer, context: UnboxContainerContext) {
+    init(unboxer: Unboxer, context: UnboxContainerContext<Any>) {
         self.models = unboxer.unbox(context.key, isKeyPath: context.isKeyPath)
+    }
+}
+
+private struct UnboxWithContextContainer<T: UnboxableWithContext>: UnboxableWithContext {
+    let model: T
+
+    init(unboxer: Unboxer, context: UnboxContainerContext<T.ContextType>) {
+        self.model = unboxer.unbox(context.key, isKeyPath: context.isKeyPath, context: context.context)
+    }
+}
+
+private struct UnboxArrayWithContextContainer<T: UnboxableWithContext>: UnboxableWithContext {
+    let models: [T]
+
+    init(unboxer: Unboxer, context: UnboxContainerContext<T.ContextType>) {
+        self.models = unboxer.unbox(context.key, isKeyPath: context.isKeyPath, context: context.context)
     }
 }
 
