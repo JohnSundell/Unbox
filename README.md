@@ -338,7 +338,9 @@ let model: Model = try Unboxer.performCustomUnboxingWithDictionary(dictionary, c
 
 **CocoaPods:**
 
-Add the line `pod "Unbox"` to your `Podfile`
+Add the line `pod 'Unbox', '~> 1.9'` to your `Podfile`
+
+<sup>PS: 1.9 since this branch is intended to work with Swift 2.3</sup>
 
 **Carthage:**
 
