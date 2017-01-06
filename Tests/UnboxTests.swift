@@ -37,11 +37,24 @@ class UnboxTests: XCTestCase {
     }
     
     func testWithInvalidRequiredURL() {
-        var invalidDictionary = UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: false)
-        invalidDictionary[UnboxTestMock.requiredURLKey] = "Clearly not a URL!"
+        struct Model: Unboxable {
+            let invalidURL: URL?
+            
+            init(unboxer: Unboxer) throws {
+                self.invalidURL = unboxer.unbox(key: "invalidURL")
+            }
+        }
         
-        let unboxed: UnboxTestMock? = try? unbox(dictionary: invalidDictionary)
-        XCTAssertNil(unboxed, "Unbox did not return nil for a dictionary with an invalid required URL value")
+        let dictionary: UnboxableDictionary = [
+            "invalidURL" : "not an url ??",
+            ]
+        
+        do {
+            let unboxed: Model = try unbox(dictionary: dictionary)
+            XCTAssertEqual(unboxed.invalidURL, URL(string: "not%20an%20url%20%3F%3F"))
+        } catch {
+            XCTFail("\(error)")
+        }
     }
     
     func testAutomaticTransformationOfStringsToRawTypes() {
@@ -268,12 +281,12 @@ class UnboxTests: XCTestCase {
         }
         
         let dictionary: UnboxableDictionary = [
-            "urlWithAposthrope" : ["https://www.dummy.url/don`t-fail!!"],
+            "urlWithAposthrope" : "https://www.dummy.url/don`t-fail",
         ]
         
         do {
             let unboxed: Model = try unbox(dictionary: dictionary)
-            XCTAssertEqual(unboxed.urlWithAposthrope, URL(string: "https://www.dummy.url/don`t-fail"))
+            XCTAssertEqual(unboxed.urlWithAposthrope, URL(string: "https://www.dummy.url/don%60t-fail"))
         } catch {
             XCTFail("\(error)")
         }

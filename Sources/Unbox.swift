@@ -499,13 +499,10 @@ extension URL: UnboxableByTransform {
     public typealias UnboxRawValue = String
     
     public static func transform(unboxedValue: String) -> URL? {
-        let regEx = "((https|http)://)((\\w|-)+)(([.]|[/])((\\w|-)+))+"
-        let predicate = NSPredicate(format:"SELF MATCHES %@", argumentArray:[regEx])
-        if !predicate.evaluate(with: unboxedValue) { return nil }
-        
         guard let url = URL(string: unboxedValue) else {
             return URL(string: unboxedValue.addingPercentEncoding(withAllowedCharacters: NSCharacterSet.urlPathAllowed)!)
         }
+        
         return url
     }
 }
