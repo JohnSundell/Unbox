@@ -258,6 +258,27 @@ class UnboxTests: XCTestCase {
         }
     }
     
+    func testURLWithAposthrope(){
+        struct Model: Unboxable {
+            let urlWithAposthrope: URL?
+            
+            init(unboxer: Unboxer) throws {
+                self.urlWithAposthrope = unboxer.unbox(key: "urlWithAposthrope")
+            }
+        }
+        
+        let dictionary: UnboxableDictionary = [
+            "urlWithAposthrope" : ["https://www.dummy.url/don`t-fail!!"],
+        ]
+        
+        do {
+            let unboxed: Model = try unbox(dictionary: dictionary)
+            XCTAssertEqual(unboxed.urlWithAposthrope, URL(string: "https://www.dummy.url/don`t-fail"))
+        } catch {
+            XCTFail("\(error)")
+        }
+    }
+    
     func testArrayOfURLs() {
         struct Model: Unboxable {
             let optional: [URL]?
