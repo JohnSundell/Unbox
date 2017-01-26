@@ -736,6 +736,78 @@ class UnboxTests: XCTestCase {
         }
     }
     
+    func testUnboxingFromArbitraryKeysDictionary() {
+        struct Model: Unboxable {
+            let required: String
+            let optional: String?
+            
+            init(unboxer: Unboxer) throws {
+                required = try unboxer.unbox(key: "required")
+                optional = unboxer.unbox(key: "optional")
+            }
+        }
+        
+        let dictionary: UnboxableDictionary = [
+            "random_unique_data_1" : [
+                "required" : "Hello",
+                "optional" : "World"
+            ],
+            "random_unique_data_2" : [
+                "required" : "Unbox",
+                "optional" : "Test"
+            ]
+        ]
+        
+        do {
+            let unboxed: [String: Model] = try unbox(dictionary: dictionary)
+            XCTAssertEqual(unboxed["random_unique_data_1"]?.required, "Hello")
+            XCTAssertEqual(unboxed["random_unique_data_1"]?.optional, "World")
+            XCTAssertEqual(unboxed["random_unique_data_2"]?.required, "Unbox")
+            XCTAssertEqual(unboxed["random_unique_data_2"]?.optional, "Test")
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+    
+    func testUnboxingFromArbitraryKeysData() {
+        struct Model: Unboxable {
+            let required: String
+            let optional: String?
+            
+            init(unboxer: Unboxer) throws {
+                required = try unboxer.unbox(key: "required")
+                optional = unboxer.unbox(key: "optional")
+            }
+        }
+        
+        let dictionary: UnboxableDictionary = [
+            "random_unique_data_1" : [
+                "required" : "Hello",
+                "optional" : "World"
+            ],
+            "random_unique_data_2" : [
+                "required" : "Unbox",
+                "optional" : "Test"
+            ]
+        ]
+        
+        guard let data = try? JSONSerialization.data(withJSONObject: dictionary, options: []) else {
+            XCTFail("Failed to serialize dictionary to data")
+            return
+        }
+        
+        do {
+            let unboxed: [String: Model] = try unbox(data: data)
+            XCTAssertEqual(unboxed["random_unique_data_1"]?.required, "Hello")
+            XCTAssertEqual(unboxed["random_unique_data_1"]?.optional, "World")
+            XCTAssertEqual(unboxed["random_unique_data_2"]?.required, "Unbox")
+            XCTAssertEqual(unboxed["random_unique_data_2"]?.optional, "Test")
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+        
+    }
+    
     func testUnboxingValueFromArray() {
         struct Model: Unboxable {
             let required: String
