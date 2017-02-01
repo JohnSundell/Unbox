@@ -183,6 +183,59 @@ struct UniqueIdentifier: UnboxableByTransform {
 }
 ```
 
+### Formatters
+
+If you have values that need to be formatted before use, Unbox supports using formatters to automatically format an unboxed value. Any `DateFormatter` can out of the box be used to format dates, but you can also add formatters for your own custom types, like this:
+
+```swift
+enum Currency {
+    case usd(Int)
+    case sek(Int)
+    case pln(Int)
+}
+
+struct CurrencyFormatter: UnboxFormatter {
+    func format(unboxedValue: String) -> Currency? {
+        let components = unboxedValue.components(separatedBy: ":")
+
+        guard components.count == 2 else {
+            return nil
+        }
+
+        let identifier = components[0]
+
+        guard let value = Int(components[1]) else {
+            return nil
+        }
+
+        switch identifier {
+        case "usd":
+            return .usd(value)
+        case "sek":
+            return .sek(value)
+        case "pln":
+            return .pln(value)
+        default:
+            return nil
+        }
+    }
+}
+```
+
+You can now easily unbox any `Currency` using a given `CurrencyFormatter`:
+
+```swift
+struct Product: Unboxable {
+    let name: String
+    let price: Currency
+
+    init(unboxer: Unboxer) throws {
+        name = try unboxer.unbox(key: "name")
+        price = try unboxer.unbox(key: "price", formatter: CurrencyFormatter())
+    }
+}
+```
+
 ### Supports JSON with both Array and Dictionary root objects
 
 No matter if the root object of the JSON that you want to unbox is an `Array` or `Dictionary` - you can use the same `Unbox()` function and Unbox will return either a single model or an array of models (based on type inference).
