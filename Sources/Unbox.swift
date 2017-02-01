@@ -60,14 +60,14 @@ public func unbox<T: Unboxable>(dictionaries: [UnboxableDictionary], allowInvali
 }
 
 /// Unbox an array JSON dictionary into an array of model `T` beginning at a certain key, optionally allowing invalid elements. Throws `UnboxError`.
-public func unbox<T: Unboxable>(dictionary: UnboxableDictionary, atKey key: String) throws -> [T] {
-    let container: UnboxArrayContainer<T> = try unbox(dictionary: dictionary, context: .key(key))
+public func unbox<T: Unboxable>(dictionary: UnboxableDictionary, atKey key: String, allowInvalidElements: Bool = false) throws -> [T] {
+    let container: UnboxArrayContainer<T> = try unbox(dictionary: dictionary, context: (.key(key), allowInvalidElements))
     return container.models
 }
 
 /// Unbox an array JSON dictionary into an array of model `T` beginning at a certain key path, optionally allowing invalid elements. Throws `UnboxError`.
-public func unbox<T: Unboxable>(dictionary: UnboxableDictionary, atKeyPath keyPath: String) throws -> [T] {
-    let container: UnboxArrayContainer<T> = try unbox(dictionary: dictionary, context: .keyPath(keyPath))
+public func unbox<T: Unboxable>(dictionary: UnboxableDictionary, atKeyPath keyPath: String, allowInvalidElements: Bool = false) throws -> [T] {
+    let container: UnboxArrayContainer<T> = try unbox(dictionary: dictionary, context: (.keyPath(keyPath), allowInvalidElements))
     return container.models
 }
 
@@ -79,7 +79,7 @@ public func unbox<T: Unboxable>(data: Data) throws -> T {
 /// Unbox binary data into an array of `T`, optionally allowing invalid elements. Throws `UnboxError`.
 public func unbox<T: Unboxable>(data: Data, atKeyPath keyPath: String? = nil, allowInvalidElements: Bool = false) throws -> [T] {
     if let keyPath = keyPath {
-        return try unbox(dictionary: JSONSerialization.unbox(data: data), atKeyPath: keyPath)
+        return try unbox(dictionary: JSONSerialization.unbox(data: data), atKeyPath: keyPath, allowInvalidElements: allowInvalidElements)
     }
     
     return try data.unbox(allowInvalidElements: allowInvalidElements)
@@ -753,12 +753,12 @@ private struct UnboxContainer<T: Unboxable>: UnboxableWithContext {
 private struct UnboxArrayContainer<T: Unboxable>: UnboxableWithContext {
     let models: [T]
     
-    init(unboxer: Unboxer, context: UnboxPath) throws {
-        switch context {
+    init(unboxer: Unboxer, context: (path: UnboxPath, allowInvalidElements: Bool)) throws {
+        switch context.path {
         case .key(let key):
-            self.models = try unboxer.unbox(key: key)
+            self.models = try unboxer.unbox(key: key, allowInvalidElements: context.allowInvalidElements)
         case .keyPath(let keyPath):
-            self.models = try unboxer.unbox(keyPath: keyPath)
+            self.models = try unboxer.unbox(keyPath: keyPath, allowInvalidElements: context.allowInvalidElements)
         }
     }
 }
