@@ -109,13 +109,8 @@ public func unbox<T: UnboxableWithContext>(data: Data, context: T.UnboxContext, 
 
 /// Unbox binary data into a dictionary of type `[String: T]`. Throws `UnboxError`.
 public func unbox<T: Unboxable>(data: Data) throws -> [String: T] {
-    let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: [String: Any]]
-    var mappedDictionary = [String: T]()
-    try json?.forEach  { key, value in
-        let data : T = try unbox(dictionary: value)
-        mappedDictionary[key] = data
-    }
-    return mappedDictionary
+    let dictionary : [String: [String: Any]] = try JSONSerialization.unbox(data: data)
+    return try unbox(dictionary: dictionary)
 }
 
 /// Unbox `UnboxableDictionary` into a dictionary of type `[String: T]` where `T` is `Unboxable`. Throws `UnboxError`.
