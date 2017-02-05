@@ -107,6 +107,25 @@ public func unbox<T: UnboxableWithContext>(data: Data, context: T.UnboxContext, 
     return try data.unbox(context: context, allowInvalidElements: allowInvalidElements)
 }
 
+/// Unbox binary data into a dictionary of type `[String: T]`. Throws `UnboxError`.
+public func unbox<T: Unboxable>(data: Data) throws -> [String: T] {
+    let dictionary : [String: [String: Any]] = try JSONSerialization.unbox(data: data)
+    return try unbox(dictionary: dictionary)
+}
+
+/// Unbox `UnboxableDictionary` into a dictionary of type `[String: T]` where `T` is `Unboxable`. Throws `UnboxError`.
+public func unbox<T: Unboxable>(dictionary: UnboxableDictionary) throws -> [String: T] {
+    var mappedDictionary = [String: T]()
+    try dictionary.forEach { key, value in
+        guard let innerDictionary = value as? UnboxableDictionary else {
+            throw UnboxError.invalidData
+        }
+        let data : T = try unbox(dictionary: innerDictionary)
+        mappedDictionary[key] = data
+    }
+    return mappedDictionary
+}
+
 // MARK: - Error type
 
 /// Error type that Unbox throws in case an unrecoverable error was encountered
