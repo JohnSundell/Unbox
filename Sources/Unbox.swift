@@ -439,6 +439,17 @@ extension Float: UnboxableRawType {
     }
 }
 
+/// Extension making Decimal an Unboxable raw type
+extension Decimal: UnboxableRawType {
+    public static func transform(unboxedNumber: NSNumber) -> Decimal? {
+        return Decimal(string: unboxedNumber.stringValue)
+    }
+    
+    public static func transform(unboxedString unboxedValue: String) -> Decimal? {
+        return Decimal(string: unboxedValue)
+    }
+}
+
 /// Extension making Array an unboxable collection
 extension Array: UnboxableCollection {
     public typealias UnboxValue = Element
@@ -519,15 +530,6 @@ extension URL: UnboxableByTransform {
     
     public static func transform(unboxedValue: String) -> URL? {
         return URL(string: unboxedValue)
-    }
-}
-
-/// Extension making Decimal Unboxable by transform
-extension Decimal: UnboxableByTransform {
-    public typealias UnboxRawValue = String
-
-    public static func transform(unboxedValue: String) -> Decimal? {
-        return self.init(string: unboxedValue)
     }
 }
 
