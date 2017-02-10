@@ -1723,7 +1723,7 @@ private func UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: Bool)
         UnboxTestMock.requiredEnumKey : 1,
         UnboxTestMock.requiredStringKey :  "hello",
         UnboxTestMock.requiredURLKey : "http://www.google.com",
-        UnboxTestMock.requiredDecimalKey: "13.95",
+        UnboxTestMock.requiredDecimalKey: Decimal(13.95) as AnyObject,
         UnboxTestMock.requiredArrayKey : ["unbox", "is", "pretty", "cool", "right?"],
         UnboxTestMock.requiredEnumArrayKey : [0, 1],
     ]
@@ -1855,6 +1855,10 @@ private class UnboxTestBaseMock: Unboxable {
                 verificationOutcome = self.verifyPropertyValue(value: self.requiredFloat, againstDictionaryValue: value)
             case UnboxTestBaseMock.optionalFloatKey:
                 verificationOutcome = self.verifyPropertyValue(value: self.optionalFloat, againstDictionaryValue: value)
+            case UnboxTestBaseMock.requiredDecimalKey:
+                verificationOutcome = self.verifyPropertyValue(value: self.requiredDecimal, againstDictionaryValue: value)
+            case UnboxTestBaseMock.optionalDecimalKey:
+                verificationOutcome = self.verifyPropertyValue(value: self.optionalDecimal, againstDictionaryValue: value)
             case UnboxTestBaseMock.requiredCGFloatKey:
                 verificationOutcome = self.verifyTransformableValue(value: self.requiredCGFloat, againstDictionaryValue: value)
             case UnboxTestBaseMock.optionalCGFloatKey:
@@ -1871,10 +1875,6 @@ private class UnboxTestBaseMock: Unboxable {
                 verificationOutcome = self.verifyTransformableValue(value: self.requiredURL, againstDictionaryValue: value)
             case UnboxTestBaseMock.optionalURLKey:
                 verificationOutcome = self.verifyTransformableValue(value: self.optionalURL, againstDictionaryValue: value)
-            case UnboxTestBaseMock.requiredDecimalKey:
-                verificationOutcome = self.verifyTransformableValue(value: self.requiredDecimal, againstDictionaryValue: value)
-            case UnboxTestBaseMock.optionalDecimalKey:
-                verificationOutcome = self.verifyTransformableValue(value: self.optionalDecimal, againstDictionaryValue: value)
             case UnboxTestBaseMock.requiredArrayKey:
                 verificationOutcome = self.verifyArrayPropertyValue(value: self.requiredArray, againstDictionaryValue: value)
             case UnboxTestBaseMock.optionalArrayKey:
