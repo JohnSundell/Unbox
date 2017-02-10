@@ -454,6 +454,21 @@ extension Array: UnboxableCollection {
     }
 }
 
+/// Extension making Set an unboxable collection
+extension Set: UnboxableCollection {
+	public typealias UnboxValue = Element
+	
+	public static func unbox<T: UnboxCollectionElementTransformer>(value: Any, allowInvalidElements: Bool, transformer: T) throws -> Set? where T.UnboxedElement == UnboxValue {
+		guard let array = value as? [T.UnboxRawElement] else {
+			return nil
+		}
+		
+		return try Set(array.enumerated().map(allowInvalidElements: allowInvalidElements) { index, element in
+			try transformer.unbox(element: element, allowInvalidCollectionElements: allowInvalidElements).orThrow(UnboxPathError.invalidArrayElement(element, index))
+		})
+	}
+}
+
 /// Extension making Dictionary an unboxable collection
 extension Dictionary: UnboxableCollection {
     public typealias UnboxValue = Value
