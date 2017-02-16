@@ -1711,6 +1711,33 @@ class UnboxTests: XCTestCase {
             XCTFail("\(error)")
         }
     }
+  
+    func testSets() {
+        struct Model: Unboxable {
+            let optional: Set<String>?
+            let required: Set<String>
+            
+            init(unboxer: Unboxer) throws {
+                self.optional = unboxer.unbox(key: "optional")
+                self.required = try unboxer.unbox(key: "required")
+            }
+        }
+        
+        let dictionary: UnboxableDictionary = [
+            "optional" : ["A", "A", "B"],
+            "required" : ["A"]
+        ]
+        
+        do {
+            let unboxed: Model = try unbox(dictionary: dictionary)
+            XCTAssertEqual(unboxed.optional?.count, 2)
+            XCTAssertTrue(unboxed.optional?.contains("A") ?? false)
+            XCTAssertTrue(unboxed.optional?.contains("B") ?? false)
+            XCTAssertEqual(unboxed.required, ["A"])
+        } catch {
+            XCTFail("\(error)")
+        }
+    }
 }
 
 private func UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: Bool) -> UnboxableDictionary {
