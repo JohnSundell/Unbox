@@ -455,9 +455,17 @@ extension Array: UnboxableCollection {
     public typealias UnboxValue = Element
     
     public static func unbox<T: UnboxCollectionElementTransformer>(value: Any, allowInvalidElements: Bool, transformer: T) throws -> Array? where T.UnboxedElement == UnboxValue {
-        guard let array = value as? [T.UnboxRawElement] else {
+        guard let rawArray = value as? [Any] else {
             return nil
         }
+        
+        let array = try rawArray.enumerated().map(allowInvalidElements: allowInvalidElements, transform: { item -> T.UnboxRawElement in
+            if let value = item.element as? T.UnboxRawElement {
+                return value
+            } else {
+                throw UnboxPathError.invalidArrayElement(item.element, item.offset)
+            }
+        })
         
         return try array.enumerated().map(allowInvalidElements: allowInvalidElements) { index, element in
             try transformer.unbox(element: element, allowInvalidCollectionElements: allowInvalidElements).orThrow(UnboxPathError.invalidArrayElement(element, index))
@@ -483,19 +491,22 @@ extension Dictionary: UnboxableCollection {
     public typealias UnboxValue = Value
 
     public static func unbox<T: UnboxCollectionElementTransformer>(value: Any, allowInvalidElements: Bool, transformer: T) throws -> Dictionary? where T.UnboxedElement == UnboxValue {
-        guard let dictionary = value as? [String : T.UnboxRawElement] else {
+        guard let dictionary = value as? [String : Any] else {
             return nil
         }
         
         let keyTransform = try self.makeKeyTransform()
         
-        return try dictionary.map(allowInvalidElements: allowInvalidElements) { key, value in
+        return try dictionary.map(allowInvalidElements: allowInvalidElements) { key, rawValue in
             guard let unboxedKey = keyTransform(key) else {
                 throw UnboxPathError.invalidDictionaryKey(key)
             }
             
-            guard let unboxedValue = try transformer.unbox(element: value, allowInvalidCollectionElements: allowInvalidElements) else {
-                throw UnboxPathError.invalidDictionaryValue(value, key)
+            guard
+                let value = rawValue as? T.UnboxRawElement,
+                let unboxedValue = try transformer.unbox(element: value, allowInvalidCollectionElements: allowInvalidElements)
+                else {
+                    throw UnboxPathError.invalidDictionaryValue(rawValue, key)
             }
             
             return (unboxedKey, unboxedValue)

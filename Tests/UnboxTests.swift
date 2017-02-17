@@ -917,6 +917,7 @@ class UnboxTests: XCTestCase {
             "nested" : [
                 ["string" : "one"],
                 ["invalid" : "element"],
+                "null",
                 ["string" : "two"]
             ]
         ]
@@ -951,7 +952,8 @@ class UnboxTests: XCTestCase {
             "nested" : [
                 "one" : ["string" : "one"],
                 "two" : ["invalid" : "element"],
-                "three" : ["string" : "two"]
+                "three" : ["string" : "two"],
+                "four" : "null"
             ]
         ]
         
