@@ -542,7 +542,11 @@ extension URL: UnboxableByTransform {
     public typealias UnboxRawValue = String
     
     public static func transform(unboxedValue: String) -> URL? {
-        return URL(string: unboxedValue)
+        guard let url = URL(string: unboxedValue) else {
+            return URL(string: unboxedValue.addingPercentEncoding(withAllowedCharacters: NSCharacterSet.urlPathAllowed)!)
+        }
+        
+        return url
     }
 }
 
