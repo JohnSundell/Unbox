@@ -1,7 +1,7 @@
 language: objective-c
 osx_image: xcode8.2
 script:
-    - xcodebuild clean test -project Unbox.xcodeproj -scheme Unbox-iOS -destination "platform=iOS Simulator,name=iPhone 7,OS=10.2" CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=NO
+    - xcodebuild clean test -project Unbox.xcodeproj -scheme Unbox-iOS -destination "platform=iOS Simulator,name=iPhone 7,OS=10.1" CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=NO
     - xcodebuild clean test -project Unbox.xcodeproj -scheme Unbox-macOS -destination "platform=OS X" CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=NO
     - xcodebuild clean test -project Unbox.xcodeproj -scheme Unbox-tvOS -destination "platform=tvOS Simulator,name=Apple TV 1080p" CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=NO
     - xcodebuild clean build -project Unbox.xcodeproj -scheme Unbox-watchOS CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=NO
