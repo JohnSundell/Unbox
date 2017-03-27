@@ -22,6 +22,46 @@
 		524F1E061E89B0A3000AC6FE /* UnboxPathError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E041E89B0A3000AC6FE /* UnboxPathError.swift */; };
 		524F1E071E89B0A3000AC6FE /* UnboxPathError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E041E89B0A3000AC6FE /* UnboxPathError.swift */; };
 		524F1E081E89B0A3000AC6FE /* UnboxPathError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E041E89B0A3000AC6FE /* UnboxPathError.swift */; };
+		524F1E0A1E89B117000AC6FE /* Unboxable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E091E89B117000AC6FE /* Unboxable.swift */; };
+		524F1E0B1E89B117000AC6FE /* Unboxable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E091E89B117000AC6FE /* Unboxable.swift */; };
+		524F1E0C1E89B117000AC6FE /* Unboxable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E091E89B117000AC6FE /* Unboxable.swift */; };
+		524F1E0D1E89B117000AC6FE /* Unboxable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E091E89B117000AC6FE /* Unboxable.swift */; };
+		524F1E0F1E89B168000AC6FE /* UnboxableWithContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E0E1E89B168000AC6FE /* UnboxableWithContext.swift */; };
+		524F1E101E89B168000AC6FE /* UnboxableWithContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E0E1E89B168000AC6FE /* UnboxableWithContext.swift */; };
+		524F1E111E89B168000AC6FE /* UnboxableWithContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E0E1E89B168000AC6FE /* UnboxableWithContext.swift */; };
+		524F1E121E89B168000AC6FE /* UnboxableWithContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E0E1E89B168000AC6FE /* UnboxableWithContext.swift */; };
+		524F1E141E89B276000AC6FE /* UnboxCompatible.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E131E89B276000AC6FE /* UnboxCompatible.swift */; };
+		524F1E151E89B276000AC6FE /* UnboxCompatible.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E131E89B276000AC6FE /* UnboxCompatible.swift */; };
+		524F1E161E89B276000AC6FE /* UnboxCompatible.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E131E89B276000AC6FE /* UnboxCompatible.swift */; };
+		524F1E171E89B276000AC6FE /* UnboxCompatible.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E131E89B276000AC6FE /* UnboxCompatible.swift */; };
+		524F1E191E89B2A9000AC6FE /* UnboxableRawType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E181E89B2A9000AC6FE /* UnboxableRawType.swift */; };
+		524F1E1A1E89B2A9000AC6FE /* UnboxableRawType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E181E89B2A9000AC6FE /* UnboxableRawType.swift */; };
+		524F1E1B1E89B2A9000AC6FE /* UnboxableRawType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E181E89B2A9000AC6FE /* UnboxableRawType.swift */; };
+		524F1E1C1E89B2A9000AC6FE /* UnboxableRawType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E181E89B2A9000AC6FE /* UnboxableRawType.swift */; };
+		524F1E1E1E89B345000AC6FE /* UnboxableCollection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E1D1E89B345000AC6FE /* UnboxableCollection.swift */; };
+		524F1E1F1E89B345000AC6FE /* UnboxableCollection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E1D1E89B345000AC6FE /* UnboxableCollection.swift */; };
+		524F1E201E89B345000AC6FE /* UnboxableCollection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E1D1E89B345000AC6FE /* UnboxableCollection.swift */; };
+		524F1E211E89B345000AC6FE /* UnboxableCollection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E1D1E89B345000AC6FE /* UnboxableCollection.swift */; };
+		524F1E231E89B381000AC6FE /* UnboxCollectionElementTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E221E89B381000AC6FE /* UnboxCollectionElementTransformer.swift */; };
+		524F1E241E89B381000AC6FE /* UnboxCollectionElementTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E221E89B381000AC6FE /* UnboxCollectionElementTransformer.swift */; };
+		524F1E251E89B381000AC6FE /* UnboxCollectionElementTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E221E89B381000AC6FE /* UnboxCollectionElementTransformer.swift */; };
+		524F1E261E89B381000AC6FE /* UnboxCollectionElementTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E221E89B381000AC6FE /* UnboxCollectionElementTransformer.swift */; };
+		524F1E281E89B3BC000AC6FE /* UnboxableEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E271E89B3BC000AC6FE /* UnboxableEnum.swift */; };
+		524F1E291E89B3BC000AC6FE /* UnboxableEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E271E89B3BC000AC6FE /* UnboxableEnum.swift */; };
+		524F1E2A1E89B3BC000AC6FE /* UnboxableEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E271E89B3BC000AC6FE /* UnboxableEnum.swift */; };
+		524F1E2B1E89B3BC000AC6FE /* UnboxableEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E271E89B3BC000AC6FE /* UnboxableEnum.swift */; };
+		524F1E2D1E89B3E3000AC6FE /* UnboxableKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E2C1E89B3E3000AC6FE /* UnboxableKey.swift */; };
+		524F1E2E1E89B3E3000AC6FE /* UnboxableKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E2C1E89B3E3000AC6FE /* UnboxableKey.swift */; };
+		524F1E2F1E89B3E3000AC6FE /* UnboxableKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E2C1E89B3E3000AC6FE /* UnboxableKey.swift */; };
+		524F1E301E89B3E3000AC6FE /* UnboxableKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E2C1E89B3E3000AC6FE /* UnboxableKey.swift */; };
+		524F1E321E89B409000AC6FE /* UnboxableByTransform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E311E89B409000AC6FE /* UnboxableByTransform.swift */; };
+		524F1E331E89B409000AC6FE /* UnboxableByTransform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E311E89B409000AC6FE /* UnboxableByTransform.swift */; };
+		524F1E341E89B409000AC6FE /* UnboxableByTransform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E311E89B409000AC6FE /* UnboxableByTransform.swift */; };
+		524F1E351E89B409000AC6FE /* UnboxableByTransform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E311E89B409000AC6FE /* UnboxableByTransform.swift */; };
+		524F1E371E89B42E000AC6FE /* UnboxFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E361E89B42D000AC6FE /* UnboxFormatter.swift */; };
+		524F1E381E89B42E000AC6FE /* UnboxFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E361E89B42D000AC6FE /* UnboxFormatter.swift */; };
+		524F1E391E89B42E000AC6FE /* UnboxFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E361E89B42D000AC6FE /* UnboxFormatter.swift */; };
+		524F1E3A1E89B42E000AC6FE /* UnboxFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1E361E89B42D000AC6FE /* UnboxFormatter.swift */; };
 		52D6D9871BEFF229002C0205 /* Unbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52D6D97C1BEFF229002C0205 /* Unbox.framework */; };
 		DD7502881C68FEDE006590AF /* Unbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52D6DA0F1BF000BD002C0205 /* Unbox.framework */; };
 		DD7502921C690C7A006590AF /* Unbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52D6D9F01BEFFFBE002C0205 /* Unbox.framework */; };
@@ -56,6 +96,16 @@
 		524F1DFB1E89B02F000AC6FE /* UnboxTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnboxTests.swift; sourceTree = "<group>"; };
 		524F1DFF1E89B06E000AC6FE /* UnboxError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnboxError.swift; sourceTree = "<group>"; };
 		524F1E041E89B0A3000AC6FE /* UnboxPathError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnboxPathError.swift; sourceTree = "<group>"; };
+		524F1E091E89B117000AC6FE /* Unboxable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Unboxable.swift; sourceTree = "<group>"; };
+		524F1E0E1E89B168000AC6FE /* UnboxableWithContext.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnboxableWithContext.swift; sourceTree = "<group>"; };
+		524F1E131E89B276000AC6FE /* UnboxCompatible.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnboxCompatible.swift; sourceTree = "<group>"; };
+		524F1E181E89B2A9000AC6FE /* UnboxableRawType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnboxableRawType.swift; sourceTree = "<group>"; };
+		524F1E1D1E89B345000AC6FE /* UnboxableCollection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnboxableCollection.swift; sourceTree = "<group>"; };
+		524F1E221E89B381000AC6FE /* UnboxCollectionElementTransformer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnboxCollectionElementTransformer.swift; sourceTree = "<group>"; };
+		524F1E271E89B3BC000AC6FE /* UnboxableEnum.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnboxableEnum.swift; sourceTree = "<group>"; };
+		524F1E2C1E89B3E3000AC6FE /* UnboxableKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnboxableKey.swift; sourceTree = "<group>"; };
+		524F1E311E89B409000AC6FE /* UnboxableByTransform.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnboxableByTransform.swift; sourceTree = "<group>"; };
+		524F1E361E89B42D000AC6FE /* UnboxFormatter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnboxFormatter.swift; sourceTree = "<group>"; };
 		52D6D97C1BEFF229002C0205 /* Unbox.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Unbox.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		52D6D9861BEFF229002C0205 /* Unbox-iOS Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Unbox-iOS Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		52D6D9E21BEFFF6E002C0205 /* Unbox.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Unbox.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -127,7 +177,17 @@
 			isa = PBXGroup;
 			children = (
 				524F1DF61E89AFE0000AC6FE /* Unbox.swift */,
+				524F1E091E89B117000AC6FE /* Unboxable.swift */,
+				524F1E311E89B409000AC6FE /* UnboxableByTransform.swift */,
+				524F1E1D1E89B345000AC6FE /* UnboxableCollection.swift */,
+				524F1E271E89B3BC000AC6FE /* UnboxableEnum.swift */,
+				524F1E2C1E89B3E3000AC6FE /* UnboxableKey.swift */,
+				524F1E181E89B2A9000AC6FE /* UnboxableRawType.swift */,
+				524F1E0E1E89B168000AC6FE /* UnboxableWithContext.swift */,
+				524F1E221E89B381000AC6FE /* UnboxCollectionElementTransformer.swift */,
+				524F1E131E89B276000AC6FE /* UnboxCompatible.swift */,
 				524F1DFF1E89B06E000AC6FE /* UnboxError.swift */,
+				524F1E361E89B42D000AC6FE /* UnboxFormatter.swift */,
 				524F1E041E89B0A3000AC6FE /* UnboxPathError.swift */,
 			);
 			path = Sources;
@@ -471,8 +531,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				524F1E321E89B409000AC6FE /* UnboxableByTransform.swift in Sources */,
+				524F1E1E1E89B345000AC6FE /* UnboxableCollection.swift in Sources */,
+				524F1E191E89B2A9000AC6FE /* UnboxableRawType.swift in Sources */,
+				524F1E0F1E89B168000AC6FE /* UnboxableWithContext.swift in Sources */,
+				524F1E231E89B381000AC6FE /* UnboxCollectionElementTransformer.swift in Sources */,
 				524F1E051E89B0A3000AC6FE /* UnboxPathError.swift in Sources */,
+				524F1E141E89B276000AC6FE /* UnboxCompatible.swift in Sources */,
 				524F1DF71E89AFE0000AC6FE /* Unbox.swift in Sources */,
+				524F1E281E89B3BC000AC6FE /* UnboxableEnum.swift in Sources */,
+				524F1E371E89B42E000AC6FE /* UnboxFormatter.swift in Sources */,
+				524F1E2D1E89B3E3000AC6FE /* UnboxableKey.swift in Sources */,
+				524F1E0A1E89B117000AC6FE /* Unboxable.swift in Sources */,
 				524F1E001E89B06E000AC6FE /* UnboxError.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -489,8 +559,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				524F1E341E89B409000AC6FE /* UnboxableByTransform.swift in Sources */,
+				524F1E201E89B345000AC6FE /* UnboxableCollection.swift in Sources */,
+				524F1E1B1E89B2A9000AC6FE /* UnboxableRawType.swift in Sources */,
+				524F1E111E89B168000AC6FE /* UnboxableWithContext.swift in Sources */,
+				524F1E251E89B381000AC6FE /* UnboxCollectionElementTransformer.swift in Sources */,
 				524F1E071E89B0A3000AC6FE /* UnboxPathError.swift in Sources */,
+				524F1E161E89B276000AC6FE /* UnboxCompatible.swift in Sources */,
 				524F1DF91E89AFE0000AC6FE /* Unbox.swift in Sources */,
+				524F1E2A1E89B3BC000AC6FE /* UnboxableEnum.swift in Sources */,
+				524F1E391E89B42E000AC6FE /* UnboxFormatter.swift in Sources */,
+				524F1E2F1E89B3E3000AC6FE /* UnboxableKey.swift in Sources */,
+				524F1E0C1E89B117000AC6FE /* Unboxable.swift in Sources */,
 				524F1E021E89B06E000AC6FE /* UnboxError.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -499,8 +579,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				524F1E351E89B409000AC6FE /* UnboxableByTransform.swift in Sources */,
+				524F1E211E89B345000AC6FE /* UnboxableCollection.swift in Sources */,
+				524F1E1C1E89B2A9000AC6FE /* UnboxableRawType.swift in Sources */,
+				524F1E121E89B168000AC6FE /* UnboxableWithContext.swift in Sources */,
+				524F1E261E89B381000AC6FE /* UnboxCollectionElementTransformer.swift in Sources */,
 				524F1E081E89B0A3000AC6FE /* UnboxPathError.swift in Sources */,
+				524F1E171E89B276000AC6FE /* UnboxCompatible.swift in Sources */,
 				524F1DFA1E89AFE0000AC6FE /* Unbox.swift in Sources */,
+				524F1E2B1E89B3BC000AC6FE /* UnboxableEnum.swift in Sources */,
+				524F1E3A1E89B42E000AC6FE /* UnboxFormatter.swift in Sources */,
+				524F1E301E89B3E3000AC6FE /* UnboxableKey.swift in Sources */,
+				524F1E0D1E89B117000AC6FE /* Unboxable.swift in Sources */,
 				524F1E031E89B06E000AC6FE /* UnboxError.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -509,8 +599,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				524F1E331E89B409000AC6FE /* UnboxableByTransform.swift in Sources */,
+				524F1E1F1E89B345000AC6FE /* UnboxableCollection.swift in Sources */,
+				524F1E1A1E89B2A9000AC6FE /* UnboxableRawType.swift in Sources */,
+				524F1E101E89B168000AC6FE /* UnboxableWithContext.swift in Sources */,
+				524F1E241E89B381000AC6FE /* UnboxCollectionElementTransformer.swift in Sources */,
 				524F1E061E89B0A3000AC6FE /* UnboxPathError.swift in Sources */,
+				524F1E151E89B276000AC6FE /* UnboxCompatible.swift in Sources */,
 				524F1DF81E89AFE0000AC6FE /* Unbox.swift in Sources */,
+				524F1E291E89B3BC000AC6FE /* UnboxableEnum.swift in Sources */,
+				524F1E381E89B42E000AC6FE /* UnboxFormatter.swift in Sources */,
+				524F1E2E1E89B3E3000AC6FE /* UnboxableKey.swift in Sources */,
+				524F1E0B1E89B117000AC6FE /* Unboxable.swift in Sources */,
 				524F1E011E89B06E000AC6FE /* UnboxError.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
