@@ -7,14 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		524F1DED1E89AD4F000AC6FE /* UnboxTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1DEC1E89AD4F000AC6FE /* UnboxTests.swift */; };
-		524F1DEE1E89AD4F000AC6FE /* UnboxTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1DEC1E89AD4F000AC6FE /* UnboxTests.swift */; };
-		524F1DEF1E89AD4F000AC6FE /* UnboxTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1DEC1E89AD4F000AC6FE /* UnboxTests.swift */; };
+		524F1DF71E89AFE0000AC6FE /* Unbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1DF61E89AFE0000AC6FE /* Unbox.swift */; };
+		524F1DF81E89AFE0000AC6FE /* Unbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1DF61E89AFE0000AC6FE /* Unbox.swift */; };
+		524F1DF91E89AFE0000AC6FE /* Unbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1DF61E89AFE0000AC6FE /* Unbox.swift */; };
+		524F1DFA1E89AFE0000AC6FE /* Unbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1DF61E89AFE0000AC6FE /* Unbox.swift */; };
+		524F1DFC1E89B02F000AC6FE /* UnboxTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1DFB1E89B02F000AC6FE /* UnboxTests.swift */; };
+		524F1DFD1E89B02F000AC6FE /* UnboxTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1DFB1E89B02F000AC6FE /* UnboxTests.swift */; };
+		524F1DFE1E89B02F000AC6FE /* UnboxTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1DFB1E89B02F000AC6FE /* UnboxTests.swift */; };
 		52D6D9871BEFF229002C0205 /* Unbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52D6D97C1BEFF229002C0205 /* Unbox.framework */; };
-		52D6D9981BEFF375002C0205 /* Unbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D6D9961BEFF375002C0205 /* Unbox.swift */; };
-		52D6D9EA1BEFFFA4002C0205 /* Unbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D6D9961BEFF375002C0205 /* Unbox.swift */; };
-		52D6DA091BF00081002C0205 /* Unbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D6D9961BEFF375002C0205 /* Unbox.swift */; };
-		52D6DA261BF00118002C0205 /* Unbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D6D9961BEFF375002C0205 /* Unbox.swift */; };
 		DD7502881C68FEDE006590AF /* Unbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52D6DA0F1BF000BD002C0205 /* Unbox.framework */; };
 		DD7502921C690C7A006590AF /* Unbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52D6D9F01BEFFFBE002C0205 /* Unbox.framework */; };
 /* End PBXBuildFile section */
@@ -44,10 +44,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		524F1DEC1E89AD4F000AC6FE /* UnboxTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = UnboxTests.swift; path = Tests/UnboxTests/UnboxTests.swift; sourceTree = "<group>"; };
+		524F1DF61E89AFE0000AC6FE /* Unbox.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Unbox.swift; sourceTree = "<group>"; };
+		524F1DFB1E89B02F000AC6FE /* UnboxTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnboxTests.swift; sourceTree = "<group>"; };
 		52D6D97C1BEFF229002C0205 /* Unbox.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Unbox.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		52D6D9861BEFF229002C0205 /* Unbox-iOS Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Unbox-iOS Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		52D6D9961BEFF375002C0205 /* Unbox.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Unbox.swift; path = Sources/Unbox.swift; sourceTree = "<group>"; };
 		52D6D9E21BEFFF6E002C0205 /* Unbox.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Unbox.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		52D6D9F01BEFFFBE002C0205 /* Unbox.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Unbox.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		52D6DA0F1BF000BD002C0205 /* Unbox.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Unbox.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -113,11 +113,28 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		524F1DF41E89AFA9000AC6FE /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				524F1DF61E89AFE0000AC6FE /* Unbox.swift */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		524F1DF51E89AFB1000AC6FE /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				524F1DFB1E89B02F000AC6FE /* UnboxTests.swift */,
+			);
+			name = Tests;
+			path = Tests/UnboxTests;
+			sourceTree = "<group>";
+		};
 		52D6D9721BEFF229002C0205 = {
 			isa = PBXGroup;
 			children = (
-				52D6D9961BEFF375002C0205 /* Unbox.swift */,
-				524F1DEC1E89AD4F000AC6FE /* UnboxTests.swift */,
+				524F1DF41E89AFA9000AC6FE /* Sources */,
+				524F1DF51E89AFB1000AC6FE /* Tests */,
 				52D6D99C1BEFF38C002C0205 /* Configs */,
 				52D6D97D1BEFF229002C0205 /* Products */,
 			);
@@ -334,7 +351,7 @@
 				TargetAttributes = {
 					52D6D97B1BEFF229002C0205 = {
 						CreatedOnToolsVersion = 7.1;
-						LastSwiftMigration = 0800;
+						LastSwiftMigration = 0830;
 					};
 					52D6D9851BEFF229002C0205 = {
 						CreatedOnToolsVersion = 7.1;
@@ -342,15 +359,15 @@
 					};
 					52D6D9E11BEFFF6E002C0205 = {
 						CreatedOnToolsVersion = 7.1;
-						LastSwiftMigration = 0800;
+						LastSwiftMigration = 0830;
 					};
 					52D6D9EF1BEFFFBE002C0205 = {
 						CreatedOnToolsVersion = 7.1;
-						LastSwiftMigration = 0800;
+						LastSwiftMigration = 0830;
 					};
 					52D6DA0E1BF000BD002C0205 = {
 						CreatedOnToolsVersion = 7.1;
-						LastSwiftMigration = 0800;
+						LastSwiftMigration = 0830;
 					};
 					DD7502791C68FCFC006590AF = {
 						CreatedOnToolsVersion = 7.2.1;
@@ -442,7 +459,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				52D6D9981BEFF375002C0205 /* Unbox.swift in Sources */,
+				524F1DF71E89AFE0000AC6FE /* Unbox.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -450,7 +467,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				524F1DED1E89AD4F000AC6FE /* UnboxTests.swift in Sources */,
+				524F1DFC1E89B02F000AC6FE /* UnboxTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -458,7 +475,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				52D6D9EA1BEFFFA4002C0205 /* Unbox.swift in Sources */,
+				524F1DF91E89AFE0000AC6FE /* Unbox.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -466,7 +483,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				52D6DA091BF00081002C0205 /* Unbox.swift in Sources */,
+				524F1DFA1E89AFE0000AC6FE /* Unbox.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -474,7 +491,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				52D6DA261BF00118002C0205 /* Unbox.swift in Sources */,
+				524F1DF81E89AFE0000AC6FE /* Unbox.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -482,7 +499,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				524F1DEE1E89AD4F000AC6FE /* UnboxTests.swift in Sources */,
+				524F1DFD1E89B02F000AC6FE /* UnboxTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -490,7 +507,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				524F1DEF1E89AD4F000AC6FE /* UnboxTests.swift in Sources */,
+				524F1DFE1E89B02F000AC6FE /* UnboxTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -658,6 +675,7 @@
 		52D6D9941BEFF229002C0205 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ENABLE_MODULES = YES;
 				INFOPLIST_FILE = Configs/UnboxTests.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
@@ -671,6 +689,7 @@
 		52D6D9951BEFF229002C0205 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ENABLE_MODULES = YES;
 				INFOPLIST_FILE = Configs/UnboxTests.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
@@ -685,6 +704,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_MODULES = YES;
 				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -697,6 +717,7 @@
 				PRODUCT_NAME = Unbox;
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = 4;
 				WATCHOS_DEPLOYMENT_TARGET = 2.0;
@@ -707,6 +728,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_MODULES = YES;
 				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -730,6 +752,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_MODULES = YES;
 				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -742,6 +765,7 @@
 				PRODUCT_NAME = Unbox;
 				SDKROOT = appletvos;
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TVOS_DEPLOYMENT_TARGET = 9.0;
@@ -752,6 +776,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_MODULES = YES;
 				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -775,6 +800,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEFINES_MODULE = YES;
@@ -790,6 +816,7 @@
 				PRODUCT_NAME = Unbox;
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
@@ -798,6 +825,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEFINES_MODULE = YES;
@@ -821,6 +849,7 @@
 		DD7502831C68FCFC006590AF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
@@ -838,6 +867,7 @@
 		DD7502841C68FCFC006590AF /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
@@ -855,6 +885,7 @@
 		DD7502961C690C7A006590AF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ENABLE_MODULES = YES;
 				INFOPLIST_FILE = Configs/UnboxTests.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
@@ -870,6 +901,7 @@
 		DD7502971C690C7A006590AF /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ENABLE_MODULES = YES;
 				INFOPLIST_FILE = Configs/UnboxTests.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
