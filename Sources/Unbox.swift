@@ -5,16 +5,6 @@
  */
 
 import Foundation
-#if !os(Linux)
-import CoreGraphics
-#endif
-
-// MARK: - API
-    
-/// Type alias defining what type of Dictionary that is Unboxable (valid JSON)
-public typealias UnboxableDictionary = [String : Any]
-
-// MARK: - Unbox functions
 
 /// Unbox a JSON dictionary into a model `T`. Throws `UnboxError`.
 public func unbox<T: Unboxable>(dictionary: UnboxableDictionary) throws -> T {
@@ -103,32 +93,4 @@ public func unbox<T: Unboxable>(dictionary: UnboxableDictionary) throws -> [Stri
         mappedDictionary[key] = data
     }
     return mappedDictionary
-}
-
-// MARK: - UnboxContainers
-
-private struct UnboxContainer<T: Unboxable>: UnboxableWithContext {
-    let model: T
-    
-    init(unboxer: Unboxer, context: UnboxPath) throws {
-        switch context {
-        case .key(let key):
-            self.model = try unboxer.unbox(key: key)
-        case .keyPath(let keyPath):
-            self.model = try unboxer.unbox(keyPath: keyPath)
-        }
-    }
-}
-
-private struct UnboxArrayContainer<T: Unboxable>: UnboxableWithContext {
-    let models: [T]
-    
-    init(unboxer: Unboxer, context: (path: UnboxPath, allowInvalidElements: Bool)) throws {
-        switch context.path {
-        case .key(let key):
-            self.models = try unboxer.unbox(key: key, allowInvalidElements: context.allowInvalidElements)
-        case .keyPath(let keyPath):
-            self.models = try unboxer.unbox(keyPath: keyPath, allowInvalidElements: context.allowInvalidElements)
-        }
-    }
 }
