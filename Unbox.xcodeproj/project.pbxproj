@@ -7,16 +7,16 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		524F1DED1E89AD4F000AC6FE /* UnboxTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1DEC1E89AD4F000AC6FE /* UnboxTests.swift */; };
+		524F1DEE1E89AD4F000AC6FE /* UnboxTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1DEC1E89AD4F000AC6FE /* UnboxTests.swift */; };
+		524F1DEF1E89AD4F000AC6FE /* UnboxTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1DEC1E89AD4F000AC6FE /* UnboxTests.swift */; };
 		52D6D9871BEFF229002C0205 /* Unbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52D6D97C1BEFF229002C0205 /* Unbox.framework */; };
 		52D6D9981BEFF375002C0205 /* Unbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D6D9961BEFF375002C0205 /* Unbox.swift */; };
-		52D6D99B1BEFF375002C0205 /* UnboxTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D6D9971BEFF375002C0205 /* UnboxTests.swift */; };
 		52D6D9EA1BEFFFA4002C0205 /* Unbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D6D9961BEFF375002C0205 /* Unbox.swift */; };
 		52D6DA091BF00081002C0205 /* Unbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D6D9961BEFF375002C0205 /* Unbox.swift */; };
 		52D6DA261BF00118002C0205 /* Unbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D6D9961BEFF375002C0205 /* Unbox.swift */; };
-		DD7502861C68FDDC006590AF /* UnboxTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D6D9971BEFF375002C0205 /* UnboxTests.swift */; };
 		DD7502881C68FEDE006590AF /* Unbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52D6DA0F1BF000BD002C0205 /* Unbox.framework */; };
 		DD7502921C690C7A006590AF /* Unbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52D6D9F01BEFFFBE002C0205 /* Unbox.framework */; };
-		DD75029A1C690CBE006590AF /* UnboxTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D6D9971BEFF375002C0205 /* UnboxTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -44,10 +44,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		524F1DEC1E89AD4F000AC6FE /* UnboxTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = UnboxTests.swift; path = Tests/UnboxTests/UnboxTests.swift; sourceTree = "<group>"; };
 		52D6D97C1BEFF229002C0205 /* Unbox.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Unbox.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		52D6D9861BEFF229002C0205 /* Unbox-iOS Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Unbox-iOS Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		52D6D9961BEFF375002C0205 /* Unbox.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Unbox.swift; path = Sources/Unbox.swift; sourceTree = "<group>"; };
-		52D6D9971BEFF375002C0205 /* UnboxTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = UnboxTests.swift; path = Tests/UnboxTests.swift; sourceTree = "<group>"; };
 		52D6D9E21BEFFF6E002C0205 /* Unbox.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Unbox.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		52D6D9F01BEFFFBE002C0205 /* Unbox.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Unbox.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		52D6DA0F1BF000BD002C0205 /* Unbox.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Unbox.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -117,7 +117,7 @@
 			isa = PBXGroup;
 			children = (
 				52D6D9961BEFF375002C0205 /* Unbox.swift */,
-				52D6D9971BEFF375002C0205 /* UnboxTests.swift */,
+				524F1DEC1E89AD4F000AC6FE /* UnboxTests.swift */,
 				52D6D99C1BEFF38C002C0205 /* Configs */,
 				52D6D97D1BEFF229002C0205 /* Products */,
 			);
@@ -450,7 +450,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				52D6D99B1BEFF375002C0205 /* UnboxTests.swift in Sources */,
+				524F1DED1E89AD4F000AC6FE /* UnboxTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -482,7 +482,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DD7502861C68FDDC006590AF /* UnboxTests.swift in Sources */,
+				524F1DEE1E89AD4F000AC6FE /* UnboxTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -490,7 +490,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DD75029A1C690CBE006590AF /* UnboxTests.swift in Sources */,
+				524F1DEF1E89AD4F000AC6FE /* UnboxTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
