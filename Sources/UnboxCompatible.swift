@@ -11,3 +11,19 @@ public protocol UnboxCompatible {
     /// Unbox a value, or either throw or return nil if unboxing couldn't be performed
     static func unbox(value: Any, allowInvalidCollectionElements: Bool) throws -> Self?
 }
+
+// MARK: - Internal extensions
+
+internal extension UnboxCompatible {
+    static func unbox(value: Any) throws -> Self? {
+        return try self.unbox(value: value, allowInvalidCollectionElements: false)
+    }
+}
+
+internal extension UnboxCompatible where Self: Collection {
+    static func makeTransform(allowInvalidElements: Bool) -> UnboxTransform<Self> {
+        return {
+            try self.unbox(value: $0, allowInvalidCollectionElements: allowInvalidElements)
+        }
+    }
+}

@@ -11,3 +11,9 @@ public protocol Unboxable {
     /// Initialize an instance of this model by unboxing a dictionary using an Unboxer
     init(unboxer: Unboxer) throws
 }
+
+internal extension Unboxable {
+    static func makeTransform() -> UnboxTransform<Self> {
+        return { try ($0 as? UnboxableDictionary).map(unbox) }
+    }
+}
