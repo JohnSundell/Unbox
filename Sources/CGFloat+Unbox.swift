@@ -7,6 +7,8 @@
 import Foundation
 
 #if !os(Linux)
+import CoreGraphics
+
 /// Extension making `CGFloat` an Unboxable raw type
 extension CGFloat: UnboxableByTransform {
     public typealias UnboxRawValue = Double
