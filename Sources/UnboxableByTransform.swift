@@ -14,3 +14,10 @@ public protocol UnboxableByTransform: UnboxCompatible {
     /// Attempt to transform a raw unboxed value into an instance of this type
     static func transform(unboxedValue: UnboxRawValue) -> Self?
 }
+
+/// Default implementation of `UnboxCompatible` for transformable types
+public extension UnboxableByTransform {
+    static func unbox(value: Any, allowInvalidCollectionElements: Bool) throws -> Self? {
+        return (value as? UnboxRawValue).map(self.transform)
+    }
+}

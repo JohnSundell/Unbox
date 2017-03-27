@@ -105,65 +105,6 @@ public func unbox<T: Unboxable>(dictionary: UnboxableDictionary) throws -> [Stri
     return mappedDictionary
 }
 
-// MARK: - Default protocol implementations
-
-public extension UnboxableRawType {
-    static func unbox(value: Any, allowInvalidCollectionElements: Bool) throws -> Self? {
-        if let matchedValue = value as? Self {
-            return matchedValue
-        }
-        
-        if let string = value as? String {
-            return self.transform(unboxedString: string)
-        }
-
-        if let number = value as? NSNumber {
-            return self.transform(unboxedNumber: number)
-        }
-
-        return nil
-    }
-}
-
-public extension UnboxableCollection {
-    public static func unbox(value: Any, allowInvalidCollectionElements: Bool) throws -> Self? {
-        if let matchingCollection = value as? Self {
-            return matchingCollection
-        }
-        
-        if let unboxableType = UnboxValue.self as? Unboxable.Type {
-            let transformer = UnboxCollectionElementClosureTransformer<UnboxableDictionary, UnboxValue>() { element in
-                let unboxer = Unboxer(dictionary: element)
-                return try unboxableType.init(unboxer: unboxer) as? UnboxValue
-            }
-            
-            return try self.unbox(value: value, allowInvalidElements: allowInvalidCollectionElements, transformer: transformer)
-        }
-        
-        if let unboxCompatibleType = UnboxValue.self as? UnboxCompatible.Type {
-            let transformer = UnboxCollectionElementClosureTransformer<Any, UnboxValue>() { element in
-                return try unboxCompatibleType.unbox(value: element, allowInvalidCollectionElements: allowInvalidCollectionElements) as? UnboxValue
-            }
-            
-            return try self.unbox(value: value, allowInvalidElements: allowInvalidCollectionElements, transformer: transformer)
-        }
-        
-        throw UnboxPathError.invalidCollectionElementType(UnboxValue.self)
-    }
-}
-
-public extension UnboxableByTransform {
-    static func unbox(value: Any, allowInvalidCollectionElements: Bool) throws -> Self? {
-        return (value as? UnboxRawValue).map(self.transform)
-    }
-}
-
-public extension UnboxableEnum {
-    static func unbox(value: Any, allowInvalidCollectionElements: Bool) throws -> Self? {
-        return (value as? RawValue).map(self.init)
-    }
-}
-
 // MARK: - Extensions
 
 /// Extension making Bool an Unboxable raw type
@@ -629,17 +570,7 @@ private struct UnboxArrayContainer<T: Unboxable>: UnboxableWithContext {
 
 // MARK: - Collection element transformers
 
-private class UnboxCollectionElementClosureTransformer<I, O>: UnboxCollectionElementTransformer {
-    private let closure: (I) throws -> O?
-    
-    init(closure: @escaping (I) throws -> O?) {
-        self.closure = closure
-    }
-    
-    func unbox(element: I, allowInvalidCollectionElements: Bool) throws -> O? {
-        return try self.closure(element)
-    }
-}
+
 
 private class UnboxableWithContextCollectionElementTransformer<T: UnboxableWithContext>: UnboxCollectionElementTransformer {
     private let context: T.UnboxContext
@@ -809,24 +740,6 @@ private extension Unboxer {
     
     func performCustomUnboxing<T>(closure: (Unboxer) throws -> T?) throws -> T {
         return try closure(self).orThrow(UnboxError.customUnboxingFailed)
-    }
-}
-
-private extension Optional {
-    func map<T>(_ transform: (Wrapped) throws -> T?) rethrows -> T? {
-        guard let value = self else {
-            return nil
-        }
-        
-        return try transform(value)
-    }
-    
-    func orThrow<E: Error>(_ errorClosure: @autoclosure () -> E) throws -> Wrapped {
-        guard let value = self else {
-            throw errorClosure()
-        }
-        
-        return value
     }
 }
 
