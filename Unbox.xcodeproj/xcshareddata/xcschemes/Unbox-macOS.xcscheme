@@ -16,7 +16,7 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "52D6DA0E1BF000BD002C0205"
                BuildableName = "Unbox.framework"
-               BlueprintName = "Unbox-OSX"
+               BlueprintName = "Unbox-macOS"
                ReferencedContainer = "container:Unbox.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -34,8 +34,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "DD7502791C68FCFC006590AF"
-               BuildableName = "Unbox-OSX Tests.xctest"
-               BlueprintName = "Unbox-OSX Tests"
+               BuildableName = "Unbox-macOS Tests.xctest"
+               BlueprintName = "Unbox-macOS Tests"
                ReferencedContainer = "container:Unbox.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -45,7 +45,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "52D6DA0E1BF000BD002C0205"
             BuildableName = "Unbox.framework"
-            BlueprintName = "Unbox-OSX"
+            BlueprintName = "Unbox-macOS"
             ReferencedContainer = "container:Unbox.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -67,7 +67,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "52D6DA0E1BF000BD002C0205"
             BuildableName = "Unbox.framework"
-            BlueprintName = "Unbox-OSX"
+            BlueprintName = "Unbox-macOS"
             ReferencedContainer = "container:Unbox.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -85,7 +85,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "52D6DA0E1BF000BD002C0205"
             BuildableName = "Unbox.framework"
-            BlueprintName = "Unbox-OSX"
+            BlueprintName = "Unbox-macOS"
             ReferencedContainer = "container:Unbox.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
