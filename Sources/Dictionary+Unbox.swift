@@ -6,6 +6,49 @@
 
 import Foundation
 
+/**
+ *  Extension adding unboxing methods to JSON-like dictionaries
+ *
+ *  The methods in this extension are your top level entry points into Unbox's API
+ *  For usage and examples, see https://github.com/johnsundell/unbox
+ */
+extension Dictionary where Key == String, Value == Any {
+    /**
+     *  Unbox this dictionary into an `Unboxable` type
+     *
+     *  - parameter path: Optionally begin unboxing at a given path within the dictionary
+     *  - throws: `UnboxError` if the unboxing failed
+     */
+    func unboxed<T: Unboxable>(at path: UnboxPath? = nil) throws -> T {
+        let unboxer = Unboxer(dictionary: self)
+        return try unboxer.performUnboxing(at: path)
+    }
+
+    /**
+     *  Unbox this dictionary into an `UnboxableWithContext` type
+     *
+     *  - parameter context: The context to use during unboxing, as required by the type
+     *  - parameter path: Optionally begin unboxing at a given path within the dictionary
+     *  - throws: `UnboxError` if the unboxing failed
+     */
+    func unboxed<T: UnboxableWithContext>(with context: T.UnboxContext, at path: UnboxPath? = nil) throws -> T {
+        let unboxer = Unboxer(dictionary: self)
+        return try unboxer.performUnboxing(with: context, at: path)
+    }
+
+    /**
+     *  Unbox the value for a path in this dictionary into an array of an `Unboxable` type
+     *
+     *  - parameter path: The path to begin unboxing at within this dictionary
+     *  - parameter allowInvalidElements: Optionally skip invalid elements instead of throwing
+     *  - throws: `UnboxError` if the unboxing failed
+     */
+    func unboxed<T: Unboxable>(at path: UnboxPath, allowInvalidElements: Bool = false) throws -> [T] {
+        let unboxer = Unboxer(dictionary: self)
+        return try unboxer.unbox(at: path, allowInvalidElements: allowInvalidElements)
+    }
+}
+
 /// Extension making `Dictionary` an unboxable collection
 extension Dictionary: UnboxableCollection {
     public typealias UnboxValue = Value

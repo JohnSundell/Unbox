@@ -6,7 +6,7 @@
 
 import Foundation
 
-/// Extension making `String` an Unboxable raw type
+/// Extension making `String` an unboxable raw type
 extension String: UnboxableRawType {
     public static func transform(unboxedNumber: NSNumber) -> String? {
         return unboxedNumber.stringValue
@@ -14,5 +14,15 @@ extension String: UnboxableRawType {
 
     public static func transform(unboxedString: String) -> String? {
         return unboxedString
+    }
+}
+
+internal extension String {
+    func asKey() -> UnboxPath {
+        return .key(self)
+    }
+
+    func asKeyPath() -> UnboxPath {
+        return .keyPath(self)
     }
 }
