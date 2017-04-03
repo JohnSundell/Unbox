@@ -12,7 +12,7 @@ import Foundation
  *  The methods in this extension are your top level entry points into Unbox's API
  *  For usage and examples, see https://github.com/johnsundell/unbox
  */
-extension Dictionary where Key == String, Value == Any {
+extension Dictionary where Key == String {
     /**
      *  Unbox this dictionary into an `Unboxable` type
      *
