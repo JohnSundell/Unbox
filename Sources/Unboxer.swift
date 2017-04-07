@@ -224,14 +224,15 @@ private extension Unboxer {
             case .keyPath(let keyPath):
                 var node: UnboxPathNode = self.dictionary
                 let components = keyPath.components(separatedBy: ".")
-                let lastKey = components.last
+                let keyCounter = components.count
+                var i = 1
 
                 for key in components {
                     guard let nextValue = node.unboxPathValue(forKey: key) else {
                         throw UnboxPathError.missingKey(key)
                     }
 
-                    if key == lastKey {
+                    if i == keyCounter {
                         return try transform(nextValue).orThrow(UnboxPathError.invalidValue(nextValue, key))
                     }
 
@@ -239,6 +240,7 @@ private extension Unboxer {
                         throw UnboxPathError.invalidValue(nextValue, key)
                     }
 
+                    i = i + 1
                     node = nextNode
                 }
 
