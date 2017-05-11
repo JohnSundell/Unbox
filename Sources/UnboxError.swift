@@ -12,7 +12,7 @@ public enum UnboxError: Error {
     case invalidData
     /// Custom unboxing failed, either by throwing or returning `nil`
     case customUnboxingFailed
-    /// An error occured while unboxing a value for a path (contains the underlying path error, and the path)
+    /// An error occurred while unboxing a value for a path (contains the underlying path error, and the path)
     case pathError(UnboxPathError, String)
 }
 
@@ -25,7 +25,7 @@ extension UnboxError: CustomStringConvertible {
         case .customUnboxingFailed:
             return "[UnboxError] Custom unboxing failed."
         case .pathError(let error, let path):
-            return "[UnboxError] An error occured while unboxing path \"\(path)\": \(error)"
+            return "[UnboxError] An error occurred while unboxing path \"\(path)\": \(error)"
         }
     }
 }

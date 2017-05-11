@@ -418,7 +418,7 @@ Use the `do, try, catch` pattern to catch and handle the error:
 do {
     let model: Model = try unbox(data: data)
 } catch {
-    print("An error occured: \(error)")
+    print("An error occurred: \(error)")
 }
 ```
 
