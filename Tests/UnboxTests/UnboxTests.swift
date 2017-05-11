@@ -1068,7 +1068,7 @@ class UnboxTests: XCTestCase {
             _ = try unbox(dictionary: [:]) as Model
             XCTFail("Unbox should have thrown for a missing value")
         } catch {
-            XCTAssertEqual("\(error)", "[UnboxError] An error occured while unboxing path \"string\": The key \"string\" is missing.")
+            XCTAssertEqual("\(error)", "[UnboxError] An error occurred while unboxing path \"string\": The key \"string\" is missing.")
         }
     }
     
@@ -1085,7 +1085,7 @@ class UnboxTests: XCTestCase {
             _ = try unbox(dictionary: ["string" : []]) as Model
             XCTFail("Unbox should have thrown for an invalid value")
         } catch {
-            XCTAssertEqual("\(error)", "[UnboxError] An error occured while unboxing path \"string\": Invalid value ([]) for key \"string\".")
+            XCTAssertEqual("\(error)", "[UnboxError] An error occurred while unboxing path \"string\": Invalid value ([]) for key \"string\".")
         }
     }
     
@@ -1614,7 +1614,7 @@ class UnboxTests: XCTestCase {
             _ = try unbox(dictionary: dictionary) as Model
             XCTFail("Should have thrown")
         } catch {
-            XCTAssertEqual("\(error)", "[UnboxError] An error occured while unboxing path \"array\": Invalid collection element type: ObjectIdentifier. Must be UnboxCompatible or Unboxable.")
+            XCTAssertEqual("\(error)", "[UnboxError] An error occurred while unboxing path \"array\": Invalid collection element type: ObjectIdentifier. Must be UnboxCompatible or Unboxable.")
         }
     }
     
@@ -1635,7 +1635,7 @@ class UnboxTests: XCTestCase {
             _ = try unbox(dictionary: dictionary) as Model
             XCTFail("Should have thrown")
         } catch {
-            XCTAssertEqual("\(error)", "[UnboxError] An error occured while unboxing path \"array\": Invalid array element ([:]) at index 0.")
+            XCTAssertEqual("\(error)", "[UnboxError] An error occurred while unboxing path \"array\": Invalid array element ([:]) at index 0.")
         }
     }
     
@@ -1656,7 +1656,7 @@ class UnboxTests: XCTestCase {
             _ = try unbox(dictionary: dictionary) as Model
             XCTFail("Should have thrown")
         } catch {
-            XCTAssertEqual("\(error)", "[UnboxError] An error occured while unboxing path \"dictionary\": Invalid dictionary key type: ObjectIdentifier. Must be either String or UnboxableKey.")
+            XCTAssertEqual("\(error)", "[UnboxError] An error occurred while unboxing path \"dictionary\": Invalid dictionary key type: ObjectIdentifier. Must be either String or UnboxableKey.")
         }
     }
     
@@ -1677,7 +1677,7 @@ class UnboxTests: XCTestCase {
             _ = try unbox(dictionary: dictionary) as Model
             XCTFail("Should have thrown")
         } catch {
-            XCTAssertEqual("\(error)", "[UnboxError] An error occured while unboxing path \"dictionary\": Invalid collection element type: ObjectIdentifier. Must be UnboxCompatible or Unboxable.")
+            XCTAssertEqual("\(error)", "[UnboxError] An error occurred while unboxing path \"dictionary\": Invalid collection element type: ObjectIdentifier. Must be UnboxCompatible or Unboxable.")
         }
     }
     
