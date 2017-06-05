@@ -149,7 +149,7 @@ public final class Unboxer {
 
     /// Unbox an optional collection of UnboxableWithContext values by key
     public func unbox<C: UnboxableCollection, V: UnboxableWithContext>(key: String, context: V.UnboxContext, allowInvalidElements: Bool = false) -> C? where C.UnboxValue == V {
-        return try? self.unbox(key: key, context: context, allowInvalidElements: allowInvalidElements)
+        return try? self.unbox(path: .key(key), transform: V.makeCollectionTransform(context: context, allowInvalidElements: allowInvalidElements))
     }
 
     /// Unbox an optional value using a formatter by key
@@ -186,7 +186,7 @@ public final class Unboxer {
 
     /// Unbox an optional collection of UnboxableWithContext values by key path
     public func unbox<C: UnboxableCollection, V: UnboxableWithContext>(keyPath: String, context: V.UnboxContext, allowInvalidElements: Bool = false) -> C? where C.UnboxValue == V {
-        return try? self.unbox(keyPath: keyPath, context: context, allowInvalidElements: allowInvalidElements)
+        return try? self.unbox(path: .keyPath(keyPath), transform: V.makeCollectionTransform(context: context, allowInvalidElements: allowInvalidElements))
     }
 
     /// Unbox an optional value using a formatter by key path
