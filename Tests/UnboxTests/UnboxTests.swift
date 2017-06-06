@@ -1753,14 +1753,14 @@ private func UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: Bool)
         UnboxTestMock.requiredDoubleKey : Double(1.5),
         UnboxTestMock.requiredFloatKey : Float(3.14),
         UnboxTestMock.requiredEnumKey : 1,
-        UnboxTestMock.requiredStringKey :  "hello",
+        UnboxTestMock.requiredStringKey : "hello",
         UnboxTestMock.requiredURLKey : "http://www.google.com",
-        UnboxTestMock.requiredDecimalKey: Decimal(13.95),
         UnboxTestMock.requiredArrayKey : ["unbox", "is", "pretty", "cool", "right?"],
         UnboxTestMock.requiredEnumArrayKey : [0, 1],
     ]
 
     #if !os(Linux)
+    dictionary[UnboxTestMock.requiredDecimalKey] = Decimal(13.95)
     dictionary[UnboxTestMock.requiredCGFloatKey] = 0.72
     #endif
     
@@ -1833,6 +1833,8 @@ private class UnboxTestBaseMock: Unboxable {
     #if !os(Linux)
     let requiredCGFloat: CGFloat
     let optionalCGFloat: CGFloat?
+    let requiredDecimal: Decimal
+    let optionalDecimal: Decimal?
     #endif
     let requiredEnum: UnboxTestEnum
     let optionalEnum: UnboxTestEnum?
@@ -1840,8 +1842,6 @@ private class UnboxTestBaseMock: Unboxable {
     let optionalString: String?
     let requiredURL: URL
     let optionalURL: URL?
-    let requiredDecimal: Decimal
-    let optionalDecimal: Decimal?
     let requiredArray: [String]
     let optionalArray: [String]?
     let requiredEnumArray: [UnboxTestEnum]
@@ -1859,6 +1859,8 @@ private class UnboxTestBaseMock: Unboxable {
         #if !os(Linux)
         self.requiredCGFloat = try unboxer.unbox(key: UnboxTestBaseMock.requiredCGFloatKey)
         self.optionalCGFloat = unboxer.unbox(key: UnboxTestBaseMock.optionalCGFloatKey)
+        self.requiredDecimal = try unboxer.unbox(key: UnboxTestBaseMock.requiredDecimalKey)
+        self.optionalDecimal = unboxer.unbox(key: UnboxTestBaseMock.optionalDecimalKey)
         #endif
         self.requiredEnum = try unboxer.unbox(key: UnboxTestBaseMock.requiredEnumKey)
         self.optionalEnum = unboxer.unbox(key: UnboxTestBaseMock.optionalEnumKey)
@@ -1866,8 +1868,6 @@ private class UnboxTestBaseMock: Unboxable {
         self.optionalString = unboxer.unbox(key: UnboxTestBaseMock.optionalStringKey)
         self.requiredURL = try unboxer.unbox(key: UnboxTestBaseMock.requiredURLKey)
         self.optionalURL = unboxer.unbox(key: UnboxTestBaseMock.optionalURLKey)
-        self.requiredDecimal = try unboxer.unbox(key: UnboxTestBaseMock.requiredDecimalKey)
-        self.optionalDecimal = unboxer.unbox(key: UnboxTestBaseMock.optionalDecimalKey)
         self.requiredArray = try unboxer.unbox(key: UnboxTestBaseMock.requiredArrayKey)
         self.optionalArray = unboxer.unbox(key: UnboxTestBaseMock.optionalArrayKey)
         self.requiredEnumArray = try unboxer.unbox(key: UnboxTestBaseMock.requiredEnumArrayKey)
@@ -1896,9 +1896,17 @@ private class UnboxTestBaseMock: Unboxable {
             case UnboxTestBaseMock.optionalFloatKey:
                 verificationOutcome = self.verifyPropertyValue(value: self.optionalFloat, againstDictionaryValue: value)
             case UnboxTestBaseMock.requiredDecimalKey:
+                #if !os(Linux)
                 verificationOutcome = self.verifyPropertyValue(value: self.requiredDecimal, againstDictionaryValue: value)
+                #else
+                verificationOutcome = false
+                #endif
             case UnboxTestBaseMock.optionalDecimalKey:
+                #if !os(Linux)
                 verificationOutcome = self.verifyPropertyValue(value: self.optionalDecimal, againstDictionaryValue: value)
+                #else
+                verificationOutcome = false
+                #endif
             case UnboxTestBaseMock.requiredCGFloatKey:
                 #if !os(Linux)
                 verificationOutcome = self.verifyTransformableValue(value: self.requiredCGFloat, againstDictionaryValue: value)
