@@ -734,7 +734,7 @@ class UnboxTests: XCTestCase {
         let dictionary = UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: false)
         
         do {
-            let data = try JSONSerialization.data(withJSONObject: dictionary as AnyObject, options: [])
+            let data = try JSONSerialization.data(withJSONObject: NSDictionary(dictionary: dictionary), options: [])
             let unboxed: UnboxTestMock? = try? unbox(data: data)
             XCTAssertNotNil(unboxed, "Could not unbox from data")
         } catch {
@@ -1103,9 +1103,9 @@ class UnboxTests: XCTestCase {
     }
     
     func testThrowingForInvalidDataArray() {
-        let notDictionaryArray = [12, 13, 9]
+        let notDictionaryArray: NSArray = [12, 13, 9]
         
-        guard let data = try? JSONSerialization.data(withJSONObject: notDictionaryArray as AnyObject, options: []) else {
+        guard let data = try? JSONSerialization.data(withJSONObject: notDictionaryArray, options: []) else {
             return XCTFail()
         }
         
@@ -1254,7 +1254,7 @@ class UnboxTests: XCTestCase {
                 "int" : 5,
                 "string" : "Hello"
             ]
-            let data = try JSONSerialization.data(withJSONObject: dictionary as AnyObject, options: [])
+            let data = try JSONSerialization.data(withJSONObject: NSDictionary(dictionary: dictionary), options: [])
             
             let unboxingClosure: (Unboxer) -> Model? = {
                 return try? Model(int: $0.unbox(key: "int"), double: 3.14, string: $0.unbox(key: "string"))
@@ -1750,21 +1750,24 @@ private func UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: Bool)
     var dictionary: UnboxableDictionary = [
         UnboxTestMock.requiredBoolKey : true,
         UnboxTestMock.requiredIntKey : 15,
-        UnboxTestMock.requiredDoubleKey : Double(1.5) as AnyObject,
-        UnboxTestMock.requiredFloatKey : Float(3.14) as AnyObject,
-        UnboxTestMock.requiredCGFloatKey : 0.72,
+        UnboxTestMock.requiredDoubleKey : Double(1.5),
+        UnboxTestMock.requiredFloatKey : Float(3.14),
         UnboxTestMock.requiredEnumKey : 1,
-        UnboxTestMock.requiredStringKey :  "hello",
+        UnboxTestMock.requiredStringKey : "hello",
         UnboxTestMock.requiredURLKey : "http://www.google.com",
-        UnboxTestMock.requiredDecimalKey: Decimal(13.95) as AnyObject,
         UnboxTestMock.requiredArrayKey : ["unbox", "is", "pretty", "cool", "right?"],
         UnboxTestMock.requiredEnumArrayKey : [0, 1],
     ]
+
+    #if !os(Linux)
+    dictionary[UnboxTestMock.requiredDecimalKey] = Decimal(13.95)
+    dictionary[UnboxTestMock.requiredCGFloatKey] = 0.72
+    #endif
     
     if !nested {
-        dictionary[UnboxTestMock.requiredUnboxableKey] = UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: true) as AnyObject
-        dictionary[UnboxTestMock.requiredUnboxableArrayKey] = [UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: true)]  as AnyObject
-        dictionary[UnboxTestMock.requiredUnboxableDictionaryKey] = ["test" : UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: true)]  as AnyObject
+        dictionary[UnboxTestMock.requiredUnboxableKey] = UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: true)
+        dictionary[UnboxTestMock.requiredUnboxableArrayKey] = [UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: true)]
+        dictionary[UnboxTestMock.requiredUnboxableDictionaryKey] = ["test" : UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: true)]
     }
     
     return dictionary
@@ -1827,16 +1830,18 @@ private class UnboxTestBaseMock: Unboxable {
     let optionalDouble: Double?
     let requiredFloat: Float
     let optionalFloat: Float?
+    #if !os(Linux)
     let requiredCGFloat: CGFloat
     let optionalCGFloat: CGFloat?
+    let requiredDecimal: Decimal
+    let optionalDecimal: Decimal?
+    #endif
     let requiredEnum: UnboxTestEnum
     let optionalEnum: UnboxTestEnum?
     let requiredString: String
     let optionalString: String?
     let requiredURL: URL
     let optionalURL: URL?
-    let requiredDecimal: Decimal
-    let optionalDecimal: Decimal?
     let requiredArray: [String]
     let optionalArray: [String]?
     let requiredEnumArray: [UnboxTestEnum]
@@ -1851,16 +1856,18 @@ private class UnboxTestBaseMock: Unboxable {
         self.optionalDouble = unboxer.unbox(key: UnboxTestBaseMock.optionalDoubleKey)
         self.requiredFloat = try unboxer.unbox(key: UnboxTestBaseMock.requiredFloatKey)
         self.optionalFloat = unboxer.unbox(key: UnboxTestBaseMock.optionalFloatKey)
+        #if !os(Linux)
         self.requiredCGFloat = try unboxer.unbox(key: UnboxTestBaseMock.requiredCGFloatKey)
         self.optionalCGFloat = unboxer.unbox(key: UnboxTestBaseMock.optionalCGFloatKey)
+        self.requiredDecimal = try unboxer.unbox(key: UnboxTestBaseMock.requiredDecimalKey)
+        self.optionalDecimal = unboxer.unbox(key: UnboxTestBaseMock.optionalDecimalKey)
+        #endif
         self.requiredEnum = try unboxer.unbox(key: UnboxTestBaseMock.requiredEnumKey)
         self.optionalEnum = unboxer.unbox(key: UnboxTestBaseMock.optionalEnumKey)
         self.requiredString = try unboxer.unbox(key: UnboxTestBaseMock.requiredStringKey)
         self.optionalString = unboxer.unbox(key: UnboxTestBaseMock.optionalStringKey)
         self.requiredURL = try unboxer.unbox(key: UnboxTestBaseMock.requiredURLKey)
         self.optionalURL = unboxer.unbox(key: UnboxTestBaseMock.optionalURLKey)
-        self.requiredDecimal = try unboxer.unbox(key: UnboxTestBaseMock.requiredDecimalKey)
-        self.optionalDecimal = unboxer.unbox(key: UnboxTestBaseMock.optionalDecimalKey)
         self.requiredArray = try unboxer.unbox(key: UnboxTestBaseMock.requiredArrayKey)
         self.optionalArray = unboxer.unbox(key: UnboxTestBaseMock.optionalArrayKey)
         self.requiredEnumArray = try unboxer.unbox(key: UnboxTestBaseMock.requiredEnumArrayKey)
@@ -1889,13 +1896,29 @@ private class UnboxTestBaseMock: Unboxable {
             case UnboxTestBaseMock.optionalFloatKey:
                 verificationOutcome = self.verifyPropertyValue(value: self.optionalFloat, againstDictionaryValue: value)
             case UnboxTestBaseMock.requiredDecimalKey:
+                #if !os(Linux)
                 verificationOutcome = self.verifyPropertyValue(value: self.requiredDecimal, againstDictionaryValue: value)
+                #else
+                verificationOutcome = false
+                #endif
             case UnboxTestBaseMock.optionalDecimalKey:
+                #if !os(Linux)
                 verificationOutcome = self.verifyPropertyValue(value: self.optionalDecimal, againstDictionaryValue: value)
+                #else
+                verificationOutcome = false
+                #endif
             case UnboxTestBaseMock.requiredCGFloatKey:
+                #if !os(Linux)
                 verificationOutcome = self.verifyTransformableValue(value: self.requiredCGFloat, againstDictionaryValue: value)
+                #else
+                verificationOutcome = false
+                #endif
             case UnboxTestBaseMock.optionalCGFloatKey:
+                #if !os(Linux)
                 verificationOutcome = self.verifyTransformableValue(value: self.optionalCGFloat, againstDictionaryValue: value)
+                #else
+                verificationOutcome = false
+                #endif
             case UnboxTestBaseMock.requiredEnumKey:
                 verificationOutcome = self.verifyEnumPropertyValue(value: self.requiredEnum, againstDictionaryValue: value)
             case UnboxTestBaseMock.optionalEnumKey:
