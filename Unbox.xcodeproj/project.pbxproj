@@ -181,6 +181,14 @@
 		52D6D9871BEFF229002C0205 /* Unbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52D6D97C1BEFF229002C0205 /* Unbox.framework */; };
 		DD7502881C68FEDE006590AF /* Unbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52D6DA0F1BF000BD002C0205 /* Unbox.framework */; };
 		DD7502921C690C7A006590AF /* Unbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52D6D9F01BEFFFBE002C0205 /* Unbox.framework */; };
+		FE63CED71EE70829000239C9 /* UnboxWarning.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE63CED61EE70829000239C9 /* UnboxWarning.swift */; };
+		FE63CED91EE709DF000239C9 /* UnboxWarningLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE63CED81EE709DF000239C9 /* UnboxWarningLogger.swift */; };
+		FE63CEDA1EE709DF000239C9 /* UnboxWarningLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE63CED81EE709DF000239C9 /* UnboxWarningLogger.swift */; };
+		FE63CEDB1EE709DF000239C9 /* UnboxWarningLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE63CED81EE709DF000239C9 /* UnboxWarningLogger.swift */; };
+		FE63CEDC1EE709DF000239C9 /* UnboxWarningLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE63CED81EE709DF000239C9 /* UnboxWarningLogger.swift */; };
+		FE63CEDD1EE709F0000239C9 /* UnboxWarning.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE63CED61EE70829000239C9 /* UnboxWarning.swift */; };
+		FE63CEDE1EE709F0000239C9 /* UnboxWarning.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE63CED61EE70829000239C9 /* UnboxWarning.swift */; };
+		FE63CEDF1EE709F1000239C9 /* UnboxWarning.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE63CED61EE70829000239C9 /* UnboxWarning.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -260,6 +268,8 @@
 		AD2FAA281CD0B6E100659CF4 /* UnboxTests.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = UnboxTests.plist; sourceTree = "<group>"; };
 		DD75027A1C68FCFC006590AF /* Unbox-macOS Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Unbox-macOS Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DD75028D1C690C7A006590AF /* Unbox-tvOS Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Unbox-tvOS Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		FE63CED61EE70829000239C9 /* UnboxWarning.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnboxWarning.swift; sourceTree = "<group>"; };
+		FE63CED81EE709DF000239C9 /* UnboxWarningLogger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnboxWarningLogger.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -363,6 +373,8 @@
 				524F1E041E89B0A3000AC6FE /* UnboxPathError.swift */,
 				524F1E9F1E89BF6C000AC6FE /* UnboxPathNode.swift */,
 				524F1E901E89BDFC000AC6FE /* URL+Unbox.swift */,
+				FE63CED61EE70829000239C9 /* UnboxWarning.swift */,
+				FE63CED81EE709DF000239C9 /* UnboxWarningLogger.swift */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -736,7 +748,9 @@
 				524F1E5F1E89BA9E000AC6FE /* UInt64+Unbox.swift in Sources */,
 				524F1EBE1E89C1C6000AC6FE /* Data+Unbox.swift in Sources */,
 				524F1E371E89B42E000AC6FE /* UnboxFormatter.swift in Sources */,
+				FE63CED71EE70829000239C9 /* UnboxWarning.swift in Sources */,
 				524F1E501E89BA26000AC6FE /* Int32+Unbox.swift in Sources */,
+				FE63CED91EE709DF000239C9 /* UnboxWarningLogger.swift in Sources */,
 				524F1ECD1E89C466000AC6FE /* UnboxArrayContainer.swift in Sources */,
 				524F1EB91E89C16B000AC6FE /* JSONSerialization+Unbox.swift in Sources */,
 				524F1EAA1E89C01B000AC6FE /* NSArray+Unbox.swift in Sources */,
@@ -766,12 +780,14 @@
 				524F1E891E89BD1C000AC6FE /* CGFloat+Unbox.swift in Sources */,
 				524F1E341E89B409000AC6FE /* UnboxableByTransform.swift in Sources */,
 				524F1E5C1E89BA78000AC6FE /* UInt32+Unbox.swift in Sources */,
+				FE63CEDB1EE709DF000239C9 /* UnboxWarningLogger.swift in Sources */,
 				524F1ECA1E89C41C000AC6FE /* UnboxContainer.swift in Sources */,
 				524F1E841E89BC99000AC6FE /* Dictionary+Unbox.swift in Sources */,
 				524F1E201E89B345000AC6FE /* UnboxableCollection.swift in Sources */,
 				524F1E931E89BDFC000AC6FE /* URL+Unbox.swift in Sources */,
 				524F1E6B1E89BAE7000AC6FE /* Float+Unbox.swift in Sources */,
 				524F1E3E1E89B884000AC6FE /* Optional+Unbox.swift in Sources */,
+				FE63CEDE1EE709F0000239C9 /* UnboxWarning.swift in Sources */,
 				524F1E1B1E89B2A9000AC6FE /* UnboxableRawType.swift in Sources */,
 				524F1E111E89B168000AC6FE /* UnboxableWithContext.swift in Sources */,
 				524F1E251E89B381000AC6FE /* UnboxCollectionElementTransformer.swift in Sources */,
@@ -815,12 +831,14 @@
 				524F1E8A1E89BD1C000AC6FE /* CGFloat+Unbox.swift in Sources */,
 				524F1E351E89B409000AC6FE /* UnboxableByTransform.swift in Sources */,
 				524F1E5D1E89BA78000AC6FE /* UInt32+Unbox.swift in Sources */,
+				FE63CEDC1EE709DF000239C9 /* UnboxWarningLogger.swift in Sources */,
 				524F1ECB1E89C41C000AC6FE /* UnboxContainer.swift in Sources */,
 				524F1E851E89BC99000AC6FE /* Dictionary+Unbox.swift in Sources */,
 				524F1E211E89B345000AC6FE /* UnboxableCollection.swift in Sources */,
 				524F1E941E89BDFC000AC6FE /* URL+Unbox.swift in Sources */,
 				524F1E6C1E89BAE7000AC6FE /* Float+Unbox.swift in Sources */,
 				524F1E3F1E89B884000AC6FE /* Optional+Unbox.swift in Sources */,
+				FE63CEDF1EE709F1000239C9 /* UnboxWarning.swift in Sources */,
 				524F1E1C1E89B2A9000AC6FE /* UnboxableRawType.swift in Sources */,
 				524F1E121E89B168000AC6FE /* UnboxableWithContext.swift in Sources */,
 				524F1E261E89B381000AC6FE /* UnboxCollectionElementTransformer.swift in Sources */,
@@ -864,12 +882,14 @@
 				524F1E881E89BD1C000AC6FE /* CGFloat+Unbox.swift in Sources */,
 				524F1E331E89B409000AC6FE /* UnboxableByTransform.swift in Sources */,
 				524F1E5B1E89BA78000AC6FE /* UInt32+Unbox.swift in Sources */,
+				FE63CEDA1EE709DF000239C9 /* UnboxWarningLogger.swift in Sources */,
 				524F1EC91E89C41C000AC6FE /* UnboxContainer.swift in Sources */,
 				524F1E831E89BC99000AC6FE /* Dictionary+Unbox.swift in Sources */,
 				524F1E1F1E89B345000AC6FE /* UnboxableCollection.swift in Sources */,
 				524F1E921E89BDFC000AC6FE /* URL+Unbox.swift in Sources */,
 				524F1E6A1E89BAE7000AC6FE /* Float+Unbox.swift in Sources */,
 				524F1E3D1E89B884000AC6FE /* Optional+Unbox.swift in Sources */,
+				FE63CEDD1EE709F0000239C9 /* UnboxWarning.swift in Sources */,
 				524F1E1A1E89B2A9000AC6FE /* UnboxableRawType.swift in Sources */,
 				524F1E101E89B168000AC6FE /* UnboxableWithContext.swift in Sources */,
 				524F1E241E89B381000AC6FE /* UnboxCollectionElementTransformer.swift in Sources */,

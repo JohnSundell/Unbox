@@ -15,6 +15,12 @@ import Foundation
  *  - and the correct type will be returned. If a required (non-optional) value couldn't be unboxed `UnboxError` will be thrown.
  */
 public final class Unboxer {
+    
+    /// Takes care of logging warnings found during the unbox.
+    /// Warnings are not fatal as errors, they just indicate that something is wrong.
+    /// For instance, if we fail to unbox an optional key, we'll move forward but you'll receive a warning as this key was present but couldn't be parsed meaning that some data was lost.
+    public static var warningLogger: UnboxWarningLogger?
+    
     /// The underlying JSON dictionary that is being unboxed
     public let dictionary: UnboxableDictionary
 
@@ -53,83 +59,88 @@ public final class Unboxer {
 
     /// Unbox a required value by key
     public func unbox<T: UnboxCompatible>(key: String) throws -> T {
-        return try self.unbox(path: .key(key), transform: T.unbox)
+        return try self.unbox(path: .key(key), transform: T.unbox, unboxedValueIsOptional: false)
     }
 
     /// Unbox a required collection by key
     public func unbox<T: UnboxableCollection>(key: String, allowInvalidElements: Bool) throws -> T {
         let transform = T.makeTransform(allowInvalidElements: allowInvalidElements)
-        return try self.unbox(path: .key(key), transform: transform)
+        return try self.unbox(path: .key(key), transform: transform, unboxedValueIsOptional: false)
     }
 
     /// Unbox a required Unboxable type by key
     public func unbox<T: Unboxable>(key: String) throws -> T {
-        return try self.unbox(path: .key(key), transform: T.makeTransform())
+        return try self.unbox(path: .key(key), transform: T.makeTransform(), unboxedValueIsOptional: false)
     }
 
     /// Unbox a required UnboxableWithContext type by key
     public func unbox<T: UnboxableWithContext>(key: String, context: T.UnboxContext) throws -> T {
-        return try self.unbox(path: .key(key), transform: T.makeTransform(context: context))
+        return try self.unbox(path: .key(key), transform: T.makeTransform(context: context), unboxedValueIsOptional: false)
     }
 
     /// Unbox a required collection of UnboxableWithContext values by key
     public func unbox<C: UnboxableCollection, V: UnboxableWithContext>(key: String, context: V.UnboxContext, allowInvalidElements: Bool = false) throws -> C where C.UnboxValue == V {
-        return try self.unbox(path: .key(key), transform: V.makeCollectionTransform(context: context, allowInvalidElements: allowInvalidElements))
+        return try self.unbox(path: .key(key), transform: V.makeCollectionTransform(context: context, allowInvalidElements: allowInvalidElements), unboxedValueIsOptional: false)
     }
 
     /// Unbox a required value using a formatter by key
     public func unbox<F: UnboxFormatter>(key: String, formatter: F) throws -> F.UnboxFormattedType {
-        return try self.unbox(path: .key(key), transform: formatter.makeTransform())
+        return try self.unbox(path: .key(key), transform: formatter.makeTransform(), unboxedValueIsOptional: false)
     }
 
     /// Unbox a required collection of values using a formatter by key
     public func unbox<C: UnboxableCollection, F: UnboxFormatter>(key: String, formatter: F, allowInvalidElements: Bool = false) throws -> C where C.UnboxValue == F.UnboxFormattedType {
-        return try self.unbox(path: .key(key), transform: formatter.makeCollectionTransform(allowInvalidElements: allowInvalidElements))
+        return try self.unbox(path: .key(key), transform: formatter.makeCollectionTransform(allowInvalidElements: allowInvalidElements), unboxedValueIsOptional: false)
     }
 
     // MARK: - Unboxing required values (by key path)
 
     /// Unbox a required value by key path
     public func unbox<T: UnboxCompatible>(keyPath: String) throws -> T {
-        return try self.unbox(path: .keyPath(keyPath), transform: T.unbox)
+        return try self.unbox(path: .keyPath(keyPath), transform: T.unbox, unboxedValueIsOptional: true)
     }
 
     /// Unbox a required collection by key path
     public func unbox<T: UnboxCompatible>(keyPath: String, allowInvalidElements: Bool) throws -> T where T: Collection {
         let transform = T.makeTransform(allowInvalidElements: allowInvalidElements)
-        return try self.unbox(path: .keyPath(keyPath), transform: transform)
+        return try self.unbox(path: .keyPath(keyPath), transform: transform, unboxedValueIsOptional: true)
     }
 
     /// Unbox a required Unboxable by key path
     public func unbox<T: Unboxable>(keyPath: String) throws -> T {
-        return try self.unbox(path: .keyPath(keyPath), transform: T.makeTransform())
+        return try self.unbox(path: .keyPath(keyPath), transform: T.makeTransform(), unboxedValueIsOptional: true)
     }
 
     /// Unbox a required UnboxableWithContext type by key path
     public func unbox<T: UnboxableWithContext>(keyPath: String, context: T.UnboxContext) throws -> T {
-        return try self.unbox(path: .keyPath(keyPath), transform: T.makeTransform(context: context))
+        return try self.unbox(path: .keyPath(keyPath), transform: T.makeTransform(context: context), unboxedValueIsOptional: true)
     }
 
     /// Unbox a required collection of UnboxableWithContext values by key path
     public func unbox<C: UnboxableCollection, V: UnboxableWithContext>(keyPath: String, context: V.UnboxContext, allowInvalidElements: Bool = false) throws -> C where C.UnboxValue == V {
-        return try self.unbox(path: .keyPath(keyPath), transform: V.makeCollectionTransform(context: context, allowInvalidElements: allowInvalidElements))
+        return try self.unbox(path: .keyPath(keyPath), transform: V.makeCollectionTransform(context: context, allowInvalidElements: allowInvalidElements), unboxedValueIsOptional: true)
     }
 
     /// Unbox a required value using a formatter by key path
     public func unbox<F: UnboxFormatter>(keyPath: String, formatter: F) throws -> F.UnboxFormattedType {
-        return try self.unbox(path: .keyPath(keyPath), transform: formatter.makeTransform())
+        return try self.unbox(path: .keyPath(keyPath), transform: formatter.makeTransform(), unboxedValueIsOptional: true)
     }
 
     /// Unbox a required collection of values using a formatter by key path
     public func unbox<C: UnboxableCollection, F: UnboxFormatter>(keyPath: String, formatter: F, allowInvalidElements: Bool = false) throws -> C where C.UnboxValue == F.UnboxFormattedType {
-        return try self.unbox(path: .keyPath(keyPath), transform: formatter.makeCollectionTransform(allowInvalidElements: allowInvalidElements))
+        return try self.unbox(path: .keyPath(keyPath), transform: formatter.makeCollectionTransform(allowInvalidElements: allowInvalidElements), unboxedValueIsOptional: true)
     }
 
     // MARK: - Unboxing optional values (by key)
 
     /// Unbox an optional value by key
     public func unbox<T: UnboxCompatible>(key: String) -> T? {
-        return try? self.unbox(key: key)
+        do {
+            return try unbox(key: key) as T
+        } catch {
+            (error as? UnboxError)?.logAsWarningForOptionalValueIfNeeded()
+            return nil
+        }
     }
 
     /// Unbox an optional collection by key
@@ -149,7 +160,7 @@ public final class Unboxer {
 
     /// Unbox an optional collection of UnboxableWithContext values by key
     public func unbox<C: UnboxableCollection, V: UnboxableWithContext>(key: String, context: V.UnboxContext, allowInvalidElements: Bool = false) -> C? where C.UnboxValue == V {
-        return try? self.unbox(path: .key(key), transform: V.makeCollectionTransform(context: context, allowInvalidElements: allowInvalidElements))
+        return try? self.unbox(path: .key(key), transform: V.makeCollectionTransform(context: context, allowInvalidElements: allowInvalidElements), unboxedValueIsOptional: true)
     }
 
     /// Unbox an optional value using a formatter by key
@@ -186,7 +197,7 @@ public final class Unboxer {
 
     /// Unbox an optional collection of UnboxableWithContext values by key path
     public func unbox<C: UnboxableCollection, V: UnboxableWithContext>(keyPath: String, context: V.UnboxContext, allowInvalidElements: Bool = false) -> C? where C.UnboxValue == V {
-        return try? self.unbox(path: .keyPath(keyPath), transform: V.makeCollectionTransform(context: context, allowInvalidElements: allowInvalidElements))
+        return try? self.unbox(path: .keyPath(keyPath), transform: V.makeCollectionTransform(context: context, allowInvalidElements: allowInvalidElements), unboxedValueIsOptional: true)
     }
 
     /// Unbox an optional value using a formatter by key path
@@ -215,7 +226,7 @@ internal extension Unboxer {
 // MARK: - Private
 
 private extension Unboxer {
-    func unbox<R>(path: UnboxPath, transform: UnboxTransform<R>) throws -> R {
+    func unbox<R>(path: UnboxPath, transform: UnboxTransform<R>, unboxedValueIsOptional isOptional: Bool) throws -> R {
         do {
             switch path {
             case .key(let key):
@@ -245,17 +256,44 @@ private extension Unboxer {
                 throw UnboxPathError.emptyKeyPath
             }
         } catch {
+            var processedError: UnboxError? = nil
+            
             if let publicError = error as? UnboxError {
-                throw publicError
+                processedError = publicError
             } else if let pathError = error as? UnboxPathError {
-                throw UnboxError.pathError(pathError, path.description)
+                processedError = UnboxError.pathError(pathError, path.description)
+            }
+            
+            // log a warning only if we have a processed error
+            if let processedError = processedError,
+                isOptional,
+                processedError.isOptionalKeyFailedtoUnboxWarning {
+                
+                let warning = UnboxWarning.optionalKeyFailedToUnbox(error: processedError)
+                Unboxer.warningLogger?.log(warning: warning)
+                
             }
 
-            throw error
+            throw processedError ?? error
         }
     }
 
     func performCustomUnboxing<T>(closure: (Unboxer) throws -> T?) throws -> T {
         return try closure(self).orThrow(UnboxError.customUnboxingFailed)
     }
+}
+
+private extension UnboxError {
+    
+    /// When unboxing an optional value, an error is generated
+    /// If the key was present in the dictionary we want to log this error as a warning
+    func logAsWarningForOptionalValueIfNeeded() {
+        guard isOptionalKeyFailedtoUnboxWarning else {
+            return
+        }
+        
+        let warning = UnboxWarning.optionalKeyFailedToUnbox(error: self)
+        Unboxer.warningLogger?.log(warning: warning)
+    }
+    
 }

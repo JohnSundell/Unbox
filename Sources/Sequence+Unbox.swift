@@ -13,7 +13,17 @@ internal extension Sequence {
         }
 
         return self.flatMap {
-            return try? transform($0)
+            
+            do {
+                let unboxed = try transform($0)
+                return unboxed
+            } catch {
+                if let error = error as? UnboxError {
+                    let warning = UnboxWarning.invalidElement(error: error)
+                    Unboxer.warningLogger?.log(warning: warning)
+                }
+                return nil
+            }
         }
     }
 }

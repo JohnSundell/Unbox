@@ -70,6 +70,9 @@ private extension Dictionary {
             } catch {
                 if !allowInvalidElements {
                     throw error
+                } else if let unboxError = error as? UnboxError {
+                    let warning = UnboxWarning.invalidElement(error: unboxError)
+                    Unboxer.warningLogger?.log(warning: warning)
                 }
             }
         }

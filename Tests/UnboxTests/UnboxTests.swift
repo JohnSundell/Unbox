@@ -1744,6 +1744,154 @@ class UnboxTests: XCTestCase {
             XCTFail("\(error)")
         }
     }
+    
+    func testWarningsAreLoggedForInvalidElementsInArray() {
+        
+        let logger = UnboxWarningLoggerMock()
+        Unboxer.warningLogger = logger
+        
+        struct Model: Unboxable {
+            let string: String
+            
+            init(unboxer: Unboxer) throws {
+                self.string = try unboxer.unbox(key: "string")
+            }
+        }
+        
+        let dictionaries: [UnboxableDictionary] = [
+            ["string" : "one"],
+            ["invalid" : "element"],
+            ["string" : "two"]
+        ]
+        
+        do {
+            let unboxed: [Model] = try unbox(dictionaries: dictionaries, allowInvalidElements: true)
+            XCTAssertEqual(unboxed.first?.string, "one")
+            XCTAssertEqual(unboxed.last?.string, "two")
+        } catch {
+            XCTFail("\(error)")
+        }
+        
+        XCTAssertEqual(logger.receivedWarnings.count, 1, "Expected only one warning call")
+        
+        guard let warning = logger.receivedWarnings.first else {
+            XCTFail("Expected to find a warning but there wasn't any")
+            return
+        }
+        
+        switch warning {
+        case .invalidElement:
+            break
+        default:
+            XCTFail("Expected logged warning to be .invalidElement but instead got \(warning)")
+        }
+    }
+    
+    func testWarningsareLoggedForInvalidElementsInNestedArrayOfDictionaries() {
+        
+        let logger = UnboxWarningLoggerMock()
+        Unboxer.warningLogger = logger
+        
+        struct Model: Unboxable {
+            let nestedModels: [NestedModel]
+            
+            init(unboxer: Unboxer) throws {
+                self.nestedModels = try unboxer.unbox(key: "nested", allowInvalidElements: true)
+            }
+        }
+        
+        struct NestedModel: Unboxable {
+            let string: String
+            
+            init(unboxer: Unboxer) throws {
+                self.string = try unboxer.unbox(key: "string")
+            }
+        }
+        
+        let dictionary: UnboxableDictionary = [
+            "nested" : [
+                ["string" : "one"],
+                ["invalid" : "element"],
+                ["string" : "two"]
+            ]
+        ]
+        
+        do {
+            let unboxed: Model = try unbox(dictionary: dictionary)
+            XCTAssertEqual(unboxed.nestedModels.first?.string, "one")
+            XCTAssertEqual(unboxed.nestedModels.last?.string, "two")
+        } catch {
+            XCTFail("\(error)")
+        }
+        
+        XCTAssertEqual(logger.receivedWarnings.count, 1, "Expected only one warning call")
+        
+        guard let warning = logger.receivedWarnings.first else {
+            XCTFail("Expected to find a warning but there wasn't any")
+            return
+        }
+        
+        switch warning {
+        case .invalidElement:
+            break
+        default:
+            XCTFail("Expected logged warning to be .invalidElement but instead got \(warning)")
+        }
+    }
+    
+    func testWarningsAreLoggedForInvalidElementsInNestedDictionary() {
+        
+        let logger = UnboxWarningLoggerMock()
+        Unboxer.warningLogger = logger
+        
+        struct Model: Unboxable {
+            let nestedModels: [String : NestedModel]
+            
+            init(unboxer: Unboxer) throws {
+                self.nestedModels = try unboxer.unbox(key: "nested", allowInvalidElements: true)
+            }
+        }
+        
+        struct NestedModel: Unboxable {
+            let string: String
+            
+            init(unboxer: Unboxer) throws {
+                self.string = try unboxer.unbox(key: "string")
+            }
+        }
+        
+        let dictionary: UnboxableDictionary = [
+            "nested" : [
+                "one" : ["string" : "one"],
+                "two" : ["invalid" : "element"],
+                "three" : ["string" : "two"]
+            ]
+        ]
+        
+        do {
+            let unboxed: Model = try unbox(dictionary: dictionary)
+            XCTAssertEqual(unboxed.nestedModels.count, 2)
+            XCTAssertEqual(unboxed.nestedModels["one"]?.string, "one")
+            XCTAssertEqual(unboxed.nestedModels["three"]?.string, "two")
+        } catch {
+            XCTFail("\(error)")
+        }
+        
+        XCTAssertEqual(logger.receivedWarnings.count, 1, "Expected only one warning call")
+        
+        guard let warning = logger.receivedWarnings.first else {
+            XCTFail("Expected to find a warning but there wasn't any")
+            return
+        }
+        
+        switch warning {
+        case .invalidElement:
+            break
+        default:
+            XCTFail("Expected logged warning to be .invalidElement but instead got \(warning)")
+        }
+    }
+
 }
 
 private func UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: Bool) -> UnboxableDictionary {
@@ -2022,6 +2170,15 @@ private final class UnboxTestContextMock: UnboxableWithContext {
         self.nestedArray = unboxer.unbox(key: "nestedArray", context: "nestedArrayContext")
         self.nestedDictionary = unboxer.unbox(key: "nestedDictionary", context: "nestedDictionaryContext")
     }
+}
+
+private final class UnboxWarningLoggerMock: UnboxWarningLogger {
+    
+    private(set) var receivedWarnings: [UnboxWarning] = []
+    func log(warning: UnboxWarning) {
+        receivedWarnings.append(warning)
+    }
+    
 }
 
 private struct UnboxTestSimpleMock: Unboxable, Equatable {
