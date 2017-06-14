@@ -15,7 +15,9 @@ extension Array: UnboxableCollection {
             return nil
         }
 
-        return try array.enumerated().map(allowInvalidElements: allowInvalidElements) { index, element in
+        return try array.enumerated().map(allowInvalidElements: allowInvalidElements) { (arg) in
+            
+            let (index, element) = arg
             let unboxedElement = try transformer.unbox(element: element, allowInvalidCollectionElements: allowInvalidElements)
             return try unboxedElement.orThrow(UnboxPathError.invalidArrayElement(element, index))
         }
