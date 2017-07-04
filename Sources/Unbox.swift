@@ -85,7 +85,9 @@ public func unbox<T: Unboxable>(data: Data) throws -> [String: T] {
 /// Unbox `UnboxableDictionary` into a dictionary of type `[String: T]` where `T` is `Unboxable`. Throws `UnboxError`.
 public func unbox<T: Unboxable>(dictionary: UnboxableDictionary) throws -> [String: T] {
     var mappedDictionary = [String: T]()
-    try dictionary.forEach { key, value in
+    try dictionary.forEach { (arg) in
+        
+        let (key, value) = arg
         guard let innerDictionary = value as? UnboxableDictionary else {
             throw UnboxError.invalidData
         }
