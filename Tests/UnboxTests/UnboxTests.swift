@@ -1744,6 +1744,29 @@ class UnboxTests: XCTestCase {
             XCTFail("\(error)")
         }
     }
+
+    func testKeyPathWithSameLastTwoComponens() {
+        struct Model: Unboxable {
+            let message: String
+
+            init(unboxer: Unboxer) throws {
+                self.message = try unboxer.unbox(keyPath: "message.message")
+            }
+        }
+
+        let dictionary: UnboxableDictionary = [
+            "message": [
+                "message": "value"
+            ]
+        ]
+
+        do {
+            let unboxed: Model = try unbox(dictionary: dictionary)
+            XCTAssertEqual("value", unboxed.message)
+        } catch {
+            XCTFail("\(error)")
+        }
+    }
 }
 
 private func UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: Bool) -> UnboxableDictionary {
