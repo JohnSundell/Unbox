@@ -318,6 +318,45 @@ class UnboxTests: XCTestCase {
         }
     }
     
+    func testArrayOfExpressibleEnums() {
+        struct Model: Unboxable {
+            let optionalS_A: [UnboxTestStringExpressedEnum]?
+            let optionalI_A: [UnboxTestIntExpressedEnum]?
+            let optionalS_B: [UnboxTestStringExpressedEnum]?
+            let optionalI_B: [UnboxTestIntExpressedEnum]?
+            let requiredS: [UnboxTestStringExpressedEnum]
+            let requiredI: [UnboxTestIntExpressedEnum]
+            
+            init(unboxer: Unboxer) throws {
+                self.optionalS_A = unboxer.unbox(key: "optionalS_A")
+                self.optionalI_A = unboxer.unbox(key: "optionalI_A")
+                self.optionalS_B = unboxer.unbox(key: "optionalS_B")
+                self.optionalI_B = unboxer.unbox(key: "optionalI_B")
+                self.requiredS = try unboxer.unbox(key: "requiredS")
+                self.requiredI = try unboxer.unbox(key: "requiredI")
+            }
+        }
+        
+        let dictionary: UnboxableDictionary = [
+            "optionalS_A" : ["case1", "case2"],
+            "optionalI_A" : [1, 2],
+            "requiredS" : ["case2", "case1"],
+            "requiredI" : [2, 1]
+        ]
+        
+        do {
+            let unboxed: Model = try unbox(dictionary: dictionary)
+            XCTAssertEqual(unboxed.optionalS_A!, [.case1, .case2])
+            XCTAssertEqual(unboxed.optionalI_A!, [.case1, .case2])
+            XCTAssertNil(unboxed.optionalS_B)
+            XCTAssertNil(unboxed.optionalI_B)
+            XCTAssertEqual(unboxed.requiredS, [.case2, .case1])
+            XCTAssertEqual(unboxed.requiredI, [.case2, .case1])
+        } catch {
+            XCTFail("\(error)")
+        }
+    }
+    
     func testRequiredDateFormatting() {
         struct Model: Unboxable {
             let date: Date
@@ -1754,11 +1793,15 @@ private func UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: Bool)
         UnboxTestMock.requiredFloatKey : Float(3.14) as AnyObject,
         UnboxTestMock.requiredCGFloatKey : 0.72,
         UnboxTestMock.requiredEnumKey : 1,
+        UnboxTestMock.requiredEnumStringExpressedKey : "case1",
+        UnboxTestMock.requiredEnumIntExpressedKey : 1,
         UnboxTestMock.requiredStringKey :  "hello",
         UnboxTestMock.requiredURLKey : "http://www.google.com",
         UnboxTestMock.requiredDecimalKey: Decimal(13.95) as AnyObject,
         UnboxTestMock.requiredArrayKey : ["unbox", "is", "pretty", "cool", "right?"],
         UnboxTestMock.requiredEnumArrayKey : [0, 1],
+        UnboxTestMock.requiredEnumStringExpressedArrayKey : ["case1", "case2"],
+        UnboxTestMock.requiredEnumIntExpressedArrayKey : [1, 2],
     ]
     
     if !nested {
@@ -1775,6 +1818,41 @@ private func UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: Bool)
 private enum UnboxTestEnum: Int, UnboxableEnum {
     case First
     case Second
+}
+
+struct StringExpressedStruct:ExpressibleByStringLiteral, Equatable{
+    let obj:String
+    init(stringLiteral value: String) {
+        obj = value
+    }
+    init(unicodeScalarLiteral value: String) {
+        self.init(stringLiteral:value)
+    }
+    init(extendedGraphemeClusterLiteral value: String) {
+        self.init(stringLiteral:value)
+    }
+    static func ==(lhs: StringExpressedStruct, rhs: StringExpressedStruct) -> Bool{
+        return lhs.obj == rhs.obj
+    }
+}
+
+struct IntExpressedStruct:ExpressibleByIntegerLiteral, Equatable{
+    let obj:Int
+    init(integerLiteral value: Int) {
+        self.obj = value
+    }
+    static func ==(lhs: IntExpressedStruct, rhs: IntExpressedStruct) -> Bool{
+        return lhs.obj == rhs.obj
+    }
+}
+
+enum UnboxTestStringExpressedEnum: StringExpressedStruct, RawRepresentable, UnboxableEnum{
+    case case1
+    case case2
+}
+enum UnboxTestIntExpressedEnum: IntExpressedStruct, RawRepresentable, UnboxableEnum{
+    case case1 = 1
+    case case2
 }
 
 private struct UnboxTestDictionaryKey: UnboxableKey, Hashable {
@@ -1808,6 +1886,10 @@ private class UnboxTestBaseMock: Unboxable {
     static let optionalCGFloatKey = "optionalCGFloat"
     static let requiredEnumKey = "requiredEnum"
     static let optionalEnumKey = "optionalEnum"
+    static let requiredEnumStringExpressedKey = "requiredEnumStringExpressed"
+    static let optionalEnumStringExpressedKey = "optionalEnumStringExpressed"
+    static let requiredEnumIntExpressedKey = "requiredEnumIntExpressed"
+    static let optionalEnumIntExpressedKey = "optionalEnumIntExpressed"
     static let requiredStringKey = "requiredString"
     static let optionalStringKey = "optionalString"
     static let requiredURLKey = "requiredURL"
@@ -1818,6 +1900,10 @@ private class UnboxTestBaseMock: Unboxable {
     static let optionalArrayKey = "optionalArray"
     static let requiredEnumArrayKey = "requiredEnumArray"
     static let optionalEnumArrayKey = "optionalEnumArray"
+    static let requiredEnumStringExpressedArrayKey = "requiredEnumStringExpressedArray"
+    static let optionalEnumStringExpressedArrayKey = "optionalEnumStringExpressedArray"
+    static let requiredEnumIntExpressedArrayKey = "requiredEnumIntExpressedArray"
+    static let optionalEnumIntExpressedArrayKey = "optionalEnumIntExpressedArray"
     
     let requiredBool: Bool
     let optionalBool: Bool?
@@ -1831,6 +1917,10 @@ private class UnboxTestBaseMock: Unboxable {
     let optionalCGFloat: CGFloat?
     let requiredEnum: UnboxTestEnum
     let optionalEnum: UnboxTestEnum?
+    let requiredStringExpressedEnum: UnboxTestStringExpressedEnum
+    let optionalStringExpressedEnum: UnboxTestStringExpressedEnum?
+    let requiredIntExpressedEnum: UnboxTestIntExpressedEnum
+    let optionalIntExpressedEnum: UnboxTestIntExpressedEnum?
     let requiredString: String
     let optionalString: String?
     let requiredURL: URL
@@ -1841,6 +1931,10 @@ private class UnboxTestBaseMock: Unboxable {
     let optionalArray: [String]?
     let requiredEnumArray: [UnboxTestEnum]
     let optionalEnumArray: [UnboxTestEnum]?
+    let requiredStringExpressedEnumArray: [UnboxTestStringExpressedEnum]
+    let optionalStringExpressedEnumArray: [UnboxTestStringExpressedEnum]?
+    let requiredIntExpressedEnumArray: [UnboxTestIntExpressedEnum]
+    let optionalIntExpressedEnumArray: [UnboxTestIntExpressedEnum]?
     
     required init(unboxer: Unboxer) throws {
         self.requiredBool = try unboxer.unbox(key: UnboxTestBaseMock.requiredBoolKey)
@@ -1855,6 +1949,10 @@ private class UnboxTestBaseMock: Unboxable {
         self.optionalCGFloat = unboxer.unbox(key: UnboxTestBaseMock.optionalCGFloatKey)
         self.requiredEnum = try unboxer.unbox(key: UnboxTestBaseMock.requiredEnumKey)
         self.optionalEnum = unboxer.unbox(key: UnboxTestBaseMock.optionalEnumKey)
+        self.requiredStringExpressedEnum = try unboxer.unbox(key: UnboxTestBaseMock.requiredEnumStringExpressedKey)
+        self.optionalStringExpressedEnum = unboxer.unbox(key: UnboxTestBaseMock.optionalEnumStringExpressedKey)
+        self.requiredIntExpressedEnum = try unboxer.unbox(key: UnboxTestBaseMock.requiredEnumIntExpressedKey)
+        self.optionalIntExpressedEnum = unboxer.unbox(key: UnboxTestBaseMock.optionalEnumIntExpressedKey)
         self.requiredString = try unboxer.unbox(key: UnboxTestBaseMock.requiredStringKey)
         self.optionalString = unboxer.unbox(key: UnboxTestBaseMock.optionalStringKey)
         self.requiredURL = try unboxer.unbox(key: UnboxTestBaseMock.requiredURLKey)
@@ -1865,6 +1963,10 @@ private class UnboxTestBaseMock: Unboxable {
         self.optionalArray = unboxer.unbox(key: UnboxTestBaseMock.optionalArrayKey)
         self.requiredEnumArray = try unboxer.unbox(key: UnboxTestBaseMock.requiredEnumArrayKey)
         self.optionalEnumArray = unboxer.unbox(key: UnboxTestBaseMock.optionalEnumArrayKey)
+        self.requiredStringExpressedEnumArray = try unboxer.unbox(key: UnboxTestBaseMock.requiredEnumStringExpressedArrayKey)
+        self.optionalStringExpressedEnumArray = unboxer.unbox(key: UnboxTestBaseMock.optionalEnumStringExpressedArrayKey)
+        self.requiredIntExpressedEnumArray = try unboxer.unbox(key: UnboxTestBaseMock.requiredEnumIntExpressedArrayKey)
+        self.optionalIntExpressedEnumArray = unboxer.unbox(key: UnboxTestBaseMock.optionalEnumIntExpressedArrayKey)
     }
     
     func verifyAgainstDictionary(dictionary: UnboxableDictionary) {
@@ -1900,6 +2002,14 @@ private class UnboxTestBaseMock: Unboxable {
                 verificationOutcome = self.verifyEnumPropertyValue(value: self.requiredEnum, againstDictionaryValue: value)
             case UnboxTestBaseMock.optionalEnumKey:
                 verificationOutcome = self.verifyEnumPropertyValue(value: self.optionalEnum, againstDictionaryValue: value)
+            case UnboxTestBaseMock.requiredEnumStringExpressedKey:
+                verificationOutcome = self.verifyEnumPropertyValue(value: self.requiredStringExpressedEnum, againstDictionaryValue: value)
+            case UnboxTestBaseMock.optionalEnumStringExpressedKey:
+                verificationOutcome = self.verifyEnumPropertyValue(value: self.optionalStringExpressedEnum, againstDictionaryValue: value)
+            case UnboxTestBaseMock.requiredEnumIntExpressedKey:
+                verificationOutcome = self.verifyEnumPropertyValue(value: self.requiredIntExpressedEnum, againstDictionaryValue: value)
+            case UnboxTestBaseMock.optionalEnumIntExpressedKey:
+                verificationOutcome = self.verifyEnumPropertyValue(value: self.optionalIntExpressedEnum, againstDictionaryValue: value)
             case UnboxTestBaseMock.requiredStringKey:
                 verificationOutcome = self.verifyPropertyValue(value: self.requiredString, againstDictionaryValue: value)
             case UnboxTestBaseMock.optionalStringKey:
@@ -1916,6 +2026,14 @@ private class UnboxTestBaseMock: Unboxable {
                 verificationOutcome = self.verifyEnumArrayPropertyValue(value: self.requiredEnumArray, againstDictionaryValue: value)
             case UnboxTestBaseMock.optionalEnumArrayKey:
                 verificationOutcome = self.verifyEnumArrayPropertyValue(value: self.optionalEnumArray, againstDictionaryValue: value)
+            case UnboxTestBaseMock.requiredEnumStringExpressedArrayKey:
+                verificationOutcome = self.verifyEnumArrayPropertyValue(value: self.requiredStringExpressedEnumArray, againstDictionaryValue: value)
+            case UnboxTestBaseMock.optionalEnumStringExpressedArrayKey:
+                verificationOutcome = self.verifyEnumArrayPropertyValue(value: self.optionalStringExpressedEnumArray, againstDictionaryValue: value)
+            case UnboxTestBaseMock.requiredEnumIntExpressedArrayKey:
+                verificationOutcome = self.verifyEnumArrayPropertyValue(value: self.requiredIntExpressedEnumArray, againstDictionaryValue: value)
+            case UnboxTestBaseMock.optionalEnumIntExpressedArrayKey:
+                verificationOutcome = self.verifyEnumArrayPropertyValue(value: self.optionalIntExpressedEnumArray, againstDictionaryValue: value)
             default:
                 verificationOutcome = true
             }
@@ -1936,6 +2054,28 @@ private class UnboxTestBaseMock: Unboxable {
     
     func verifyEnumPropertyValue<T: UnboxableEnum>(value: T?, againstDictionaryValue dictionaryValue: Any?) -> Bool where T: Equatable {
         if let rawValue = dictionaryValue as? T.RawValue {
+            if let enumValue = T(rawValue: rawValue) {
+                return value == enumValue
+            }
+        }
+        
+        return false
+    }
+    
+    func verifyEnumPropertyValue<T: UnboxableEnum>(value: T?, againstDictionaryValue dictionaryValue: Any?) -> Bool where T: Equatable, T.RawValue: ExpressibleByStringLiteral {
+        if let rawValueString = dictionaryValue as? T.RawValue.StringLiteralType {
+            let rawValue = T.RawValue(stringLiteral: rawValueString)
+            if let enumValue = T(rawValue: rawValue) {
+                return value == enumValue
+            }
+        }
+        
+        return false
+    }
+    
+    func verifyEnumPropertyValue<T: UnboxableEnum>(value: T?, againstDictionaryValue dictionaryValue: Any?) -> Bool where T: Equatable, T.RawValue: ExpressibleByIntegerLiteral {
+        if let rawValueInt = dictionaryValue as? T.RawValue.IntegerLiteralType {
+            let rawValue = T.RawValue(integerLiteral: rawValueInt)
             if let enumValue = T(rawValue: rawValue) {
                 return value == enumValue
             }
@@ -1967,6 +2107,48 @@ private class UnboxTestBaseMock: Unboxable {
             if let dictionaryArrayValue = dictionaryValue as? [T.RawValue] {
                 for i in 0..<dictionaryArrayValue.count {
                     guard let enumValue = T(rawValue: dictionaryArrayValue[i]) else {
+                        return false
+                    }
+                    
+                    guard case enumValue = propertyValue[i] else {
+                        return false
+                    }
+                }
+                
+                return true
+            }
+        }
+        
+        return false
+    }
+    
+    func verifyEnumArrayPropertyValue<T: UnboxableEnum>(value: [T]?, againstDictionaryValue dictionaryValue: Any?) -> Bool where T: Equatable, T.RawValue:ExpressibleByStringLiteral {
+        if let propertyValue = value {
+            if let dictionaryArrayValue = dictionaryValue as? [T.RawValue.StringLiteralType] {
+                for i in 0..<dictionaryArrayValue.count {
+                    let rawValue = T.RawValue(stringLiteral: dictionaryArrayValue[i])
+                    guard let enumValue = T(rawValue: rawValue) else {
+                        return false
+                    }
+                    
+                    guard case enumValue = propertyValue[i] else {
+                        return false
+                    }
+                }
+                
+                return true
+            }
+        }
+        
+        return false
+    }
+    
+    func verifyEnumArrayPropertyValue<T: UnboxableEnum>(value: [T]?, againstDictionaryValue dictionaryValue: Any?) -> Bool where T: Equatable, T.RawValue:ExpressibleByIntegerLiteral {
+        if let propertyValue = value {
+            if let dictionaryArrayValue = dictionaryValue as? [T.RawValue.IntegerLiteralType] {
+                for i in 0..<dictionaryArrayValue.count {
+                    let rawValue = T.RawValue(integerLiteral: dictionaryArrayValue[i])
+                    guard let enumValue = T(rawValue: rawValue) else {
                         return false
                     }
                     
