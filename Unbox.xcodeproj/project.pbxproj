@@ -179,6 +179,8 @@
 		524F1ECF1E89C466000AC6FE /* UnboxArrayContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1ECC1E89C466000AC6FE /* UnboxArrayContainer.swift */; };
 		524F1ED01E89C466000AC6FE /* UnboxArrayContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524F1ECC1E89C466000AC6FE /* UnboxArrayContainer.swift */; };
 		52D6D9871BEFF229002C0205 /* Unbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52D6D97C1BEFF229002C0205 /* Unbox.framework */; };
+		65358A171F4EFE9400F1B070 /* Int16+Unbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65358A161F4EFE9400F1B070 /* Int16+Unbox.swift */; };
+		65358A191F4EFEC000F1B070 /* UInt16+Unbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65358A181F4EFEC000F1B070 /* UInt16+Unbox.swift */; };
 		DD7502881C68FEDE006590AF /* Unbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52D6DA0F1BF000BD002C0205 /* Unbox.framework */; };
 		DD7502921C690C7A006590AF /* Unbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52D6D9F01BEFFFBE002C0205 /* Unbox.framework */; };
 /* End PBXBuildFile section */
@@ -256,6 +258,8 @@
 		52D6D9E21BEFFF6E002C0205 /* Unbox.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Unbox.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		52D6D9F01BEFFFBE002C0205 /* Unbox.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Unbox.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		52D6DA0F1BF000BD002C0205 /* Unbox.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Unbox.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		65358A161F4EFE9400F1B070 /* Int16+Unbox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Int16+Unbox.swift"; sourceTree = "<group>"; };
+		65358A181F4EFEC000F1B070 /* UInt16+Unbox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UInt16+Unbox.swift"; sourceTree = "<group>"; };
 		AD2FAA261CD0B6D800659CF4 /* Unbox.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Unbox.plist; sourceTree = "<group>"; };
 		AD2FAA281CD0B6E100659CF4 /* UnboxTests.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = UnboxTests.plist; sourceTree = "<group>"; };
 		DD75027A1C68FCFC006590AF /* Unbox-macOS Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Unbox-macOS Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -331,6 +335,7 @@
 				524F1E631E89BABD000AC6FE /* Double+Unbox.swift */,
 				524F1E681E89BAE7000AC6FE /* Float+Unbox.swift */,
 				524F1E451E89B9A1000AC6FE /* Int+Unbox.swift */,
+				65358A161F4EFE9400F1B070 /* Int16+Unbox.swift */,
 				524F1E4F1E89BA26000AC6FE /* Int32+Unbox.swift */,
 				524F1E541E89BA3A000AC6FE /* Int64+Unbox.swift */,
 				524F1EB81E89C16B000AC6FE /* JSONSerialization+Unbox.swift */,
@@ -340,6 +345,7 @@
 				524F1E7C1E89BC47000AC6FE /* Set+Unbox.swift */,
 				524F1E8B1E89BDB6000AC6FE /* String+Unbox.swift */,
 				524F1E4A1E89B9F7000AC6FE /* UInt+Unbox.swift */,
+				65358A181F4EFEC000F1B070 /* UInt16+Unbox.swift */,
 				524F1E591E89BA78000AC6FE /* UInt32+Unbox.swift */,
 				524F1E5E1E89BA9E000AC6FE /* UInt64+Unbox.swift */,
 				524F1E3B1E89B884000AC6FE /* Optional+Unbox.swift */,
@@ -717,6 +723,7 @@
 				524F1E3C1E89B884000AC6FE /* Optional+Unbox.swift in Sources */,
 				524F1E191E89B2A9000AC6FE /* UnboxableRawType.swift in Sources */,
 				524F1E0F1E89B168000AC6FE /* UnboxableWithContext.swift in Sources */,
+				65358A171F4EFE9400F1B070 /* Int16+Unbox.swift in Sources */,
 				524F1E231E89B381000AC6FE /* UnboxCollectionElementTransformer.swift in Sources */,
 				524F1E051E89B0A3000AC6FE /* UnboxPathError.swift in Sources */,
 				524F1E7D1E89BC47000AC6FE /* Set+Unbox.swift in Sources */,
@@ -735,6 +742,7 @@
 				524F1E641E89BABD000AC6FE /* Double+Unbox.swift in Sources */,
 				524F1E5F1E89BA9E000AC6FE /* UInt64+Unbox.swift in Sources */,
 				524F1EBE1E89C1C6000AC6FE /* Data+Unbox.swift in Sources */,
+				65358A191F4EFEC000F1B070 /* UInt16+Unbox.swift in Sources */,
 				524F1E371E89B42E000AC6FE /* UnboxFormatter.swift in Sources */,
 				524F1E501E89BA26000AC6FE /* Int32+Unbox.swift in Sources */,
 				524F1ECD1E89C466000AC6FE /* UnboxArrayContainer.swift in Sources */,

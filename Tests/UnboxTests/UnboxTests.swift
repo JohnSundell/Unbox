@@ -110,6 +110,34 @@ class UnboxTests: XCTestCase {
             XCTFail("\(error)")
         }
     }
+
+    func testInt16() {
+        struct Model: Unboxable {
+            let required: Int16
+            let optional1: Int16?
+            let optional2: Int16?
+
+            init(unboxer: Unboxer) throws {
+                self.required = try unboxer.unbox(key: "required")
+                self.optional1 = unboxer.unbox(key: "optional1")
+                self.optional2 = unboxer.unbox(key: "optional2")
+            }
+        }
+
+        let dictionary: UnboxableDictionary = [
+            "required": Int16.max,
+            "optional1": Int16.max
+        ]
+
+        do {
+            let unboxed: Model = try unbox(dictionary: dictionary)
+            XCTAssertEqual(unboxed.required, Int16.max)
+            XCTAssertEqual(unboxed.optional1, Int16.max)
+            XCTAssertNil(unboxed.optional2)
+        } catch {
+            XCTFail("\(error)")
+        }
+    }
     
     func testInt32() {
         struct Model: Unboxable {
@@ -161,6 +189,34 @@ class UnboxTests: XCTestCase {
             let unboxed: Model = try unbox(dictionary: dictionary)
             XCTAssertEqual(unboxed.required, Int64.max)
             XCTAssertEqual(unboxed.optional1, Int64.max)
+            XCTAssertNil(unboxed.optional2)
+        } catch {
+            XCTFail("\(error)")
+        }
+    }
+
+    func testUInt16() {
+        struct Model: Unboxable {
+            let required: UInt16
+            let optional1: UInt16?
+            let optional2: UInt16?
+
+            init(unboxer: Unboxer) throws {
+                self.required = try unboxer.unbox(key: "required")
+                self.optional1 = unboxer.unbox(key: "optional1")
+                self.optional2 = unboxer.unbox(key: "optional2")
+            }
+        }
+
+        let dictionary: UnboxableDictionary = [
+            "required": UInt16.max,
+            "optional1": UInt16.min
+        ]
+
+        do {
+            let unboxed: Model = try unbox(dictionary: dictionary)
+            XCTAssertEqual(unboxed.required, UInt16.max)
+            XCTAssertEqual(unboxed.optional1, UInt16.min)
             XCTAssertNil(unboxed.optional2)
         } catch {
             XCTFail("\(error)")
