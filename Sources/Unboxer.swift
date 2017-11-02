@@ -224,24 +224,24 @@ private extension Unboxer {
             case .keyPath(let keyPath):
                 var node: UnboxPathNode = self.dictionary
                 let components = keyPath.components(separatedBy: ".")
-                let lastKey = components.last
-
-                for key in components {
-                    guard let nextValue = node.unboxPathValue(forKey: key) else {
-                        throw UnboxPathError.missingKey(key)
+                let endPath = components.count - 1
+                
+                for i in 0..<components.count{
+                    guard let nextValue = node.unboxPathValue(forKey: components[i]) else {
+                        throw UnboxPathError.missingKey(components[i])
                     }
-
-                    if key == lastKey {
-                        return try transform(nextValue).orThrow(UnboxPathError.invalidValue(nextValue, key))
+                    
+                    if i == endPath {
+                        return try transform(nextValue).orThrow(UnboxPathError.invalidValue(nextValue, components[i]))
                     }
-
+                    
                     guard let nextNode = nextValue as? UnboxPathNode else {
-                        throw UnboxPathError.invalidValue(nextValue, key)
+                        throw UnboxPathError.invalidValue(nextValue, components[i])
                     }
-
+                    
                     node = nextNode
                 }
-
+                
                 throw UnboxPathError.emptyKeyPath
             }
         } catch {
@@ -250,7 +250,7 @@ private extension Unboxer {
             } else if let pathError = error as? UnboxPathError {
                 throw UnboxError.pathError(pathError, path.description)
             }
-
+            
             throw error
         }
     }
