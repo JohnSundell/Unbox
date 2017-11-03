@@ -15,6 +15,12 @@ import Foundation
  *  - and the correct type will be returned. If a required (non-optional) value couldn't be unboxed `UnboxError` will be thrown.
  */
 public final class Unboxer {
+    
+    /// Takes care of logging warnings found during unbox operation.
+    /// Warnings are not fatal as errors, they just indicate that something is wrong.
+    /// An example of a warning is when you use the `allowInvalidElements` for parsing a collection. If an element in that collection fails to unbox, you'll receive a warning in this logger.
+    public static var warningLogger: UnboxWarningLogger?
+    
     /// The underlying JSON dictionary that is being unboxed
     public let dictionary: UnboxableDictionary
 
