@@ -1546,6 +1546,21 @@ class UnboxTests: XCTestCase {
             XCTFail("Unexpected error thrown: \(error)")
         }
     }
+
+    func testUnboxingArrayCustomKeyPathWithSameKeys() {
+        let dictionary: UnboxableDictionary =
+            ["A": ["B": [
+                [["int": 14], ["int": 14], ["int": 14]],
+                [["int": 14], ["int": 20], ["int": 14]]]]]
+
+        do {
+            let unboxed: UnboxTestSimpleMock = try unbox(dictionary: dictionary, atKeyPath: "A.B.1.1")
+            XCTAssertEqual(unboxed.int, 20)
+
+        } catch {
+            XCTFail("Unexpected error thrown: \(error)")
+        }
+    }
     
     func testUnboxingArrayInvalidIndexStartingAtCustomKeyPath() {
         let dictionary: UnboxableDictionary =
