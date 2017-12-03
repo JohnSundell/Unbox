@@ -222,27 +222,28 @@ private extension Unboxer {
                 let value = try self.dictionary[key].orThrow(UnboxPathError.missingKey(key))
                 return try transform(value).orThrow(UnboxPathError.invalidValue(value, key))
             case .keyPath(let keyPath):
-                var node: UnboxPathNode = self.dictionary
                 let components = keyPath.components(separatedBy: ".")
-                let lastKey = components.last
 
-                for key in components {
+                guard let lastKey = components.last, !lastKey.isEmpty else {
+                    throw UnboxPathError.emptyKeyPath
+                }
+
+                let lastPathNode = try components.dropLast().reduce(dictionary) { (node: UnboxPathNode, key: String) -> UnboxPathNode in
                     guard let nextValue = node.unboxPathValue(forKey: key) else {
                         throw UnboxPathError.missingKey(key)
-                    }
-
-                    if key == lastKey {
-                        return try transform(nextValue).orThrow(UnboxPathError.invalidValue(nextValue, key))
                     }
 
                     guard let nextNode = nextValue as? UnboxPathNode else {
                         throw UnboxPathError.invalidValue(nextValue, key)
                     }
 
-                    node = nextNode
+                    return nextNode
                 }
 
-                throw UnboxPathError.emptyKeyPath
+                guard let value = lastPathNode.unboxPathValue(forKey: lastKey) else {
+                    throw UnboxPathError.missingKey(lastKey)
+                }
+                return try transform(value).orThrow(UnboxPathError.invalidValue(value, lastKey))
             }
         } catch {
             if let publicError = error as? UnboxError {
