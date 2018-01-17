@@ -1744,6 +1744,31 @@ class UnboxTests: XCTestCase {
             XCTFail("\(error)")
         }
     }
+
+    func testKeypathsWithSameKeys() {
+        struct Model: Unboxable {
+            let value: String
+
+            init(unboxer: Unboxer) throws {
+                self.value = try unboxer.unbox(keyPath: "key.nested.key")
+            }
+        }
+
+        let dictionary: UnboxableDictionary = [
+            "key": [
+                "nested": [
+                    "key": "value"
+                ]
+            ]
+        ]
+
+        do {
+            let model: Model = try unbox(dictionary: dictionary)
+            XCTAssertEqual(model.value, "value")
+        } catch {
+            XCTFail("\(error)")
+        }
+    }
 }
 
 private func UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: Bool) -> UnboxableDictionary {
