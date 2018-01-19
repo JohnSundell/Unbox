@@ -4,10 +4,11 @@
  *  Licensed under the MIT license, see LICENSE file
  */
 
-import Foundation
-
 #if !os(Linux)
-import CoreGraphics
+    import CoreGraphics
+#else
+    import Foundation
+#endif
 
 /// Extension making `CGFloat` an Unboxable raw type
 extension CGFloat: UnboxableByTransform {
@@ -17,4 +18,3 @@ extension CGFloat: UnboxableByTransform {
         return CGFloat(unboxedValue)
     }
 }
-#endif
