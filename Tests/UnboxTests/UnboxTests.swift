@@ -1769,6 +1769,37 @@ class UnboxTests: XCTestCase {
             XCTFail("\(error)")
         }
     }
+
+    func testErrorMessageForNestedUnboxFailure() {
+        struct Inner: Unboxable {
+            var property: String
+            init(unboxer: Unboxer) throws {
+                self.property = try unboxer.unbox(key: "property")
+            }
+        }
+
+        struct Outer: Unboxable {
+            var inner: Inner
+            init(unboxer: Unboxer) throws {
+                self.inner = try unboxer.unbox(key: "inner")
+            }
+        }
+
+        let dictionary: UnboxableDictionary = [
+            "inner": [
+                "proper": "foo"
+            ]
+        ]
+
+        do {
+            _ = try unbox(dictionary: dictionary) as Outer
+            XCTFail("Unexpected unboxing success")
+        } catch let UnboxError.pathError(_, path) {
+            XCTAssertEqual(path, "inner.property")
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
 }
 
 private func UnboxTestDictionaryWithAllRequiredKeysWithValidValues(nested: Bool) -> UnboxableDictionary {

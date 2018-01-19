@@ -244,8 +244,20 @@ private extension Unboxer {
                 throw UnboxPathError.emptyKeyPath
             }
         } catch {
-            if let publicError = error as? UnboxError {
-                throw publicError
+            if case UnboxError.pathError(let pathError, let partialPath) = error {
+                switch pathError {
+                case .emptyKeyPath,
+                     .invalidCollectionElementType(_),
+                     .invalidDictionaryKey(_),
+                     .invalidDictionaryKeyType(_):
+                    throw UnboxError.pathError(pathError, partialPath)
+                case let .missingKey(key),
+                     let .invalidValue(_, key),
+                     let .invalidDictionaryValue(_, key):
+                    throw UnboxError.pathError(pathError, "\(path).\(partialPath)")
+                case let .invalidArrayElement(_, index):
+                    throw UnboxError.pathError(pathError, "\(path).\(index).\(partialPath)")
+                }
             } else if let pathError = error as? UnboxPathError {
                 throw UnboxError.pathError(pathError, path.description)
             }
