@@ -243,26 +243,22 @@ private extension Unboxer {
 
                 throw UnboxPathError.emptyKeyPath
             }
-        } catch {
-            if case UnboxError.pathError(let pathError, let partialPath) = error {
-                switch pathError {
-                case .emptyKeyPath,
-                     .invalidCollectionElementType(_),
-                     .invalidDictionaryKey(_):
-                    throw UnboxError.pathError(pathError, partialPath)
-                case .missingKey(_),
-                     .invalidValue(_, _, _),
-                     .invalidDictionaryKeyType(_),
-                     .invalidDictionaryValue(_, _, _):
-                    throw UnboxError.pathError(pathError, "\(path).\(partialPath)")
-                case let .invalidArrayElement(_, index, _):
-                    throw UnboxError.pathError(pathError, "\(path).\(index).\(partialPath)")
-                }
-            } else if let pathError = error as? UnboxPathError {
-                throw UnboxError.pathError(pathError, path.description)
+        } catch UnboxError.pathError(let pathError, let partialPath) {
+            switch pathError {
+            case .emptyKeyPath,
+                 .invalidCollectionElementType,
+                 .invalidDictionaryKey:
+                throw UnboxError.pathError(pathError, partialPath)
+            case .missingKey,
+                 .invalidValue,
+                 .invalidDictionaryKeyType,
+                 .invalidDictionaryValue:
+                throw UnboxError.pathError(pathError, "\(path).\(partialPath)")
+            case let .invalidArrayElement(_, index, _):
+                throw UnboxError.pathError(pathError, "\(path).\(index).\(partialPath)")
             }
-
-            throw error
+        } catch let pathError as UnboxPathError {
+            throw UnboxError.pathError(pathError, path.description)
         }
     }
 
