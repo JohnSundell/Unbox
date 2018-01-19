@@ -23,7 +23,7 @@ extension Dictionary: UnboxableCollection {
             }
 
             guard let unboxedValue = try transformer.unbox(element: value, allowInvalidCollectionElements: allowInvalidElements) else {
-                throw UnboxPathError.invalidDictionaryValue(value, key)
+                throw UnboxPathError.invalidDictionaryValue(value, key, T.UnboxedElement.self)
             }
 
             return (unboxedKey, unboxedValue)

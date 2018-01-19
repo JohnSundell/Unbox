@@ -220,7 +220,7 @@ private extension Unboxer {
             switch path {
             case .key(let key):
                 let value = try self.dictionary[key].orThrow(UnboxPathError.missingKey(key))
-                return try transform(value).orThrow(UnboxPathError.invalidValue(value, key))
+                return try transform(value).orThrow(UnboxPathError.invalidValue(value, key, R.self))
             case .keyPath(let keyPath):
                 var node: UnboxPathNode = self.dictionary
                 let components = keyPath.components(separatedBy: ".")
@@ -231,11 +231,11 @@ private extension Unboxer {
                     }
 
                     if index == components.index(before: components.endIndex) {
-                        return try transform(nextValue).orThrow(UnboxPathError.invalidValue(nextValue, key))
+                        return try transform(nextValue).orThrow(UnboxPathError.invalidValue(nextValue, key, R.self))
                     }
 
                     guard let nextNode = nextValue as? UnboxPathNode else {
-                        throw UnboxPathError.invalidValue(nextValue, key)
+                        throw UnboxPathError.invalidValue(nextValue, key, R.self)
                     }
 
                     node = nextNode
@@ -248,14 +248,14 @@ private extension Unboxer {
                 switch pathError {
                 case .emptyKeyPath,
                      .invalidCollectionElementType(_),
-                     .invalidDictionaryKey(_),
-                     .invalidDictionaryKeyType(_):
+                     .invalidDictionaryKey(_):
                     throw UnboxError.pathError(pathError, partialPath)
-                case let .missingKey(key),
-                     let .invalidValue(_, key),
-                     let .invalidDictionaryValue(_, key):
+                case .missingKey(_),
+                     .invalidValue(_, _, _),
+                     .invalidDictionaryKeyType(_),
+                     .invalidDictionaryValue(_, _, _):
                     throw UnboxError.pathError(pathError, "\(path).\(partialPath)")
-                case let .invalidArrayElement(_, index):
+                case let .invalidArrayElement(_, index, _):
                     throw UnboxError.pathError(pathError, "\(path).\(index).\(partialPath)")
                 }
             } else if let pathError = error as? UnboxPathError {
