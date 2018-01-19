@@ -22,7 +22,16 @@ extension Dictionary: UnboxableCollection {
                 throw UnboxPathError.invalidDictionaryKey(key)
             }
 
-            guard let unboxedValue = try transformer.unbox(element: value, allowInvalidCollectionElements: allowInvalidElements) else {
+            let transformedValue: Value?
+            do {
+                transformedValue = try transformer.unbox(element: value, allowInvalidCollectionElements: allowInvalidElements)
+            } catch let error as UnboxPathError {
+                throw UnboxError.pathError(error, "\(key)")
+            } catch UnboxError.pathError(let pathError, let path) {
+                throw UnboxError.pathError(pathError, "\(key).\(path)")
+            }
+
+            guard let unboxedValue = transformedValue else {
                 throw UnboxPathError.invalidDictionaryValue(value, key, T.UnboxedElement.self)
             }
 
