@@ -263,6 +263,15 @@ struct Passenger: Unboxable {
 }
 ```
 
+`UnboxableEnum` also works our-of-the box if your `enum` conforms to custom `ExpressibleByStringLiteral` or `ExpressibleByIntegerLiteral`:
+
+```swift
+enum Profession: CustomStringExpressibleType, RawRepresentable, UnboxableEnum {
+    case developer
+    case astronaut
+}
+```
+
 ### Contextual objects
 
 Sometimes you need to use data other than what's contained in a dictionary during the decoding process. For this, Unbox has support for strongly typed contextual objects that can be made available in the unboxing initializer.

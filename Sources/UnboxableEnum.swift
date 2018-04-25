@@ -15,3 +15,27 @@ public extension UnboxableEnum {
         return (value as? RawValue).map(self.init)
     }
 }
+
+/// Specialized implementation of `UnboxCompatible` for enums 
+/// that are expressible by String literal.
+public extension UnboxableEnum where RawValue:ExpressibleByStringLiteral{
+    static func unbox(value: Any, allowInvalidCollectionElements: Bool) throws -> Self? {
+        guard let literal = value as? RawValue.StringLiteralType else {
+            return nil
+        }
+        
+        return self.init(rawValue: RawValue(stringLiteral: literal))
+    }
+}
+
+/// Specialized implementation of `UnboxCompatible` for enums
+/// that are expressible by Int literal.
+public extension UnboxableEnum where RawValue:ExpressibleByIntegerLiteral{
+    static func unbox(value: Any, allowInvalidCollectionElements: Bool) throws -> Self? {
+        guard let literal = value as? RawValue.IntegerLiteralType else {
+            return nil
+        }
+        
+        return self.init(rawValue: RawValue(integerLiteral: literal))
+    }
+}
