@@ -12,7 +12,7 @@ internal extension Sequence {
             return try self.map(transform)
         }
 
-        return compactMap {
+        return flatMap {
             return try? transform($0)
         }
     }
