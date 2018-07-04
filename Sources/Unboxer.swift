@@ -224,7 +224,7 @@ private extension Unboxer {
             case .keyPath(let keyPath):
                 var node: UnboxPathNode = self.dictionary
                 let components = keyPath.components(separatedBy: ".")
-                let endPath = components.count - 1
+                let endPath = components.count - 1 
                 
                 for i in 0..<components.count{
                     guard let nextValue = node.unboxPathValue(forKey: components[i]) else {
