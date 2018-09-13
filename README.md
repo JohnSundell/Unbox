@@ -391,7 +391,7 @@ Clone the repo and drag the file `Unbox.swift` into your Xcode project.
 
 **Swift Package Manager:**
 
-Add the line `.Package(url: "https://github.com/johnsundell/unbox.git", majorVersion: 2)` to your `Package.swift`
+Add the line `.Package(url: "https://github.com/johnsundell/unbox.git", majorVersion: 3)` to your `Package.swift`
 
 ### Platform support
 
