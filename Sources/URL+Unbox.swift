@@ -11,6 +11,7 @@ extension URL: UnboxableByTransform {
     public typealias UnboxRawValue = String
 
     public static func transform(unboxedValue: String) -> URL? {
-        return URL(string: unboxedValue)
+        guard let encodedString = unboxedValue.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else { return nil }
+        return URL(string: encodedString)
     }
 }
