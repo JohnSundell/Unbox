@@ -16,8 +16,15 @@ extension Array: UnboxableCollection {
         }
 
         return try array.enumerated().map(allowInvalidElements: allowInvalidElements) { index, element in
-            let unboxedElement = try transformer.unbox(element: element, allowInvalidCollectionElements: allowInvalidElements)
-            return try unboxedElement.orThrow(UnboxPathError.invalidArrayElement(element, index))
+            let unboxedElement: Element?
+            do {
+                unboxedElement = try transformer.unbox(element: element, allowInvalidCollectionElements: allowInvalidElements)
+            } catch let error as UnboxPathError {
+                throw UnboxError.pathError(error, "\(index)")
+            } catch UnboxError.pathError(let pathError, let path) {
+                throw UnboxError.pathError(pathError, "\(index).\(path)")
+            }
+            return try unboxedElement.orThrow(UnboxPathError.invalidArrayElement(element, index, T.UnboxedElement.self))
         }
     }
 }

@@ -1085,7 +1085,7 @@ class UnboxTests: XCTestCase {
             _ = try unbox(dictionary: ["string" : []]) as Model
             XCTFail("Unbox should have thrown for an invalid value")
         } catch {
-            XCTAssertEqual("\(error)", "[UnboxError] An error occurred while unboxing path \"string\": Invalid value ([]) for key \"string\".")
+            XCTAssertEqual("\(error)", "[UnboxError] An error occurred while unboxing path \"string\": Invalid value ([]) for key \"string\", JSON type Array<Any> cannot be unboxed as String")
         }
     }
     
@@ -1635,7 +1635,7 @@ class UnboxTests: XCTestCase {
             _ = try unbox(dictionary: dictionary) as Model
             XCTFail("Should have thrown")
         } catch {
-            XCTAssertEqual("\(error)", "[UnboxError] An error occurred while unboxing path \"array\": Invalid array element ([:]) at index 0.")
+            XCTAssertEqual("\(error)", "[UnboxError] An error occurred while unboxing path \"array\": Invalid array element ([:]) at index 0, JSON type Dictionary<AnyHashable, Any> cannot be unboxed as String")
         }
     }
     
@@ -1767,6 +1767,190 @@ class UnboxTests: XCTestCase {
             XCTAssertEqual(model.value, "value")
         } catch {
             XCTFail("\(error)")
+        }
+    }
+
+    func testErrorMessageForNestedUnboxFailureWithMisspelledProperty() {
+        struct Inner: Unboxable {
+            var property: String
+            init(unboxer: Unboxer) throws {
+                self.property = try unboxer.unbox(key: "property")
+            }
+        }
+
+        struct Outer: Unboxable {
+            var inner: Inner
+            init(unboxer: Unboxer) throws {
+                self.inner = try unboxer.unbox(key: "inner")
+            }
+        }
+
+        let dictionary: UnboxableDictionary = [
+            "inner": [
+                "proper": "foo"
+            ]
+        ]
+
+        do {
+            _ = try unbox(dictionary: dictionary) as Outer
+            XCTFail("Unexpected unboxing success")
+        } catch let UnboxError.pathError(_, path) {
+            XCTAssertEqual(path, "inner.property")
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
+    func testErrorMessageForNestedUnboxFailureWithMistypedProperty() {
+        struct Inner: Unboxable {
+            var property: String
+            init(unboxer: Unboxer) throws {
+                self.property = try unboxer.unbox(key: "property")
+            }
+        }
+
+        struct Outer: Unboxable {
+            var inner: Inner
+            init(unboxer: Unboxer) throws {
+                self.inner = try unboxer.unbox(key: "inner")
+            }
+        }
+
+        let dictionary: UnboxableDictionary = [
+            "inner": ["property": [123]]
+        ]
+
+        do {
+            _ = try unbox(dictionary: dictionary) as Outer
+            XCTFail("Unexpected unboxing success")
+        } catch let UnboxError.pathError(_, path) {
+            XCTAssertEqual(path, "inner.property")
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
+    func testErrorMessageForNestedUnboxFailureWithArraysAndMisspelledProperty() {
+        struct Inner: Unboxable {
+            var property: String
+            init(unboxer: Unboxer) throws {
+                self.property = try unboxer.unbox(key: "property")
+            }
+        }
+
+        struct Outer: Unboxable {
+            var inner: [Inner]
+            init(unboxer: Unboxer) throws {
+                self.inner = try unboxer.unbox(key: "inner")
+            }
+        }
+
+        let dictionary: UnboxableDictionary = [
+            "inner": [
+                ["property": "foo"],
+                ["proper": "bar"]
+            ]
+        ]
+
+        do {
+            _ = try unbox(dictionary: dictionary) as Outer
+            XCTFail("Unexpected unboxing success")
+        } catch let UnboxError.pathError(_, path) {
+            XCTAssertEqual(path, "inner.1.property")
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
+    func testErrorMessageForNestedUnboxFailureWithArraysAndMisTypedProperty() {
+        struct Inner: Unboxable {
+            var property: String
+            init(unboxer: Unboxer) throws {
+                self.property = try unboxer.unbox(key: "property")
+            }
+        }
+
+        struct Outer: Unboxable {
+            var inner: [Inner]
+            init(unboxer: Unboxer) throws {
+                self.inner = try unboxer.unbox(key: "inner")
+            }
+        }
+
+        let dictionary: UnboxableDictionary = [
+            "inner": [
+                ["property": "foo"],
+                ["property": [123]]
+            ]
+        ]
+
+        do {
+            _ = try unbox(dictionary: dictionary) as Outer
+            XCTFail("Unexpected unboxing success")
+        } catch let UnboxError.pathError(_, path) {
+            XCTAssertEqual(path, "inner.1.property")
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
+    func testErrorMessageForInvalidValueHasTypeInformationPresent() {
+        struct Thing: Unboxable {
+            var id: Int
+            init(unboxer: Unboxer) throws {
+                self.id = try unboxer.unbox(key: "id")
+            }
+        }
+
+        let dictionary: UnboxableDictionary = ["id": "abc"]
+
+        do {
+            _ = try unbox(dictionary: dictionary) as Thing
+            XCTFail("Unexpected unboxing success")
+        } catch UnboxError.pathError(let error, _) {
+            XCTAssert(error.description.hasSuffix("JSON type String cannot be unboxed as Int"))
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
+    func testErrorMessageForInvalidValueHasTypeInformationPresentForDictionaryValues() {
+        struct Thing: Unboxable {
+            var id: [String: Int]
+            init(unboxer: Unboxer) throws {
+                self.id = try unboxer.unbox(key: "id")
+            }
+        }
+
+        let dictionary: UnboxableDictionary = ["id": ["abc": "def"]]
+
+        do {
+            _ = try unbox(dictionary: dictionary) as Thing
+            XCTFail("Unexpected unboxing success")
+        } catch UnboxError.pathError(let error, _) {
+            XCTAssert(error.description.hasSuffix("JSON type String cannot be unboxed as Int"), "Error message doesn't have the right suffix: \(error)")
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
+    func testErrorMessageForInvalidValueHasTypeInformationPresentForArrayValues() {
+        struct Thing: Unboxable {
+            var id: [Int]
+            init(unboxer: Unboxer) throws {
+                self.id = try unboxer.unbox(key: "id")
+            }
+        }
+
+        let dictionary: UnboxableDictionary = ["id": ["def"]]
+
+        do {
+            _ = try unbox(dictionary: dictionary) as Thing
+            XCTFail("Unexpected unboxing success")
+        } catch UnboxError.pathError(let error, _) {
+            XCTAssert(error.description.hasSuffix("JSON type String cannot be unboxed as Int"), "Error message doesn't have the right suffix: \(error)")
+        } catch {
+            XCTFail("Unexpected error: \(error)")
         }
     }
 }
