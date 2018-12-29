@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "Unbox"
-  s.version      = "2.5.0"
+  s.version      = "3.1.0"
   s.summary      = "The easy to use Swift JSON decoder."
   s.description  = <<-DESC
     Unbox is an easy to use Swift JSON decoder. Don't spend hours writing JSON decoding code - just unbox it instead!
