@@ -21,7 +21,7 @@ public protocol UnboxableCollection: Collection, UnboxCompatible {
 
 // Default implementation of `UnboxCompatible` for collections
 public extension UnboxableCollection {
-    public static func unbox(value: Any, allowInvalidCollectionElements: Bool) throws -> Self? {
+    static func unbox(value: Any, allowInvalidCollectionElements: Bool) throws -> Self? {
         if let matchingCollection = value as? Self {
             return matchingCollection
         }
