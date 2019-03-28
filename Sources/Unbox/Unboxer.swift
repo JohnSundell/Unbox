@@ -126,25 +126,26 @@ public final class Unboxer {
     }
 
     // MARK: - Unboxing optional values (by key)
-
+    
     /// Unbox an optional value by key
     public func unbox<T: UnboxCompatible>(key: String) -> T? {
-        return try? self.unbox(key: key)
+        return try? self.unbox(path: .key(key), transform: T.unbox)
     }
 
     /// Unbox an optional collection by key
     public func unbox<T: UnboxableCollection>(key: String, allowInvalidElements: Bool) -> T? {
-        return try? self.unbox(key: key, allowInvalidElements: allowInvalidElements)
+        let transform = T.makeTransform(allowInvalidElements: allowInvalidElements)
+        return try? self.unbox(path: .key(key), transform: transform)
     }
 
     /// Unbox an optional Unboxable type by key
     public func unbox<T: Unboxable>(key: String) -> T? {
-        return try? self.unbox(key: key)
+        return try? self.unbox(path: .key(key), transform: T.makeTransform())
     }
 
     /// Unbox an optional UnboxableWithContext type by key
     public func unbox<T: UnboxableWithContext>(key: String, context: T.UnboxContext) -> T? {
-        return try? self.unbox(key: key, context: context)
+        return try? self.unbox(path: .key(key), transform: T.makeTransform(context: context))
     }
 
     /// Unbox an optional collection of UnboxableWithContext values by key
@@ -154,34 +155,35 @@ public final class Unboxer {
 
     /// Unbox an optional value using a formatter by key
     public func unbox<F: UnboxFormatter>(key: String, formatter: F) -> F.UnboxFormattedType? {
-        return try? self.unbox(key: key, formatter: formatter)
+        return try? self.unbox(path: .key(key), transform: formatter.makeTransform())
     }
 
     /// Unbox an optional collection of values using a formatter by key
     public func unbox<C: UnboxableCollection, F: UnboxFormatter>(key: String, formatter: F, allowInvalidElements: Bool = false) -> C? where C.UnboxValue == F.UnboxFormattedType {
-        return try? self.unbox(key: key, formatter: formatter, allowInvalidElements: allowInvalidElements)
+        return try? self.unbox(path: .key(key), transform: formatter.makeCollectionTransform(allowInvalidElements: allowInvalidElements))
     }
 
     // MARK: - Unboxing optional values (by key path)
 
     /// Unbox an optional value by key path
     public func unbox<T: UnboxCompatible>(keyPath: String) -> T? {
-        return try? self.unbox(keyPath: keyPath)
+        return try? self.unbox(path: .keyPath(keyPath), transform: T.unbox)
     }
 
     /// Unbox an optional collection by key path
     public func unbox<T: UnboxableCollection>(keyPath: String, allowInvalidElements: Bool) -> T? {
-        return try? self.unbox(keyPath: keyPath, allowInvalidElements: allowInvalidElements)
+        let transform = T.makeTransform(allowInvalidElements: allowInvalidElements)
+        return try? self.unbox(path: .keyPath(keyPath), transform: transform)
     }
 
     /// Unbox an optional Unboxable type by key path
     public func unbox<T: Unboxable>(keyPath: String) -> T? {
-        return try? self.unbox(keyPath: keyPath)
+        return try? self.unbox(path: .keyPath(keyPath), transform: T.makeTransform())
     }
 
     /// Unbox an optional UnboxableWithContext type by key path
     public func unbox<T: UnboxableWithContext>(keyPath: String, context: T.UnboxContext) -> T? {
-        return try? self.unbox(keyPath: keyPath, context: context)
+        return try? self.unbox(path: .keyPath(keyPath), transform: T.makeTransform(context: context))
     }
 
     /// Unbox an optional collection of UnboxableWithContext values by key path
@@ -191,12 +193,12 @@ public final class Unboxer {
 
     /// Unbox an optional value using a formatter by key path
     public func unbox<F: UnboxFormatter>(keyPath: String, formatter: F) -> F.UnboxFormattedType? {
-        return try? self.unbox(keyPath: keyPath, formatter: formatter)
+        return try? self.unbox(path: .keyPath(keyPath), transform: formatter.makeTransform())
     }
 
     /// Unbox an optional collection of values using a formatter by key path
     public func unbox<C: UnboxableCollection, F: UnboxFormatter>(keyPath: String, formatter: F, allowInvalidElements: Bool = false) -> C? where C.UnboxValue == F.UnboxFormattedType {
-        return try? self.unbox(keyPath: keyPath, formatter: formatter, allowInvalidElements: allowInvalidElements)
+        return try? self.unbox(path: .keyPath(keyPath), transform: formatter.makeCollectionTransform(allowInvalidElements: allowInvalidElements))
     }
 }
 
