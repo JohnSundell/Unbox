@@ -59,9 +59,9 @@ class UnboxTests: XCTestCase {
             
             init(unboxer: Unboxer) throws {
                 self.requiredInt = try unboxer.unbox(key: "requiredInt")
-                self.optionalInt = unboxer.unbox(key: "optionalInt")
+                self.optionalInt = try? unboxer.unbox(key: "optionalInt")
                 self.requiredDouble = try unboxer.unbox(key: "requiredDouble")
-                self.optionalDouble = unboxer.unbox(key: "optionalDouble")
+                self.optionalDouble = try? unboxer.unbox(key: "optionalDouble")
             }
         }
         
@@ -91,8 +91,8 @@ class UnboxTests: XCTestCase {
             
             init(unboxer: Unboxer) throws {
                 self.required = try unboxer.unbox(key: "required")
-                self.optional1 = unboxer.unbox(key: "optional1")
-                self.optional2 = unboxer.unbox(key: "optional2")
+                self.optional1 = try? unboxer.unbox(key: "optional1")
+                self.optional2 = try? unboxer.unbox(key: "optional2")
             }
         }
         
@@ -119,8 +119,8 @@ class UnboxTests: XCTestCase {
             
             init(unboxer: Unboxer) throws {
                 self.required = try unboxer.unbox(key: "required")
-                self.optional1 = unboxer.unbox(key: "optional1")
-                self.optional2 = unboxer.unbox(key: "optional2")
+                self.optional1 = try? unboxer.unbox(key: "optional1")
+                self.optional2 = try? unboxer.unbox(key: "optional2")
             }
         }
         
@@ -147,8 +147,8 @@ class UnboxTests: XCTestCase {
             
             init(unboxer: Unboxer) throws {
                 self.required = try unboxer.unbox(key: "required")
-                self.optional1 = unboxer.unbox(key: "optional1")
-                self.optional2 = unboxer.unbox(key: "optional2")
+                self.optional1 = try? unboxer.unbox(key: "optional1")
+                self.optional2 = try? unboxer.unbox(key: "optional2")
             }
         }
         
@@ -175,8 +175,8 @@ class UnboxTests: XCTestCase {
             
             init(unboxer: Unboxer) throws {
                 self.required = try unboxer.unbox(key: "required")
-                self.optional1 = unboxer.unbox(key: "optional1")
-                self.optional2 = unboxer.unbox(key: "optional2")
+                self.optional1 = try? unboxer.unbox(key: "optional1")
+                self.optional2 = try? unboxer.unbox(key: "optional2")
             }
         }
         
@@ -203,8 +203,8 @@ class UnboxTests: XCTestCase {
             
             init(unboxer: Unboxer) throws {
                 self.required = try unboxer.unbox(key: "required")
-                self.optional1 = unboxer.unbox(key: "optional1")
-                self.optional2 = unboxer.unbox(key: "optional2")
+                self.optional1 = try? unboxer.unbox(key: "optional1")
+                self.optional2 = try? unboxer.unbox(key: "optional2")
             }
         }
         
@@ -238,7 +238,7 @@ class UnboxTests: XCTestCase {
                 self.bool3 = try unboxer.unbox(key: "bool3")
                 self.double = try unboxer.unbox(key: "double")
                 self.float = try unboxer.unbox(key: "float")
-                self.string = unboxer.unbox(key: "string")
+                self.string = try? unboxer.unbox(key: "string")
             }
         }
         
@@ -270,7 +270,7 @@ class UnboxTests: XCTestCase {
             let required: [URL]
             
             init(unboxer: Unboxer) throws {
-                self.optional = unboxer.unbox(key: "optional")
+                self.optional = try? unboxer.unbox(key: "optional")
                 self.required = try unboxer.unbox(key: "required")
             }
         }
@@ -297,8 +297,8 @@ class UnboxTests: XCTestCase {
             let required: [UnboxTestEnum]
             
             init(unboxer: Unboxer) throws {
-                self.optionalA = unboxer.unbox(key: "optionalA")
-                self.optionalB = unboxer.unbox(key: "optionalB")
+                self.optionalA = try? unboxer.unbox(key: "optionalA")
+                self.optionalB = try? unboxer.unbox(key: "optionalB")
                 self.required = try unboxer.unbox(key: "required")
             }
         }
@@ -427,8 +427,8 @@ class UnboxTests: XCTestCase {
             init(unboxer: Unboxer) {
                 let formatter = DateFormatter()
                 formatter.dateFormat = "YYYY-MM-dd"
-                self.date = unboxer.unbox(key: "date", formatter: formatter)
-                self.dateArray = unboxer.unbox(key: "dateArray", formatter: formatter)
+                self.date = try? unboxer.unbox(key: "date", formatter: formatter)
+                self.dateArray = try? unboxer.unbox(key: "dateArray", formatter: formatter)
             }
         }
         
@@ -439,8 +439,8 @@ class UnboxTests: XCTestCase {
             init(unboxer: Unboxer) {
                 let formatter = DateFormatter()
                 formatter.dateFormat = "YYYY-MM-dd"
-                self.date = unboxer.unbox(key: "date", formatter: formatter)
-                self.dateArray = unboxer.unbox(key: "dateArray", formatter: formatter, allowInvalidElements: true)
+                self.date = try? unboxer.unbox(key: "date", formatter: formatter)
+                self.dateArray = try? unboxer.unbox(key: "dateArray", formatter: formatter, allowInvalidElements: true)
             }
         }
         
@@ -490,9 +490,9 @@ class UnboxTests: XCTestCase {
             
             init(unboxer: Unboxer) throws {
                 self.requiredIntDictionary = try unboxer.unbox(key: "requiredIntDictionary")
-                self.optionalIntDictionary = unboxer.unbox(key: "optionalIntDictionary")
+                self.optionalIntDictionary = try? unboxer.unbox(key: "optionalIntDictionary")
                 self.requiredModelDictionary = try unboxer.unbox(key: "requiredModelDictionary")
-                self.optionalModelDictionary = unboxer.unbox(key: "optionalModelDictionary")
+                self.optionalModelDictionary = try? unboxer.unbox(key: "optionalModelDictionary")
             }
         }
         
@@ -538,7 +538,7 @@ class UnboxTests: XCTestCase {
             let dictionary: [UnboxTestDictionaryKey : Int]?
             
             init(unboxer: Unboxer) {
-                self.dictionary = unboxer.unbox(key: "dictionary")
+                self.dictionary = try? unboxer.unbox(key: "dictionary")
             }
         }
         
@@ -584,7 +584,7 @@ class UnboxTests: XCTestCase {
             
             init(unboxer: Unboxer) throws {
                 self.requiredModelDictionary = try unboxer.unbox(key: "requiredModelDictionary")
-                self.optionalModelDictionary = unboxer.unbox(key: "optionalModelDictionary")
+                self.optionalModelDictionary = try? unboxer.unbox(key: "optionalModelDictionary")
             }
         }
         
@@ -690,7 +690,7 @@ class UnboxTests: XCTestCase {
             let optionalModelDictionary: [UnboxTestDictionaryKey : [UnboxTestSimpleMock]]?
             
             init(unboxer: Unboxer) {
-                self.optionalModelDictionary = unboxer.unbox(key: "optionalModelDictionary")
+                self.optionalModelDictionary = try? unboxer.unbox(key: "optionalModelDictionary")
             }
         }
         
@@ -749,7 +749,7 @@ class UnboxTests: XCTestCase {
             
             init(unboxer: Unboxer) throws {
                 required = try unboxer.unbox(key: "required")
-                optional = unboxer.unbox(key: "optional")
+                optional = try? unboxer.unbox(key: "optional")
             }
         }
         
@@ -782,7 +782,7 @@ class UnboxTests: XCTestCase {
             
             init(unboxer: Unboxer) throws {
                 required = try unboxer.unbox(key: "required")
-                optional = unboxer.unbox(key: "optional")
+                optional = try? unboxer.unbox(key: "optional")
             }
         }
         
@@ -821,7 +821,7 @@ class UnboxTests: XCTestCase {
             
             init(unboxer: Unboxer) throws {
                 self.required = try unboxer.unbox(keyPath: "required.0")
-                self.optional = unboxer.unbox(keyPath: "optional.1")
+                self.optional = try? unboxer.unbox(keyPath: "optional.1")
             }
         }
         
@@ -1724,7 +1724,7 @@ class UnboxTests: XCTestCase {
             let required: Set<String>
             
             init(unboxer: Unboxer) throws {
-                self.optional = unboxer.unbox(key: "optional")
+                self.optional = try? unboxer.unbox(key: "optional")
                 self.required = try unboxer.unbox(key: "required")
             }
         }
@@ -1803,8 +1803,6 @@ private enum UnboxTestEnum: Int, UnboxableEnum {
 }
 
 private struct UnboxTestDictionaryKey: UnboxableKey, Hashable {
-    var hashValue: Int { return self.key.hashValue }
-    
     let key: String
     
     static func transform(unboxedKey: String) -> UnboxTestDictionaryKey? {
@@ -1869,27 +1867,27 @@ private class UnboxTestBaseMock: Unboxable {
     
     required init(unboxer: Unboxer) throws {
         self.requiredBool = try unboxer.unbox(key: UnboxTestBaseMock.requiredBoolKey)
-        self.optionalBool = unboxer.unbox(key: UnboxTestBaseMock.optionalBoolKey)
+        self.optionalBool = try? unboxer.unbox(key: UnboxTestBaseMock.optionalBoolKey)
         self.requiredInt = try unboxer.unbox(key: UnboxTestBaseMock.requiredIntKey)
-        self.optionalInt = unboxer.unbox(key: UnboxTestBaseMock.optionalIntKey)
+        self.optionalInt = try? unboxer.unbox(key: UnboxTestBaseMock.optionalIntKey)
         self.requiredDouble = try unboxer.unbox(key: UnboxTestBaseMock.requiredDoubleKey)
-        self.optionalDouble = unboxer.unbox(key: UnboxTestBaseMock.optionalDoubleKey)
+        self.optionalDouble = try? unboxer.unbox(key: UnboxTestBaseMock.optionalDoubleKey)
         self.requiredFloat = try unboxer.unbox(key: UnboxTestBaseMock.requiredFloatKey)
-        self.optionalFloat = unboxer.unbox(key: UnboxTestBaseMock.optionalFloatKey)
+        self.optionalFloat = try? unboxer.unbox(key: UnboxTestBaseMock.optionalFloatKey)
         self.requiredCGFloat = try unboxer.unbox(key: UnboxTestBaseMock.requiredCGFloatKey)
-        self.optionalCGFloat = unboxer.unbox(key: UnboxTestBaseMock.optionalCGFloatKey)
+        self.optionalCGFloat = try? unboxer.unbox(key: UnboxTestBaseMock.optionalCGFloatKey)
         self.requiredEnum = try unboxer.unbox(key: UnboxTestBaseMock.requiredEnumKey)
-        self.optionalEnum = unboxer.unbox(key: UnboxTestBaseMock.optionalEnumKey)
+        self.optionalEnum = try? unboxer.unbox(key: UnboxTestBaseMock.optionalEnumKey)
         self.requiredString = try unboxer.unbox(key: UnboxTestBaseMock.requiredStringKey)
-        self.optionalString = unboxer.unbox(key: UnboxTestBaseMock.optionalStringKey)
+        self.optionalString = try? unboxer.unbox(key: UnboxTestBaseMock.optionalStringKey)
         self.requiredURL = try unboxer.unbox(key: UnboxTestBaseMock.requiredURLKey)
-        self.optionalURL = unboxer.unbox(key: UnboxTestBaseMock.optionalURLKey)
+        self.optionalURL = try? unboxer.unbox(key: UnboxTestBaseMock.optionalURLKey)
         self.requiredDecimal = try unboxer.unbox(key: UnboxTestBaseMock.requiredDecimalKey)
-        self.optionalDecimal = unboxer.unbox(key: UnboxTestBaseMock.optionalDecimalKey)
+        self.optionalDecimal = try? unboxer.unbox(key: UnboxTestBaseMock.optionalDecimalKey)
         self.requiredArray = try unboxer.unbox(key: UnboxTestBaseMock.requiredArrayKey)
-        self.optionalArray = unboxer.unbox(key: UnboxTestBaseMock.optionalArrayKey)
+        self.optionalArray = try? unboxer.unbox(key: UnboxTestBaseMock.optionalArrayKey)
         self.requiredEnumArray = try unboxer.unbox(key: UnboxTestBaseMock.requiredEnumArrayKey)
-        self.optionalEnumArray = unboxer.unbox(key: UnboxTestBaseMock.optionalEnumArrayKey)
+        self.optionalEnumArray = try? unboxer.unbox(key: UnboxTestBaseMock.optionalEnumArrayKey)
     }
     
     func verifyAgainstDictionary(dictionary: UnboxableDictionary) {
@@ -2025,11 +2023,11 @@ private class UnboxTestMock: UnboxTestBaseMock {
     
     required init(unboxer: Unboxer) throws {
         self.requiredUnboxable = try unboxer.unbox(key: UnboxTestMock.requiredUnboxableKey)
-        self.optionalUnboxable = unboxer.unbox(key: UnboxTestMock.optionalUnboxableKey)
+        self.optionalUnboxable = try? unboxer.unbox(key: UnboxTestMock.optionalUnboxableKey)
         self.requiredUnboxableArray = try unboxer.unbox(key: UnboxTestMock.requiredUnboxableArrayKey)
-        self.optionalUnboxableArray = unboxer.unbox(key: UnboxTestMock.optionalUnboxableArrayKey)
+        self.optionalUnboxableArray = try? unboxer.unbox(key: UnboxTestMock.optionalUnboxableArrayKey)
         self.requiredUnboxableDictionary = try unboxer.unbox(key: UnboxTestMock.requiredUnboxableDictionaryKey)
-        self.optionalUnboxableDictionary = unboxer.unbox(key: UnboxTestMock.optionalUnboxableDictionaryKey)
+        self.optionalUnboxableDictionary = try? unboxer.unbox(key: UnboxTestMock.optionalUnboxableDictionaryKey)
         
         try super.init(unboxer: unboxer)
     }
@@ -2043,9 +2041,9 @@ private final class UnboxTestContextMock: UnboxableWithContext {
     
     init(unboxer: Unboxer, context: String) {
         self.context = context
-        self.nested = unboxer.unbox(key: "nested", context: "nestedContext")
-        self.nestedArray = unboxer.unbox(key: "nestedArray", context: "nestedArrayContext")
-        self.nestedDictionary = unboxer.unbox(key: "nestedDictionary", context: "nestedDictionaryContext")
+        self.nested = try? unboxer.unbox(key: "nested", context: "nestedContext")
+        self.nestedArray = try? unboxer.unbox(key: "nestedArray", context: "nestedArrayContext")
+        self.nestedDictionary = try? unboxer.unbox(key: "nestedDictionary", context: "nestedDictionaryContext")
     }
 }
 
