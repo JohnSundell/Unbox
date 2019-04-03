@@ -94,12 +94,12 @@ extension SpaceShip: Unboxable {
         self.weight = try unboxer.unbox(key: "weight")
         self.engine = try unboxer.unbox(key: "engine")
         self.passengers = try unboxer.unbox(key: "passengers")
-        self.launchLiveStreamURL = unboxer.unbox(key: "liveStreamURL")
-        self.lastPilot = unboxer.unbox(key: "lastPilot")
+        self.launchLiveStreamURL = try? unboxer.unbox(key: "liveStreamURL")
+        self.lastPilot = try? unboxer.unbox(key: "lastPilot")
 
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "YYYY-MM-dd"
-        self.lastLaunchDate = unboxer.unbox(key: "lastLaunchDate", formatter: dateFormatter)
+        self.lastLaunchDate = try? unboxer.unbox(key: "lastLaunchDate", formatter: dateFormatter)
     }
 }
 
@@ -366,10 +366,9 @@ Sometimes you need more fine grained control over the decoding process, and even
 let dependency = DependencyManager.loadDependency()
 
 let model: Model = try Unboxer.performCustomUnboxing(dictionary: dictionary, closure: { unboxer in
-
     var model = Model(dependency: dependency)
-    model.name = unboxer.unbox(key: "name")
-    model.count = unboxer.unbox(key: "count")
+    model.name = try? unboxer.unbox(key: "name")
+    model.count = try? unboxer.unbox(key: "count")
 
     return model
 })
