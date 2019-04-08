@@ -1,3 +1,9 @@
+⚠️ **DEPRECATED**
+
+Unbox is deprecated in favor of Swift’s built-in `Codable` API and [the Codextended project](https://github.com/JohnSundell/Codextended). All current users are highly encouraged to migrate to `Codable` as soon as possible. [Click here for more information and a migration guide](CodableMigrationGuide.md).
+
+---
+
 <p align="center">
     <img src="logo.png" width="300" max-width="50%" alt="Unbox" />
 </p>
